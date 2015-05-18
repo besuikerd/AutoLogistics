@@ -17,9 +17,9 @@ with ParsingSpec
       }
 
       registerOperands(itemRef)
-      registerBinaryOperators(100, "->")
-      registerBinaryOperators(101, "times")
-      registerBinaryOperators(8, "to")
+//      registerBinaryOperators(100, "->")
+//      registerBinaryOperators(101, "times")
+      registerBinaryOperators(8, ("to", (e1, op, e2) => Application(VariableExpression("mkList"), List(e1, e2))))
     }
 
 //    val program =
@@ -37,11 +37,8 @@ with ParsingSpec
     val program =
       """
         |
-        |print("hoi")(42)
-        |
-        |
-        |
-        |
+        |print(42 + 3 * 4)
+        |x = 1 to 42
         |
         |""".stripMargin
 

@@ -16,6 +16,13 @@ object DSLPrettyPrinter{
       case VariableExpression(name) => tabs ++ s"Variable($name)"
       case NaturalNumberConstant(i) => tabs ++ i.toString
       case RealNumberConstant(i) => tabs ++ i.toString
+
+      case b:BinaryExpression =>
+        s"""${tabs}${b.getClass().getSimpleName()}(
+           |${prettifyLevelled(b.e1, level + 1)}
+           |${prettifyLevelled(b.e2, level + 1)}
+           |$tabs)
+         """.stripMargin
       case LambdaExpression(bindings, expression) =>
         s"""${tabs}Lambda(
             |${bindings.map(b => s"$tabs\t$b").mkString("\n")}
