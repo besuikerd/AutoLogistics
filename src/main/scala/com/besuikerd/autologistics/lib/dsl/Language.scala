@@ -20,6 +20,10 @@ sealed abstract class Expression extends ASTNode
 
 case class VariableExpression(name:String) extends Expression
 case class Application(expression:Expression, arguments:List[Expression]) extends Expression
+object Application{
+  def apply(e1:Expression, name:String, e2:Expression):Application = Application(VariableExpression(name), List(e1, e2))
+  def apply(name:String)(e1:Expression, op:String, e2:Expression):Application = apply(e1, name, e2)
+}
 
 case class BlockExpression(statements:List[Statement]) extends Expression
 case class LambdaExpression(bindings:List[String], body:Expression) extends Expression
