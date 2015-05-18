@@ -1,5 +1,6 @@
 package dsl
 
+import com.besuikerd.autologistics.lib
 import com.besuikerd.autologistics.lib.dsl._
 import com.besuikerd.autologistics.lib.dsl.parser.{DSLPrettyPrinter, DSLParser, DSLParserPluginRegistry}
 import org.scalatest.{FlatSpec, Inside, Matchers}
@@ -17,9 +18,9 @@ with ParsingSpec
       }
 
       registerOperands(itemRef)
-//      registerBinaryOperators(100, "->")
-//      registerBinaryOperators(101, "times")
-      registerBinaryOperators(8, ("to", (e1, op, e2) => Application(VariableExpression("mkList"), List(e1, e2))))
+      registerBinaryOperators(100, ("->", Application.apply("moveTo")))
+      registerBinaryOperators(101, ("times", Application.apply))
+      registerBinaryOperators(8, ("to", Application.apply("mkList")))
     }
 
 //    val program =
@@ -39,6 +40,8 @@ with ParsingSpec
         |
         |print(42 + 3 * 4)
         |x = 1 to 42
+        |
+        |inv1 -> inv2 times 24
         |
         |""".stripMargin
 
