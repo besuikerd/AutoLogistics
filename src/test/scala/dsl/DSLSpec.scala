@@ -3,6 +3,8 @@ package dsl
 import com.besuikerd.autologistics.lib
 import com.besuikerd.autologistics.lib.dsl._
 import com.besuikerd.autologistics.lib.dsl.parser.{DSLPrettyPrinter, DSLParser, DSLParserPluginRegistry}
+import com.besuikerd.autologistics.lib.dsl.vm.CodeGenerator
+import com.besuikerd.autologistics.lib.dsl.vm._
 import org.scalatest.{FlatSpec, Inside, Matchers}
 import com.besuikerd.autologistics.lib.dsl.parser._
 
@@ -37,16 +39,25 @@ with ParsingSpec
 
     val program =
       """
-        |
-        |print(42 + 3 * 4)
-        |x = 1 to 42
-        |
-        |inv1 -> inv2 times 24
-        |
+        |x = 3
+        |y = x + 1
+        |println(x - y == 1)
         |""".stripMargin
 
     parsing(parser)(parser.parser, program){ statements =>
       statements.foreach{s => println(DSLPrettyPrinter.prettify(s))}
+      val instructions = CodeGenerator.generate(statements)
+      instructions.foreach(println)
+      val vm = new VirtualMachine()
+      vm.load(instructions)
+      vm.addNativePartial("print"){args => args.foreach(a => print(a.stringRepresentation)); NilValue}
+      vm.addNativePartial("println"){args => args.foreach(a => println(a.stringRepresentation)); NilValue}
+      vm.run(100)
+
+      println("scopes: " + vm.scopes)
+      println("instructions: " + vm.instructions)
+      println("stack: " + vm.stack)
+
     }
   }
 }

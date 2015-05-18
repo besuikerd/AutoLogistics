@@ -1,5 +1,7 @@
 package com.besuikerd.autologistics.lib.dsl.parser
 
+import com.besuikerd.autologistics.lib.dsl
+
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.{Parsers, ImplicitConversions, JavaTokenParsers}
 import com.besuikerd.autologistics.lib.dsl._
@@ -11,7 +13,6 @@ trait DSLParser extends JavaTokenParsers
   with DSLOperands
   with DSLStatements
   with PluggableParsers
-  //with DSLParserPluginRegistry
 {
 
   override protected val whiteSpace: Regex = """[^\S\n]+""".r
@@ -32,7 +33,7 @@ trait DSLParser extends JavaTokenParsers
       def next: Parser[Expression] = (acc ~ (cur ~ next).*) ^^ {
         case exp ~ List() => exp
         case exp ~ xs => xs.foldRight(exp) {
-          case (op ~ exp, acc) => op._2(exp, op._1, acc) //Application(VariableExpression(op), List(acc, exp))
+          case (op ~ exp, acc) => op._2(acc, op._1, exp) //Application(VariableExpression(op), List(acc, exp))
         }
       }
       next
@@ -79,6 +80,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
   lazy val number:Parser[Expression] = floatingPointNumber ^^ {case n => n.optToInt.map(NaturalNumberConstant).getOrElse(RealNumberConstant(n.toDouble))}
 
 
+  lazy val bool:Parser[BooleanConstant] = ("true" | "false") ^^ {case s => BooleanConstant(s.equals("true"))}
 
   lazy val string:Parser[StringLiteral] = stringLiteral ^^ {case s => StringLiteral(s.substring(1, s.length - 1))}
 
@@ -103,9 +105,10 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
 
 
   abstract override def operands = super.operands ++ Seq(
-    application |
+    bool |
     number |
     string |
+    application |
     lambda |
     parensExp |
     blockExp |
