@@ -39,9 +39,9 @@ with ParsingSpec
 
     val program =
       """
-        |x = 3
-        |y = x + 1
-        |println(x - y == 1)
+        |y = 23
+        |x = \a -> y + a
+        |println((\p -> p + x(y))(2)))
         |""".stripMargin
 
     parsing(parser)(parser.parser, program){ statements =>

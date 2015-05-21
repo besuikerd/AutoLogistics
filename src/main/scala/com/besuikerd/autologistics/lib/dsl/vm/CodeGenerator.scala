@@ -12,6 +12,13 @@ object CodeGenerator {
 
     case VariableExpression(v) => List(Get(v))
 
+    case LambdaExpression(bindings, body) => {
+      val bodyInstructions = generate(body)
+      List(PushClosure(bindings, findVariables(bodyInstructions).filter(!bindings.contains(_)), bodyInstructions))
+    }
+
+    case BlockExpression(body) => generate(body)
+
     case Application(e, args) => generate(e) ++ args.map(generate).flatten :+ Call(args.size)
 
     case Add(e1, _, e2) => generate(e1) ++ generate(e2) :+ AddInstruction
@@ -32,4 +39,6 @@ object CodeGenerator {
     case StringLiteral(s) => List(Push(StringValue(s)))
     case BooleanConstant(b) => List(Push(BooleanValue(b)))
   }
+
+  private def findVariables(instructions: List[Instruction]):List[String] = instructions.collect{case Get(v) => v}
 }

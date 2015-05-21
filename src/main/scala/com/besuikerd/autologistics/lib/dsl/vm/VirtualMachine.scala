@@ -1,37 +1,19 @@
 package com.besuikerd.autologistics.lib.dsl.vm
 
 import org.scalatest.fixture
+import scala.collection.mutable.{Map => MMap}
 
 import scala.collection.mutable.Stack
-import scala.collection.mutable.Map
 
 class VirtualMachine {
-  type Scope = Map[String, StackValue]
+  type Scope = MMap[String, StackValue]
 
   val stack = Stack[StackValue]()
-  val globalScope:Scope = Map[String, StackValue]()
+  val globalScope:Scope = MMap[String, StackValue]()
   val scopes = Stack[Scope]()
   val instructions = Stack[Instruction]()
 
   reset()
-  /*
-  def popTyped[A <: StackValue : TypeTag](f:A => Unit): Unit ={
-    val tpe = typeTag[A].tpe
-    if(tpe <:<  typestack.top){
-      f(stack.pop().asInstanceOf[A])
-    } else{
-      crash(s"expected type: ${typeTag[A].tpe}, got: ${stack.top}")
-    }
-  }
-
-  def poptionalTyped[A <: StackValue: TypeTag]:Option[A] = {
-    if(stack.top.isInstanceOf[A]){
-      Some(stack.pop().asInstanceOf[A])
-    } else{
-      None
-    }
-  }
-  */
 
   def addNative(name:String, f:List[StackValue] => StackValue):Unit = {
     globalScope.put(name, NativeFunction(name, f))
@@ -69,6 +51,14 @@ class VirtualMachine {
     instructions.pushAll(program.reverse)
   }
 
+  def get(name:String):Option[StackValue] = scopes.map(_.get(name)).find(_.isDefined) match{
+    case Some(Some(value)) => Some(value)
+    case Some(None) => None
+    case None => None
+  }
+
+  def openScope():Unit = scopes.push(MMap())
+  def closeScope():Unit = scopes.pop()
   def pop() = stack.pop()
   def push(value:StackValue) = stack.push(value)
   def crash(msg:String) = instructions.push(Crash(msg))
@@ -85,16 +75,15 @@ sealed abstract class DefaultInstruction(val f:VirtualMachine => Unit) extends I
 
 object Pop extends DefaultInstruction(_.stack.pop())
 
-object OpenScope extends DefaultInstruction(_.scopes.push(Map()))
+object OpenScope extends DefaultInstruction(_.scopes.push(MMap()))
 object CloseScope extends DefaultInstruction(_.scopes.pop())
 case class Crash(msg:String) extends DefaultInstruction(_.crash(msg))
 
 case class Push(value:StackValue) extends DefaultInstruction(_.stack.push(value))
 
 case class Get(s:String) extends DefaultInstruction(machine =>{
-  machine.scopes.map(_.get(s)).find(_.isDefined) match{
-    case Some(Some(value)) => machine.stack.push(value)
-    case Some(None) => machine.crash(s"Value not found: $s")
+  machine.get(s) match{
+    case Some(value) => machine.push(value)
     case None => machine.crash(s"Value not found: $s")
   }
 })
@@ -103,6 +92,15 @@ case class Call(argCount:Int) extends DefaultInstruction(machine => {
   val args = (for(_ <- 0 until argCount) yield machine.pop()).toList
   machine.pop() match{
     case NativeFunction(name, f) => machine.push(f(args))
+
+    case Closure(bindings, free, body) => {
+      machine.instructions.push(CloseScope)
+      machine.openScope()
+      machine.instructions.pushAll(body.reverse)//TODO optimize
+      bindings.zip(args).foreach{case (name, arg) => machine.scopes.top.put(name, arg)}
+      machine.scopes.push(free)
+    }
+
     case other => machine.crash(s"can not call ${other.stringRepresentation}")
   }
 })
@@ -153,6 +151,17 @@ object GTEInstruction extends CompareInstruction(">=", _ >= _)
 object LTInstruction extends CompareInstruction("<", _ < _)
 object LTEInstruction extends CompareInstruction("<=", _ <=  _)
 
+case class PushClosure(bindings:List[String], free:List[String], body:List[Instruction]) extends DefaultInstruction(machine => {
+  val optFrees = free.map(x => (x, machine.get(x)))
+  optFrees.find(_._2.isEmpty) match{
+    case Some((free, _)) => machine.crash(s"could not bind free variable: $free")
+    case None => {
+      val frees = free.zip(optFrees.map(_._2.get)).toMap
+      machine.push(Closure(bindings, MMap() ++ frees, body))
+    }
+  }
+})
+
 sealed abstract class StackValue(val stringRepresentation: String)
 
 sealed abstract class NumericStackValue(val value:Double) extends StackValue(value.toString)
@@ -164,5 +173,7 @@ case class NaturalNumber(n:Int) extends NumericStackValue(n){
 case class StringValue(s:String) extends StackValue(s.toString)
 case class BooleanValue(b:Boolean) extends StackValue(b.toString)
 object NilValue extends StackValue("null")
+
+case class Closure(bindings: List[String], free:MMap[String, StackValue], body:List[Instruction]) extends StackValue("Closure")
 
 case class NativeFunction(name:String, f:List[StackValue] => StackValue) extends StackValue(s"<$name>")
