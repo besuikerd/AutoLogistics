@@ -67,7 +67,6 @@ trait DSLBinaryExpressions extends PluggableParsers{ this:DSLParser =>
     4 -> Seq(("&&", And)),
     5 -> Seq(("||", Or))
   )
-
 }
 
 trait DSLOperands extends PluggableParsers { this:DSLParser =>
@@ -94,7 +93,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
     case exp ~ argumentLists => argumentLists.foldRight(exp)((cur, acc) => Application(acc, cur))
   }
 
-  lazy val blockExp:Parser[Expression] = "{" ~> (statement.*) <~ "}" ^^ BlockExpression
+  lazy val blockExp:Parser[Expression] = "\\{".r ~> (statement.*) <~ "\n*}".r ^^ BlockExpression
 
   //TODO something like this: operands.fi.lter(!_.equals(app)).reduceRight(_ | _)
   lazy val applyable: Parser[Expression] =
@@ -102,7 +101,6 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
     parensExp |
     blockExp |
     variable
-
 
   abstract override def operands = super.operands ++ Seq(
     bool |
