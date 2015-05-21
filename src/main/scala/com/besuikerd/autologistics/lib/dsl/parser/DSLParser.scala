@@ -5,7 +5,7 @@ import com.besuikerd.autologistics.lib.dsl
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.{Parsers, ImplicitConversions, JavaTokenParsers}
 import com.besuikerd.autologistics.lib.dsl._
-import com.besuikerd.autologistics.lib.util.int._
+import com.besuikerd.autologistics.lib.extensions.IntStringExtensions
 
 trait DSLParser extends JavaTokenParsers
   with ImplicitConversions
@@ -16,7 +16,7 @@ trait DSLParser extends JavaTokenParsers
 {
 
   override protected val whiteSpace: Regex = """[^\S\n]+""".r
-  lazy val newline:Parser[String] = """\n|\r\n""".r
+  lazy val newline:Parser[String] = literal("\n")
 
   lazy val EOF = (".".r.map(Some(_)) | success(None)).flatMap{
     case Some(s) => failure(s"Expected: EOF, got: $s")
@@ -40,7 +40,7 @@ trait DSLParser extends JavaTokenParsers
     }
   }
 
-  lazy val statement: Parser[Statement] = statements.reduceRight(_ | _)
+  lazy val statement: Parser[Statement] = statements.reduceRight(_ | _) <~ ";".?
   lazy val operand:Parser[Expression] = operands.reduceRight(_ | _)
 }
 
@@ -93,7 +93,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
     case exp ~ argumentLists => argumentLists.foldRight(exp)((cur, acc) => Application(acc, cur))
   }
 
-  lazy val blockExp:Parser[Expression] = "\\{".r ~> (statement.*) <~ "\n*}".r ^^ BlockExpression
+  lazy val blockExp:Parser[Expression] = "{" ~> newline.* ~> repsep(statement, newline.*) <~ newline.* <~ "}" ^^ BlockExpression
 
   //TODO something like this: operands.fi.lter(!_.equals(app)).reduceRight(_ | _)
   lazy val applyable: Parser[Expression] =

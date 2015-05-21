@@ -8,16 +8,20 @@ object CodeGenerator {
   def generate(ast:ASTNode):List[Instruction] = ast match {
 
     case ExpressionStatement(e) => generate(e) :+ Pop
+    case Assignment(binding, l:LambdaExpression) => lambdaInstructions(Some(binding), l) :+ Put(binding)
     case Assignment(binding, e) => generate(e) :+ Put(binding)
 
     case VariableExpression(v) => List(Get(v))
 
-    case LambdaExpression(bindings, body) => {
-      val bodyInstructions = generate(body)
-      List(PushClosure(bindings, findVariables(bodyInstructions).filter(!bindings.contains(_)), bodyInstructions))
-    }
+    case l:LambdaExpression => lambdaInstructions(None, l)
 
-    case BlockExpression(body) => generate(body)
+    case BlockExpression(body) => {
+      val statements = body.flatMap(generate)
+      val(xs, x) = (statements.init, statements.last)
+      println("last in block: " + x)
+      val fixedStatements = if(x equals Pop) xs else xs :+ Push(NilValue)
+      OpenScope +: fixedStatements :+ CloseScope
+    }
 
     case Application(e, args) => generate(e) ++ args.map(generate).flatten :+ Call(args.size)
 
@@ -38,6 +42,11 @@ object CodeGenerator {
     case RealNumberConstant(n) => List(Push(RealNumber(n)))
     case StringLiteral(s) => List(Push(StringValue(s)))
     case BooleanConstant(b) => List(Push(BooleanValue(b)))
+  }
+
+  private def lambdaInstructions(name:Option[String], lambda:LambdaExpression): List[Instruction] ={
+    val bodyInstructions = generate(lambda.body)
+    List(PushClosure(name, lambda.bindings, findVariables(bodyInstructions).filter(!lambda.bindings.contains(_)), bodyInstructions))
   }
 
   private def findVariables(instructions: List[Instruction]):List[String] = instructions.collect{case Get(v) => v}
