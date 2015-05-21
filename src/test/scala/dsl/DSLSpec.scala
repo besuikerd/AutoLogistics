@@ -39,25 +39,30 @@ with ParsingSpec
 
     val program =
       """
-        |y = 23
-        |x = \a -> y + a
-        |println((\p -> p + x(y))(2)))
+        |add = \x y -> x + y
+        |g = \f a b -> f(a,b)
+        |println(g(add, 2, 3))
         |""".stripMargin
 
     parsing(parser)(parser.parser, program){ statements =>
       statements.foreach{s => println(DSLPrettyPrinter.prettify(s))}
       val instructions = CodeGenerator.generate(statements)
-      instructions.foreach(println)
+      instructions.foreach{
+        case PushClosure(optName, bindings, free, body) =>
+          println(s"PushClosure($optName, $bindings, $free")
+          body.foreach(x => println("\t" + x))
+          println(")")
+        case other => println(other)
+      }
       val vm = new VirtualMachine()
       vm.load(instructions)
       vm.addNativePartial("print"){args => args.foreach(a => print(a.stringRepresentation)); NilValue}
       vm.addNativePartial("println"){args => args.foreach(a => println(a.stringRepresentation)); NilValue}
-      vm.run(100)
 
+      vm.run(1000)
       println("scopes: " + vm.scopes)
       println("instructions: " + vm.instructions)
       println("stack: " + vm.stack)
-
     }
   }
 }
