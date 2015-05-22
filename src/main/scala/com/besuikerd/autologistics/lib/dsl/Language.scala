@@ -19,6 +19,9 @@ case class ReturnStatement(value:Expression) extends Statement
 sealed abstract class Expression extends ASTNode
 
 case class VariableExpression(name:String) extends Expression
+case class ObjectFieldExpression(objExpression:Expression, fields:List[String]) extends Expression
+
+
 case class Application(expression:Expression, arguments:List[Expression]) extends Expression
 object Application{
   def apply(e1:Expression, name:String, e2:Expression):Application = Application(VariableExpression(name), List(e1, e2))
@@ -29,6 +32,8 @@ case class BlockExpression(statements:List[Statement]) extends Expression
 case class LambdaExpression(bindings:List[String], body:Expression) extends Expression
 
 case class IfElseExpression(condition:Expression, ifExpression: Expression, elseExpression:Option[Expression]) extends Expression
+
+case class ObjectExpression(fields:Map[String, Expression]) extends Expression
 
 //Binary operations
 sealed abstract class BinaryExpression(val e1:Expression, val operator:String, val e2:Expression) extends Expression

@@ -25,7 +25,7 @@ object CodeGenerator {
 
     case IfElseExpression(condition, ifExp, elseExp) => generate(condition) :+ Branch(generate(ifExp), elseExp.map(generate).getOrElse(List(Push(NilValue))))
 
-    case Application(e, args) => generate(e) ++ args.map(generate).flatten :+ Call(args.size)
+    case Application(e, args) => generate(e) ++ args.flatMap(generate) :+ Call(args.size)
 
     case Add(e1, _, e2) => generate(e1) ++ generate(e2) :+ AddInstruction
     case Sub(e1, _, e2) => generate(e1) ++ generate(e2) :+ SubInstruction
@@ -39,6 +39,9 @@ object CodeGenerator {
     case LTE(e1, _, e2) => generate(e1) ++ generate(e2) :+ LTEInstruction
     case EQ(e1, _, e2) => generate(e1) ++ generate(e2) :+ EQInstruction
     case NEQ(e1, _, e2) => generate(e1) ++ generate(e2) :+ NEQInstruction
+
+    case ObjectExpression(mapping) => mapping.values.flatMap(generate).toList :+ PushObject(mapping.keys.toList.reverse)
+    case ObjectFieldExpression(exp, bindings) => generate(exp) :+ Select(bindings)
 
     case NaturalNumberConstant(n) => List(Push(NaturalNumber(n)))
     case RealNumberConstant(n) => List(Push(RealNumber(n)))

@@ -3,6 +3,7 @@ package com.besuikerd.autologistics.lib.dsl.vm
 import org.scalatest.fixture
 import scala.collection.mutable.{Map => MMap}
 import com.besuikerd.autologistics.lib.collection.Stack
+import scala.util.control.Breaks._
 
 
 class VirtualMachine {
@@ -159,6 +160,39 @@ case class PushClosure(name:Option[String], bindings:List[String], free:List[Str
   }
 })
 
+case class PushObject(bindings:List[String]) extends DefaultInstruction(machine => {
+  val fields = MMap[String, StackValue]()
+  bindings.foreach(name => fields.put(name, machine.pop()))
+  machine.push(ObjectValue(fields))
+})
+
+case class Select(fields:List[String]) extends DefaultInstruction(machine => {
+  machine.pop() match{
+    case ObjectValue(bindings) => {
+      var mFields = fields
+      var mBindings = bindings
+      breakable {
+        while (mFields.nonEmpty) {
+          mBindings.get(mFields.head) match {
+            case Some(ObjectValue(bindings)) => mBindings = bindings
+            case Some(other) if mFields.size > 1 => {
+              machine.crash(s"cannot select fields from $other")
+              break()
+            }
+            case Some(other) => machine.push(other)
+            case None => {
+              machine.crash("cannot find value: " + mFields.head)
+              break()
+            }
+          }
+          mFields = mFields.tail
+        }
+      }
+    }
+    case other => machine.crash(s"cannot select fields from $other")
+  }
+})
+
 case class Branch(left:List[Instruction], right:List[Instruction]) extends DefaultInstruction(machine => {
   machine.pop() match{
     case BooleanValue(b) => if(b) machine.instructions ::= left else machine.instructions ::= right
@@ -166,19 +200,21 @@ case class Branch(left:List[Instruction], right:List[Instruction]) extends Defau
   }
 })
 
-sealed abstract class StackValue(val stringRepresentation: String)
-
-sealed abstract class NumericStackValue(val value:Double) extends StackValue(value.toString)
-case class RealNumber(n:Double) extends NumericStackValue(n)
-case class NaturalNumber(n:Int) extends NumericStackValue(n){
-  override val stringRepresentation = n.toString
+sealed abstract class StackValue{
+  def stringRepresentation:String
 }
 
-case class StringValue(s:String) extends StackValue(s.toString)
-case class BooleanValue(b:Boolean) extends StackValue(b.toString)
-object NilValue extends StackValue("null")
-object Recurse extends StackValue("recurse")
+sealed abstract class NumericStackValue(val value:Double) extends StackValue
+case class RealNumber(n:Double) extends NumericStackValue(n){override def stringRepresentation = n.toString}
+case class NaturalNumber(n:Int) extends NumericStackValue(n){override def stringRepresentation = n.toString}
 
-case class Closure(bindings: List[String], free:MMap[String, StackValue], body:List[Instruction]) extends StackValue("Closure")
+case class StringValue(s:String) extends StackValue{override def stringRepresentation = s}
+case class BooleanValue(b:Boolean) extends StackValue{override def stringRepresentation = b.toString}
+object NilValue extends StackValue{override def stringRepresentation = "null"}
+object Recurse extends StackValue{override def stringRepresentation = "_recursive_call"}
 
-case class NativeFunction(name:String, f:List[StackValue] => StackValue) extends StackValue(s"<$name>")
+case class ObjectValue(mapping:MMap[String, StackValue]) extends StackValue{override def stringRepresentation = "TODO: make stringrep()"}
+
+case class Closure(bindings: List[String], free:MMap[String, StackValue], body:List[Instruction]) extends StackValue{override def stringRepresentation = "Closure"}
+
+case class NativeFunction(name:String, f:List[StackValue] => StackValue) extends StackValue{override def stringRepresentation = s"<$name>"}

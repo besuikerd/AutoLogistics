@@ -94,25 +94,37 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
     case exp ~ argumentLists => argumentLists.foldRight(exp)((cur, acc) => Application(acc, cur))
   }
 
+  lazy val objectExp:Parser[ObjectExpression] = "[" ~> newline.* ~> repsep((ident <~ newline.* <~ "=" <~ newline.*) ~ expression, newline.*) <~ newline.* <~ "]" ^^ {_.map {case id ~ expr => (id, expr)}.toMap} ^^ ObjectExpression
+
+  lazy val objectField:Parser[ObjectFieldExpression] = referrable ~ ("." ~> ident).+ ^^ ObjectFieldExpression
+
   lazy val ifElse:Parser[IfElseExpression] = ("if" ~> "(" ~> expression <~ ")") ~ expression ~ ("else" ~> expression).? ^^ IfElseExpression
 
   lazy val blockExp:Parser[Expression] = "{" ~> newline.* ~> repsep(statement, newline.*) <~ newline.* <~ "}" ^^ BlockExpression
 
-  //TODO something like this: operands.fi.lter(!_.equals(app)).reduceRight(_ | _)
-  lazy val applyable: Parser[Expression] =
-    lambda |
+
+  lazy val referrable: Parser[Expression] =
     parensExp |
     blockExp |
     variable
 
+  //TODO something like this: operands.fi.lter(!_.equals(app)).reduceRight(_ | _)
+  lazy val applyable: Parser[Expression] =
+    lambda |
+    objectField |
+    referrable
+
   abstract override def operands = super.operands ++ Seq(
     bool |
+    application |
+    objectField |
     number |
     string |
     ifElse |
-    application |
+
     lambda |
     parensExp |
+    objectExp |
     blockExp |
     variable
   )

@@ -39,9 +39,17 @@ with ParsingSpec
 
     val program =
       """
-        fac = \n -> if(n > 1) fac(n - 1) * n else 1
-        println(fac(10))
-        |""".stripMargin
+        |obj = [
+        | x = 2
+        | f = \x -> {
+        |   x + 1
+        | }
+        | sub = [
+        |   x = 3
+        | ]
+        |]
+        |println(obj.f(12))
+      """.stripMargin
 
 
     println("parsing time: " + timed{parsing(parser)(parser.parser, program){x => }})
