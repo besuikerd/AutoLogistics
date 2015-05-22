@@ -1,6 +1,7 @@
 package com.besuikerd.autologistics.lib.dsl.parser
 
 import com.besuikerd.autologistics.lib.dsl
+import com.besuikerd.autologistics.lib.dsl.vm.Branch
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.{Parsers, ImplicitConversions, JavaTokenParsers}
@@ -93,6 +94,8 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
     case exp ~ argumentLists => argumentLists.foldRight(exp)((cur, acc) => Application(acc, cur))
   }
 
+  lazy val ifElse:Parser[IfElseExpression] = ("if" ~> "(" ~> expression <~ ")") ~ expression ~ ("else" ~> expression).? ^^ IfElseExpression
+
   lazy val blockExp:Parser[Expression] = "{" ~> newline.* ~> repsep(statement, newline.*) <~ newline.* <~ "}" ^^ BlockExpression
 
   //TODO something like this: operands.fi.lter(!_.equals(app)).reduceRight(_ | _)
@@ -106,6 +109,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
     bool |
     number |
     string |
+    ifElse |
     application |
     lambda |
     parensExp |

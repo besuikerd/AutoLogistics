@@ -39,10 +39,12 @@ with ParsingSpec
 
     val program =
       """
-        |add = \x y -> x + y
-        |g = \f a b -> f(a,b)
-        |println(g(add, 2, 3))
+        fac = \n -> if(n > 1) fac(n - 1) * n else 1
+        println(fac(10))
         |""".stripMargin
+
+
+    println("parsing time: " + timed{parsing(parser)(parser.parser, program){x => }})
 
     parsing(parser)(parser.parser, program){ statements =>
       statements.foreach{s => println(DSLPrettyPrinter.prettify(s))}
@@ -59,10 +61,18 @@ with ParsingSpec
       vm.addNativePartial("print"){args => args.foreach(a => print(a.stringRepresentation)); NilValue}
       vm.addNativePartial("println"){args => args.foreach(a => println(a.stringRepresentation)); NilValue}
 
-      vm.run(1000)
+      val time = timed{vm.run(10000)}
+      println(s"time taken: " + time)
       println("scopes: " + vm.scopes)
       println("instructions: " + vm.instructions)
       println("stack: " + vm.stack)
     }
   }
+
+  def timed(f: => Unit): Long =  {
+    val t0 = System.currentTimeMillis()
+    f
+    System.currentTimeMillis() - t0
+  }
+
 }
