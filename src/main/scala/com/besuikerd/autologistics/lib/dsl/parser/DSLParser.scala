@@ -46,12 +46,12 @@ trait DSLParser extends JavaTokenParsers
 }
 
 trait DSLStatements extends PluggableParsers with ImplicitConversions{this:DSLParser =>
-  lazy val returnStatement: Parser[Statement] = "return" ~> expression ^^ {case e => ReturnStatement(e)}
   lazy val assignment = (ident <~ "=") ~ expression ^^ {case variable ~ exp => Assignment(variable, exp)}
   lazy val expressionStatement: Parser[Statement] = expression.map(ExpressionStatement)
+  lazy val assignField = referrable ~ ("." ~> ident).+ ~ ("=" ~> expression) ^^ AssignField
 
   override def statements: Seq[Parser[Statement]] = super.statements ++ Seq(
-    returnStatement,
+    assignField,
     assignment,
     expressionStatement
   )

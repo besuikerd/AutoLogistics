@@ -193,6 +193,36 @@ case class Select(fields:List[String]) extends DefaultInstruction(machine => {
   }
 })
 
+case class UpdateField(fields:List[String]) extends DefaultInstruction(machine => {
+  machine.pop() match {
+    case ObjectValue(bindings) => {
+      var mFields = fields
+      var mBindings = bindings
+      breakable {
+
+        while (mFields.nonEmpty) {
+          mBindings.get(mFields.head) match {
+            case Some(ObjectValue(bindings)) => mBindings = bindings
+            case Some(other) if mFields.size > 1 => {
+              machine.crash(s"cannot select fields from $other")
+              break()
+            }
+            case None if mFields.size > 1 => {
+              machine.crash("cannot find value: " + mFields.head)
+              break()
+            }
+            case other => { //last field
+              mBindings.put(mFields.head, machine.pop())
+            }
+          }
+          mFields = mFields.tail
+        }
+      }
+    }
+    case other => machine.crash(s"cannot assign field to $other")
+  }
+})
+
 case class Branch(left:List[Instruction], right:List[Instruction]) extends DefaultInstruction(machine => {
   machine.pop() match{
     case BooleanValue(b) => if(b) machine.instructions ::= left else machine.instructions ::= right

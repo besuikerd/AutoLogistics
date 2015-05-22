@@ -39,16 +39,10 @@ with ParsingSpec
 
     val program =
       """
-        |obj = [
-        | x = 2
-        | f = \x -> {
-        |   x + 1
-        | }
-        | sub = [
-        |   x = 3
-        | ]
-        |]
-        |println(obj.f(12))
+        |x = 4
+        |bla = \y -> x + 1
+        |x = 5
+        |println(bla(1))
       """.stripMargin
 
 

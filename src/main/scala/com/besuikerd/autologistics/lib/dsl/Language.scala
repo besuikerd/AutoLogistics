@@ -12,8 +12,8 @@ sealed abstract class ASTNode
 sealed abstract class Statement extends ASTNode
 
 case class Assignment(variable:String, binding:Expression) extends Statement
+case class AssignField(obj:Expression, fields:List[String], binding:Expression) extends Statement
 case class ExpressionStatement(expression:Expression) extends Statement
-case class ReturnStatement(value:Expression) extends Statement
 
 //Expressions
 sealed abstract class Expression extends ASTNode

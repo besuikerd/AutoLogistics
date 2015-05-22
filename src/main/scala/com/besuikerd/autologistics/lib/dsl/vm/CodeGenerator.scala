@@ -11,6 +11,8 @@ object CodeGenerator {
     case Assignment(binding, l:LambdaExpression) => lambdaInstructions(Some(binding), l) :+ Put(binding)
     case Assignment(binding, e) => generate(e) :+ Put(binding)
 
+    case AssignField(objExp, fields, binding) => generate(binding) ++ generate(objExp) :+ UpdateField(fields)
+
     case VariableExpression(v) => List(Get(v))
 
     case l:LambdaExpression => lambdaInstructions(None, l)
