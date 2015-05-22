@@ -223,9 +223,23 @@ case class UpdateField(fields:List[String]) extends DefaultInstruction(machine =
   }
 })
 
+case class Load(instructions:List[Instruction]) extends DefaultInstruction(machine => {
+  machine.instructions ::= instructions
+})
+
 case class Branch(left:List[Instruction], right:List[Instruction]) extends DefaultInstruction(machine => {
   machine.pop() match{
     case BooleanValue(b) => if(b) machine.instructions ::= left else machine.instructions ::= right
+    case otherwise => machine.crash(s"cannot branch with ${otherwise.stringRepresentation}")
+  }
+})
+
+case class RepeatedBranch(left:List[Instruction], right:List[Instruction]) extends DefaultInstruction(machine => {
+  machine.pop() match{
+    case BooleanValue(b) => if(b) {
+      machine.instructions.push(RepeatedBranch(left, right))
+      machine.instructions ::= left
+    } else machine.instructions ::= right
     case otherwise => machine.crash(s"cannot branch with ${otherwise.stringRepresentation}")
   }
 })

@@ -10,9 +10,16 @@ object CodeGenerator {
     case ExpressionStatement(e) => generate(e) :+ Pop
     case Assignment(binding, l:LambdaExpression) => lambdaInstructions(Some(binding), l) :+ Put(binding)
     case Assignment(binding, e) => generate(e) :+ Put(binding)
-
     case AssignField(objExp, fields, binding) => generate(binding) ++ generate(objExp) :+ UpdateField(fields)
 
+    case WhileStatement(condition, body) => {
+      var bodyStatements = generate(body)
+      val conditionStatements = generate(condition)
+      if(bodyStatements.head.equals(OpenScope)){ //remove scope for while loop to mutate variables out of this scope
+        bodyStatements = bodyStatements.tail.init
+      }
+      conditionStatements :+ RepeatedBranch(bodyStatements :+ Pop :+ Load(conditionStatements), Nil)
+    }
     case VariableExpression(v) => List(Get(v))
 
     case l:LambdaExpression => lambdaInstructions(None, l)

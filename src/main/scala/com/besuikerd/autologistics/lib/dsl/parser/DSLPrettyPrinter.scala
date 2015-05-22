@@ -60,6 +60,7 @@ object DSLPrettyPrinter{
            |${prettifyLevelled(binding, level + 1)}
            |$tabs)
          """.stripMargin
+      case other => tabs ++ other.toString
     }
   }
 }
