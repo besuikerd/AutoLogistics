@@ -28,6 +28,8 @@ object Application{
 case class BlockExpression(statements:List[Statement]) extends Expression
 case class LambdaExpression(bindings:List[String], body:Expression) extends Expression
 
+case class IfElseExpression(condition:Expression, ifExpression: Expression, elseExpression:Option[Expression]) extends Expression
+
 //Binary operations
 sealed abstract class BinaryExpression(val e1:Expression, val operator:String, val e2:Expression) extends Expression
 case class Add(left:Expression, op:String, right:Expression) extends BinaryExpression(left, op, right)

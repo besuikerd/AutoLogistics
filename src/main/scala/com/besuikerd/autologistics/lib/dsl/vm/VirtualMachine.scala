@@ -80,7 +80,7 @@ case class Push(value:StackValue) extends DefaultInstruction(_.stack.push(value)
 
 case class Get(s:String) extends DefaultInstruction(machine =>{
   machine.get(s) match{
-    case Some(This) => machine.push(machine.scopes.find(c => c.free.exists{case (k,v) => k.equals(s) && v.equals(This)}).get)
+    case Some(Recurse) => machine.push(machine.scopes.find(c => c.free.exists{case (k,v) => k.equals(s) && v.equals(Recurse)}).get)
     case Some(value) => machine.push(value)
     case None => machine.crash(s"Value not found: $s")
   }
@@ -91,9 +91,9 @@ case class Call(argCount:Int) extends DefaultInstruction(machine => {
   machine.pop() match{
     case NativeFunction(name, f) => machine.push(f(args))
 
-    case c@Closure(bindings, free, body) => {
+    case Closure(bindings, free, body) => {
       machine.instructions.push(CloseScope)
-      machine.openScope(c)
+      machine.openScope()
       machine.instructions ::= body
       bindings.zip(args).foreach{case (name, arg) => machine.scopes.top().free.put(name, arg)}
     }
@@ -107,16 +107,16 @@ case class Put(s:String) extends DefaultInstruction(machine => {
 
 sealed abstract class NumericInstruction(f: (Double, Double) => Double) extends DefaultInstruction(machine =>
   machine.pop() match {
+    case NaturalNumber(m) => machine.pop() match{
+      case NaturalNumber(n) => machine.push(NaturalNumber(f(n,m).toInt))
+      case n:NumericStackValue => machine.push(RealNumber(f(n.value, m)))
+      case StringValue(s) => machine.push(StringValue(s + m.toString))
+      case other => machine.crash(s"can not apply  ${other.getClass.getSimpleName}")
+    }
     case RealNumber(m) => machine.pop() match {
-      case n:NumericStackValue => machine.push(RealNumber(f(m, n.value)))
+      case n:NumericStackValue => machine.push(RealNumber(f(n.value, m)))
       case StringValue(s) => machine.push(StringValue(m.toString + s))
       case other => machine.crash(s"can not add ${other.getClass.getSimpleName}")
-    }
-    case NaturalNumber(m) => machine.pop() match{
-      case NaturalNumber(n) => machine.push(NaturalNumber(f(m,n).toInt))
-      case n:NumericStackValue => machine.push(RealNumber(f(m, n.value)))
-      case StringValue(s) => machine.push(StringValue(m.toString + s))
-      case other => machine.crash(s"can not apply  ${other.getClass.getSimpleName}")
     }
     case StringValue(s) => machine.push(StringValue(s + machine.pop().stringRepresentation))
     case other => machine.crash(s"can not apply '${getClass.getSimpleName}' to $other")
@@ -132,7 +132,7 @@ object ModInstruction extends NumericInstruction(_ % _)
 sealed abstract class CompareInstruction(name:String, f: (Double, Double) => Boolean) extends DefaultInstruction(machine =>
   machine.pop() match {
     case m:NumericStackValue => machine.pop() match{
-      case n:NumericStackValue => machine.push(BooleanValue(f(m.value, n.value)))
+      case n:NumericStackValue => machine.push(BooleanValue(f(n.value, m.value)))
       case other => machine.crash(s"can not apply '$name' to ${other.stringRepresentation}")
     }
     case other => {
@@ -153,9 +153,16 @@ case class PushClosure(name:Option[String], bindings:List[String], free:List[Str
   optFrees.find(_._2.isEmpty) match{
     case Some((free, _)) if !name.map(_.equals(free)).getOrElse(false) => machine.crash(s"could not bind free variable: $free")
     case otherwise => {
-      val frees = free.zip(optFrees.map(_._2.getOrElse(This))).toMap
+      val frees = free.zip(optFrees.map(_._2.getOrElse(Recurse))).toMap
       machine.push(Closure(bindings, MMap() ++ frees, body))
     }
+  }
+})
+
+case class Branch(left:List[Instruction], right:List[Instruction]) extends DefaultInstruction(machine => {
+  machine.pop() match{
+    case BooleanValue(b) => if(b) machine.instructions ::= left else machine.instructions ::= right
+    case otherwise => machine.crash(s"cannot branch with ${otherwise.stringRepresentation}")
   }
 })
 
@@ -170,7 +177,7 @@ case class NaturalNumber(n:Int) extends NumericStackValue(n){
 case class StringValue(s:String) extends StackValue(s.toString)
 case class BooleanValue(b:Boolean) extends StackValue(b.toString)
 object NilValue extends StackValue("null")
-object This extends StackValue("this")
+object Recurse extends StackValue("recurse")
 
 case class Closure(bindings: List[String], free:MMap[String, StackValue], body:List[Instruction]) extends StackValue("Closure")
 

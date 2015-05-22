@@ -23,6 +23,8 @@ object CodeGenerator {
       OpenScope +: fixedStatements :+ CloseScope
     }
 
+    case IfElseExpression(condition, ifExp, elseExp) => generate(condition) :+ Branch(generate(ifExp), elseExp.map(generate).getOrElse(List(Push(NilValue))))
+
     case Application(e, args) => generate(e) ++ args.map(generate).flatten :+ Call(args.size)
 
     case Add(e1, _, e2) => generate(e1) ++ generate(e2) :+ AddInstruction
