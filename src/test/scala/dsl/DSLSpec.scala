@@ -40,10 +40,8 @@ with ParsingSpec
     val program =
       """
         |x = 0
-        |while(x < 10){
-        | x = x + 1
-        | println(x)
-        |}
+        |while(true){x = x + 1; if(x == 100) println("hundred!")}
+        |
       """.stripMargin
 
 

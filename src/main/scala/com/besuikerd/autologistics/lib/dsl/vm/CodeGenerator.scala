@@ -16,9 +16,13 @@ object CodeGenerator {
       var bodyStatements = generate(body)
       val conditionStatements = generate(condition)
       if(bodyStatements.head.equals(OpenScope)){ //remove scope for while loop to mutate variables out of this scope
-        bodyStatements = bodyStatements.tail.init
+        bodyStatements = bodyStatements.tail
+        val init = bodyStatements.init
+        if(init.last.equals(CloseScope)){
+          bodyStatements = init.init :+ bodyStatements.last
+        }
       }
-      conditionStatements :+ RepeatedBranch(bodyStatements :+ Pop :+ Load(conditionStatements), Nil)
+      conditionStatements :+ RepeatedBranch(bodyStatements :+ Load(conditionStatements), Nil)
     }
     case VariableExpression(v) => List(Get(v))
 
@@ -26,11 +30,15 @@ object CodeGenerator {
 
     case BlockExpression(body) => {
       val statements = body.flatMap(generate)
-      val(xs, x) = (statements.init, statements.last)
-      println("last in block: " + x)
-      val fixedStatements = if(x equals Pop) xs else xs :+ Push(NilValue)
-      OpenScope +: fixedStatements :+ CloseScope
+      if(statements.nonEmpty){
+        val(xs, x) = (statements.init, statements.last)
+        println("last in block: " + x)
+        val fixedStatements = if(x equals Pop) xs else statements :+ Push(NilValue)
+        OpenScope +: fixedStatements :+ CloseScope
+      } else List(Push(NilValue))
     }
+
+    case Instructions(instructions) => instructions
 
     case IfElseExpression(condition, ifExp, elseExp) => generate(condition) :+ Branch(generate(ifExp), elseExp.map(generate).getOrElse(List(Push(NilValue))))
 

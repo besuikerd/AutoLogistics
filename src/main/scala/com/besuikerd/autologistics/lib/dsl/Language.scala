@@ -1,5 +1,7 @@
 package com.besuikerd.autologistics.lib.dsl
 
+import com.besuikerd.autologistics.lib.dsl.vm.Instruction
+
 import scala.tools.nsc.doc.model.ImplicitConversion
 import scala.util.parsing.combinator.JavaTokenParsers
 
@@ -14,7 +16,7 @@ sealed abstract class Statement extends ASTNode
 case class Assignment(variable:String, binding:Expression) extends Statement
 case class AssignField(obj:Expression, fields:List[String], binding:Expression) extends Statement
 case class ExpressionStatement(expression:Expression) extends Statement
-case class WhileStatement(condition:Expression, body:Expression) extends Statement
+case class WhileStatement(condition:Expression, body:Statement) extends Statement
 
 //Expressions
 sealed abstract class Expression extends ASTNode
@@ -35,6 +37,8 @@ case class LambdaExpression(bindings:List[String], body:Expression) extends Expr
 case class IfElseExpression(condition:Expression, ifExpression: Expression, elseExpression:Option[Expression]) extends Expression
 
 case class ObjectExpression(fields:Map[String, Expression]) extends Expression
+
+case class Instructions(instructions:List[Instruction]) extends Expression
 
 //Binary operations
 sealed abstract class BinaryExpression(val e1:Expression, val operator:String, val e2:Expression) extends Expression
