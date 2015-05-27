@@ -8,6 +8,7 @@ import com.besuikerd.autologistics.lib.dsl.vm.CodeGenerator
 import com.besuikerd.autologistics.lib.dsl.vm._
 import org.scalatest.{FlatSpec, Inside, Matchers}
 import com.besuikerd.autologistics.lib.dsl.parser._
+import scala.collection.mutable.{Map => MMap}
 
 class DSLSpec extends FlatSpec
 with Matchers
@@ -112,15 +113,14 @@ with ParsingSpec
   "AutoLogisticsParser" should "parse additional operands and operators" in {
     val program =
       """
-        |coal = <minecraft:coal>
-        |chest = <mnecraft:chest>
-        |furnace = <minecraft:furnace>
-        |
-        |
-        |  chest >> furnace[north, coal, amount = 5]
-        |  chest[<minecraft:wood>, 1]
-        |  furnace[<minecraft:charcoal>] >> chest
-        |
+coal = <minecraft:coal>
+chest = <minecraft:chest>
+furnace = <minecraft:furnace>
+
+chest >> furnace[north, coal, amount = 5]
+chest[<minecraft:wood>, 1]
+furnace[<minecraft:charcoal>] >> chest
+
 
       """.stripMargin
 
@@ -128,17 +128,26 @@ with ParsingSpec
       val vm = new VirtualMachine()
 
       vm.addNative("_filter", { args =>
-        println(s"filtering ${args(0)}, kvCount=${args(1).asInstanceOf[ObjectValue].mapping.size}, args:${args.tail.tail.map(_.stringRepresentation).mkString("[", ",", "]")}")
-        NilValue
+        val filters = args(1).asInstanceOf[ObjectValue]
+        println(s"filtering ${args(0)}, kvCount=${filters.mapping.size}, args:${args.tail.tail.map(_.stringRepresentation).mkString("[", ",", "]")}")
+
+        val argsMapping = args.drop(2).zipWithIndex.map{x => val swapped = x.swap; (swapped._1.toString, swapped._2)}
+
+        filters.mapping ++= argsMapping
+
+        ObjectValue(MMap(
+          "item" -> args(0),
+          "filters" -> args(1)
+        ))
       })
 
       vm.addNative("_getItem", {args =>
         println("got item: " + args(0))
-        NilValue
+        args(0)
       })
 
       vm.addNative("_transferTo", {args =>
-        println(s"transferring ${args(0).stringRepresentation} to ${args(1).stringRepresentation}")
+        println(s"transferring from ${args(0).stringRepresentation} to ${args(1).stringRepresentation}")
         NilValue
       })
 
