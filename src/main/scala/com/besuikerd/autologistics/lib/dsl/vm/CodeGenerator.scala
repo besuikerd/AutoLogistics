@@ -2,6 +2,8 @@ package com.besuikerd.autologistics.lib.dsl.vm
 
 import com.besuikerd.autologistics.lib.dsl._
 
+import scala.collection.mutable.ListBuffer
+
 object CodeGenerator {
   def generate(list:List[Statement]):List[Instruction] = OpenScope +: list.map(generate).flatten :+ CloseScope
 
@@ -57,6 +59,9 @@ object CodeGenerator {
     case EQ(e1, _, e2) => generate(e1) ++ generate(e2) :+ EQInstruction
     case NEQ(e1, _, e2) => generate(e1) ++ generate(e2) :+ NEQInstruction
 
+    case And(e1, _, e2) => generate(e1) ++ generate(e2) :+ AndInstruction
+    case Or(e1, _, e2) => generate(e1) ++ generate(e2) :+ OrInstruction
+
     case ObjectExpression(mapping) => mapping.values.flatMap(generate).toList :+ PushObject(mapping.keys.toList.reverse)
     case ObjectFieldExpression(exp, bindings) => generate(exp) :+ Select(bindings)
 
@@ -64,6 +69,7 @@ object CodeGenerator {
     case RealNumberConstant(n) => List(Push(RealNumber(n)))
     case StringLiteral(s) => List(Push(StringValue(s)))
     case BooleanConstant(b) => List(Push(BooleanValue(b)))
+    case NullExpression => List(Push(NilValue))
   }
 
   private def lambdaInstructions(name:Option[String], lambda:LambdaExpression): List[Instruction] ={
@@ -71,5 +77,15 @@ object CodeGenerator {
     List(PushClosure(name, lambda.bindings, findVariables(bodyInstructions).filter(!lambda.bindings.contains(_)), bodyInstructions))
   }
 
-  private def findVariables(instructions: List[Instruction]):List[String] = instructions.collect{case Get(v) => v}
+  private def findVariables(instructions: List[Instruction]):List[String] = {
+    val definitions = ListBuffer[String]()
+    instructions.collect{
+      case Put(v) => {
+        definitions += v
+        List()
+      }
+      case Get(v) if !definitions.contains(v) => List(v)
+      //case PushClosure(_, bindings, _, _) => bindings
+    }.flatten.distinct
+  }
 }

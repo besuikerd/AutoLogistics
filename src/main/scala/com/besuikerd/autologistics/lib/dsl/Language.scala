@@ -29,6 +29,7 @@ case class Application(expression:Expression, arguments:List[Expression]) extend
 object Application{
   def apply(e1:Expression, name:String, e2:Expression):Application = Application(VariableExpression(name), List(e1, e2))
   def apply(name:String)(e1:Expression, op:String, e2:Expression):Application = apply(e1, name, e2)
+  def apply(name:String, arguments:List[Expression]):Application = Application(VariableExpression(name), arguments)
 }
 
 case class BlockExpression(statements:List[Statement]) extends Expression
@@ -63,5 +64,6 @@ sealed abstract class Number extends Expression
 case class RealNumberConstant(value:Double) extends Expression
 case class NaturalNumberConstant(value:Int) extends Expression
 
+case object NullExpression extends Expression
 case class StringLiteral(value:String) extends Expression
 case class BooleanConstant(value:Boolean) extends Expression

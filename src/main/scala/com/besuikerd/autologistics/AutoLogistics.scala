@@ -1,5 +1,6 @@
 package com.besuikerd.autologistics
 
+import com.besuikerd.autologistics.core.ModBlocks
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.Mod.EventHandler
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
@@ -11,6 +12,7 @@ object AutoLogistics {
 
   @EventHandler
   def init(event: FMLInitializationEvent): Unit = {
-
+    ModBlocks.registerBlocks()
+    ModBlocks.registerTiles()
   }
 }

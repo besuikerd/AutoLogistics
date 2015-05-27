@@ -93,7 +93,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
   }
 
   lazy val application:Parser[Expression] = applyable ~ ( "(" ~> repsep(expression, ",") <~  ")" ).* ^^ {
-    case exp ~ argumentLists => argumentLists.foldRight(exp)((cur, acc) => Application(acc, cur))
+    case exp ~ argumentLists => argumentLists.foldLeft(exp)((acc, cur) => Application(acc, cur))
   }
 
   lazy val objectExp:Parser[ObjectExpression] = "[" ~> newline.* ~> repsep((ident <~ newline.* <~ "=" <~ newline.*) ~ expression, newline.*) <~ newline.* <~ "]" ^^ {_.map {case id ~ expr => (id, expr)}.toMap} ^^ ObjectExpression
@@ -104,6 +104,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
 
   lazy val blockExp:Parser[Expression] = "{" ~> newline.* ~> repsep(statement, newline.*) <~ newline.* <~ "}" ^^ BlockExpression
 
+  lazy val nullExp:Parser[Expression] = "null" ^^ (_ => NullExpression)
 
   lazy val referrable: Parser[Expression] =
     parensExp |
@@ -118,6 +119,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
 
   abstract override def operands = super.operands ++ Seq(
     bool |
+    nullExp |
     ifElse |
     application |
     objectField |

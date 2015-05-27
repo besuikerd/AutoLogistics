@@ -12,10 +12,12 @@ class VirtualMachine {
   val scopes = Stack[Closure]()
   val instructions = Stack[Instruction]()
 
+  val globals = MMap[String, StackValue]()
+
   load(Nil)
 
   def addNative(name:String, f:List[StackValue] => StackValue):Unit = {
-    scopes.last.free.put(name, NativeFunction(name, f))
+    globals.put(name, NativeFunction(name, f))
   }
 
   def addNativePartial(name:String)(f:List[StackValue] => StackValue):Unit = {
@@ -26,12 +28,13 @@ class VirtualMachine {
     instructions.pop().execute(this)
   }
 
-  def run(cycles:Int): Unit = {
+  def run(cycles:Int): Int = {
     var i = 0
     while(!isTerminated() && i < cycles){
       cycle()
       i = i + 1
     }
+    i
   }
 
   def isTerminated(): Boolean = instructions.isEmpty || isErrorState()
@@ -43,7 +46,7 @@ class VirtualMachine {
     scopes.clear()
 
     //push empty global closure on the stack
-    scopes.push(Closure(List(), MMap(), program.reverse))
+    scopes.push(Closure(List(), globals, program.reverse))
     instructions.clear()
     instructions ::= program
   }
@@ -96,6 +99,7 @@ case class Call(argCount:Int) extends DefaultInstruction(machine => {
       machine.instructions.push(CloseScope)
       machine.openScope()
       machine.instructions ::= body
+      free.foreach(x => machine.scopes.top().free.put(x._1, x._2))
       bindings.zip(args).foreach{case (name, arg) => machine.scopes.top().free.put(name, arg)}
     }
     case other => machine.crash(s"can not call ${other.stringRepresentation}")
@@ -112,7 +116,7 @@ sealed abstract class NumericInstruction(f: (Double, Double) => Double) extends 
       case NaturalNumber(n) => machine.push(NaturalNumber(f(n,m).toInt))
       case n:NumericStackValue => machine.push(RealNumber(f(n.value, m)))
       case StringValue(s) => machine.push(StringValue(s + m.toString))
-      case other => machine.crash(s"can not apply  ${other.getClass.getSimpleName}")
+      case other => machine.crash(s"can not apply  ${other.stringRepresentation}")
     }
     case RealNumber(m) => machine.pop() match {
       case n:NumericStackValue => machine.push(RealNumber(f(n.value, m)))
@@ -136,18 +140,32 @@ sealed abstract class CompareInstruction(name:String, f: (Double, Double) => Boo
       case n:NumericStackValue => machine.push(BooleanValue(f(n.value, m.value)))
       case other => machine.crash(s"can not apply '$name' to ${other.stringRepresentation}")
     }
-    case other => {
-      machine.crash(s"can not apply '$name' to ${other.stringRepresentation}")
-    }
+    case other => machine.push(BooleanValue(machine.pop().equals(other)))
   }
 )
 
-object EQInstruction extends CompareInstruction("==", _ == _)
-object NEQInstruction extends CompareInstruction("!=", _ != _)
+object EQInstruction extends DefaultInstruction(machine => machine.push(BooleanValue(machine.pop().equals(machine.pop()))))
+object NEQInstruction extends DefaultInstruction(machine => machine.push(BooleanValue(!machine.pop().equals(machine.pop()))))
 object GTInstruction extends CompareInstruction(">", _ > _)
 object GTEInstruction extends CompareInstruction(">=", _ >= _)
 object LTInstruction extends CompareInstruction("<", _ < _)
 object LTEInstruction extends CompareInstruction("<=", _ <=  _)
+
+object AndInstruction extends DefaultInstruction(machine => machine.pop() match{
+  case BooleanValue(b1) => machine.pop() match{
+    case BooleanValue(b2) => machine.push(BooleanValue(b1 && b2))
+    case otherwise => machine.crash(s"can not apply && to $otherwise")
+  }
+  case otherwise => machine.crash(s"can not apply && to $otherwise")
+})
+
+object OrInstruction extends DefaultInstruction(machine => machine.pop() match {
+  case BooleanValue(b1) => machine.pop() match {
+    case BooleanValue(b2) => machine.push(BooleanValue(b1 || b2))
+    case otherwise => machine.crash(s"can not apply || to $otherwise")
+  }
+  case otherwise => machine.crash(s"can not apply || to $otherwise")
+})
 
 case class PushClosure(name:Option[String], bindings:List[String], free:List[String], body:List[Instruction]) extends DefaultInstruction(machine => {
   val optFrees = free.map(x => (x, machine.get(x)))
@@ -172,20 +190,23 @@ case class Select(fields:List[String]) extends DefaultInstruction(machine => {
       var mFields = fields
       var mBindings = bindings
       breakable {
-        while (mFields.nonEmpty) {
+        while (mFields.tail.nonEmpty) {
           mBindings.get(mFields.head) match {
             case Some(ObjectValue(bindings)) => mBindings = bindings
-            case Some(other) if mFields.size > 1 => {
+            case Some(other) => {
               machine.crash(s"cannot select fields from $other")
               break()
             }
-            case Some(other) => machine.push(other)
             case None => {
               machine.crash("cannot find value: " + mFields.head)
               break()
             }
           }
           mFields = mFields.tail
+        }
+        mBindings.get(mFields.head) match{
+          case Some(value) => machine.push(value)
+          case None => machine.push(NilValue)
         }
       }
     }
@@ -257,7 +278,7 @@ case class BooleanValue(b:Boolean) extends StackValue{override def stringReprese
 object NilValue extends StackValue{override def stringRepresentation = "null"}
 object Recurse extends StackValue{override def stringRepresentation = "_recursive_call"}
 
-case class ObjectValue(mapping:MMap[String, StackValue]) extends StackValue{override def stringRepresentation = "TODO: make stringrep()"}
+case class ObjectValue(mapping:MMap[String, StackValue]) extends StackValue{override def stringRepresentation = toString()}
 
 case class Closure(bindings: List[String], free:MMap[String, StackValue], body:List[Instruction]) extends StackValue{override def stringRepresentation = "Closure"}
 
