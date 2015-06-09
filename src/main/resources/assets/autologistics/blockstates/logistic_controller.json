@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "normal": { "model": "autologistics:logistic_controller" }
+  }
+}

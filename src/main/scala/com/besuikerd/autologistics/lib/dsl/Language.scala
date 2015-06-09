@@ -1,5 +1,7 @@
 package com.besuikerd.autologistics.lib.dsl
 
+import com.besuikerd.autologistics.lib.dsl.vm.Instruction
+
 import scala.tools.nsc.doc.model.ImplicitConversion
 import scala.util.parsing.combinator.JavaTokenParsers
 
@@ -12,23 +14,35 @@ sealed abstract class ASTNode
 sealed abstract class Statement extends ASTNode
 
 case class Assignment(variable:String, binding:Expression) extends Statement
+case class AssignField(obj:Expression, fields:List[String], binding:Expression) extends Statement
+case class AssignIndex(obj:Expression, indexes:List[Expression], binding:Expression) extends Statement
 case class ExpressionStatement(expression:Expression) extends Statement
-case class ReturnStatement(value:Expression) extends Statement
+case class WhileStatement(condition:Expression, body:Statement) extends Statement
 
 //Expressions
 sealed abstract class Expression extends ASTNode
 
 case class VariableExpression(name:String) extends Expression
+case class ObjectFieldExpression(objExpression:Expression, fields:List[String]) extends Expression
+case class IndexExpression(expression:Expression, indexes:List[Expression]) extends Expression
+
 case class Application(expression:Expression, arguments:List[Expression]) extends Expression
 object Application{
   def apply(e1:Expression, name:String, e2:Expression):Application = Application(VariableExpression(name), List(e1, e2))
   def apply(name:String)(e1:Expression, op:String, e2:Expression):Application = apply(e1, name, e2)
+  def apply(name:String, arguments:List[Expression]):Application = Application(VariableExpression(name), arguments)
 }
 
 case class BlockExpression(statements:List[Statement]) extends Expression
 case class LambdaExpression(bindings:List[String], body:Expression) extends Expression
 
 case class IfElseExpression(condition:Expression, ifExpression: Expression, elseExpression:Option[Expression]) extends Expression
+
+case class ObjectExpression(fields:Map[String, Expression]) extends Expression
+
+case class ListExpression(values:List[Expression]) extends Expression
+
+case class Instructions(instructions:List[Instruction]) extends Expression
 
 //Binary operations
 sealed abstract class BinaryExpression(val e1:Expression, val operator:String, val e2:Expression) extends Expression
@@ -53,5 +67,6 @@ sealed abstract class Number extends Expression
 case class RealNumberConstant(value:Double) extends Expression
 case class NaturalNumberConstant(value:Int) extends Expression
 
+case object NullExpression extends Expression
 case class StringLiteral(value:String) extends Expression
 case class BooleanConstant(value:Boolean) extends Expression

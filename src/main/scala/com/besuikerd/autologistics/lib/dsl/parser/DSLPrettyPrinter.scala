@@ -47,17 +47,20 @@ object DSLPrettyPrinter{
            |${prettifyLevelled(e, level + 1)}
            |$tabs)
          """.stripMargin
-      case ReturnStatement(e) =>
-        s"""${tabs}Return(
-           |${prettifyLevelled(e, level + 1)}
-            |$tabs)
-        """.stripMargin
       case Assignment(binding, e) =>
         s"""${tabs}Assignment(
            |$tabs\t$binding
            |${prettifyLevelled(e, level + 1)}
            |$tabs)
          """.stripMargin
+      case AssignField(obj, fields, binding) =>
+        s"""${tabs}AssignField(
+           |${prettifyLevelled(obj, level + 1)}
+           |$tabs${fields.mkString("\n")}
+           |${prettifyLevelled(binding, level + 1)}
+           |$tabs)
+         """.stripMargin
+      case other => tabs ++ other.toString
     }
   }
 }
