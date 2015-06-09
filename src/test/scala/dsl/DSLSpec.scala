@@ -17,8 +17,8 @@ with ParsingSpec
 {
   "DSL Parser" should "parse a simple program" in {
     object parser extends DSLParser with DSLParserPluginRegistry with ParserImplicits{
-      lazy val itemRef:Parser[Expression] = "<" ~> ident ~ ":" ~ ident <~ ">" ^^ {
-        case s => Application(VariableExpression("_getItem"), List(StringLiteral(concat(s))))
+      lazy val itemRef:Parser[Expression] = ("<" ~> ident <~ ":") ~ (ident <~ ">") ^^ {
+        case mod ~ name => Application(VariableExpression("_getItem"), List(StringLiteral(mod), StringLiteral(name)))
       }
 
       registerOperands(itemRef)
@@ -43,25 +43,9 @@ with ParsingSpec
 
     val program =
       """
-
-        |to = \n m -> [
-        |  current = n
-        |  next = if(n > m) null else \ -> to(n + 1, m)
-        |]
-        |
-        |
-        |foreach = \col f -> {
-        |  while(col.next != null){
-        |    f(col.current)
-        |    col = col.next()
-        |  }
-        |}
-        |
-        |
-        |range = to(0,10)
-        |
-        |foreach(range, println)
+        |x = 5
       """.stripMargin
+
 
 
 
@@ -111,21 +95,31 @@ with ParsingSpec
 
 
   "AutoLogisticsParser" should "parse additional operands and operators" in {
+//    val program =
+//      """
+//coal = <minecraft:charcoal>
+//chest = <minecraft:chest>
+//tchest = <minecraft:trapped_chest>
+//furnace = <minecraft:furnace>
+//
+//coord = (1,-2,3)
+//
+//chest >> furnace[north, coal, amount = 5]
+//chest[<minecraft:wood>, 1] >> furnace
+//furnace[<minecraft:charcoal>] >> chest
+//
+//
+//      """.stripMargin
+
     val program =
       """
-coal = <minecraft:coal>
-chest = <minecraft:chest>
-furnace = <minecraft:furnace>
-
-chest >> furnace[north, coal, amount = 5]
-chest[<minecraft:wood>, 1]
-furnace[<minecraft:charcoal>] >> chest
-
-
+        |
       """.stripMargin
 
     parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ statements =>
       val vm = new VirtualMachine()
+
+      statements foreach println
 
       vm.addNative("_filter", { args =>
         val filters = args(1).asInstanceOf[ObjectValue]
@@ -136,7 +130,7 @@ furnace[<minecraft:charcoal>] >> chest
         filters.mapping ++= argsMapping
 
         ObjectValue(MMap(
-          "item" -> args(0),
+          "assets/autologistics/models/item" -> args(0),
           "filters" -> args(1)
         ))
       })
@@ -170,6 +164,17 @@ furnace[<minecraft:charcoal>] >> chest
     val t0 = System.currentTimeMillis()
     f
     System.currentTimeMillis() - t0
+  }
+
+  it should "successfully parse the following expressions" in {
+    val program =
+      """
+        |x["bla"] = 25
+      """.stripMargin
+
+    parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ p =>
+      println(p)
+    }
   }
 
 }

@@ -15,6 +15,7 @@ sealed abstract class Statement extends ASTNode
 
 case class Assignment(variable:String, binding:Expression) extends Statement
 case class AssignField(obj:Expression, fields:List[String], binding:Expression) extends Statement
+case class AssignIndex(obj:Expression, indexes:List[Expression], binding:Expression) extends Statement
 case class ExpressionStatement(expression:Expression) extends Statement
 case class WhileStatement(condition:Expression, body:Statement) extends Statement
 
@@ -23,7 +24,7 @@ sealed abstract class Expression extends ASTNode
 
 case class VariableExpression(name:String) extends Expression
 case class ObjectFieldExpression(objExpression:Expression, fields:List[String]) extends Expression
-
+case class IndexExpression(expression:Expression, indexes:List[Expression]) extends Expression
 
 case class Application(expression:Expression, arguments:List[Expression]) extends Expression
 object Application{
@@ -38,6 +39,8 @@ case class LambdaExpression(bindings:List[String], body:Expression) extends Expr
 case class IfElseExpression(condition:Expression, ifExpression: Expression, elseExpression:Option[Expression]) extends Expression
 
 case class ObjectExpression(fields:Map[String, Expression]) extends Expression
+
+case class ListExpression(values:List[Expression]) extends Expression
 
 case class Instructions(instructions:List[Instruction]) extends Expression
 

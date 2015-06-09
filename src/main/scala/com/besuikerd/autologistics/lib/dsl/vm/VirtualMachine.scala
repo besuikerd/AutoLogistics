@@ -1,7 +1,7 @@
 package com.besuikerd.autologistics.lib.dsl.vm
 
 import org.scalatest.fixture
-import scala.collection.mutable.{Map => MMap}
+import scala.collection.mutable.{Map => MMap, ArrayBuffer}
 import com.besuikerd.autologistics.lib.collection.Stack
 import scala.util.control.Breaks._
 
@@ -93,7 +93,13 @@ case class Get(s:String) extends DefaultInstruction(machine =>{
 case class Call(argCount:Int) extends DefaultInstruction(machine => {
   val args = (for(_ <- 0 until argCount) yield machine.pop()).toList.reverse
   machine.pop() match{
-    case NativeFunction(name, f) => machine.push(f(args))
+    case NativeFunction(name, f) => {
+      try{
+        machine.push(f(args))
+      } catch{
+        case NativeFunctionException(e) => machine.crash(e)
+      }
+    }
 
     case Closure(bindings, free, body) => {
       machine.instructions.push(CloseScope)
@@ -244,6 +250,59 @@ case class UpdateField(fields:List[String]) extends DefaultInstruction(machine =
   }
 })
 
+case class UpdateIndex(level:Int) extends DefaultInstruction(machine => {
+  machine.pop() match{
+    case ObjectValue(bindings) => {
+
+    }
+    case ListValue(bindings) => {
+
+    }
+    case other => machine.crash(s"cannot update index for $other")
+  }
+})
+
+case class GetIndex(level:Int) extends DefaultInstruction(machine => {
+  machine.pop() match{
+    case obj@ObjectValue(bindings) => {
+      breakable{
+        var current:ObjectValue = obj
+        for(i <- 0 until level){
+          machine.pop() match{
+            case StringValue(s) => current.mapping.get(s) match{
+              case Some(other) if i == level - 1 => {
+                machine.push(other)
+                break
+              }
+              case Some(o:ObjectValue) => {
+                current = o
+              }
+              case Some(other) => {
+                machine.crash(s"indexing a non-object value")
+                break
+              }
+              case None => {
+                machine.crash(s"could not find index: $s")
+                break
+              }
+            }
+            case other => {
+              machine.crash(s"cannot index objects with $other")
+              break
+            }
+          }
+        }
+      }
+    }
+    case ListValue(bindings) => {
+      breakable{
+        //var current:ListValue
+      }
+    }
+    case other => machine.crash(s"cannot get index for $other")
+  }
+})
+
 case class Load(instructions:List[Instruction]) extends DefaultInstruction(machine => {
   machine.instructions ::= instructions
 })
@@ -278,8 +337,31 @@ case class BooleanValue(b:Boolean) extends StackValue{override def stringReprese
 object NilValue extends StackValue{override def stringRepresentation = "null"}
 object Recurse extends StackValue{override def stringRepresentation = "_recursive_call"}
 
-case class ObjectValue(mapping:MMap[String, StackValue]) extends StackValue{override def stringRepresentation = toString()}
+case class ObjectValue(mapping:MMap[String, StackValue]) extends StackValue{
+  override def stringRepresentation = toString()
+  def copy():ObjectValue = {
+    val mappingCopy = MMap[String, StackValue]()
+    mappingCopy ++= mapping.mapValues {
+      case o:ObjectValue => o.copy()
+      case other => other
+    }
+    ObjectValue(mappingCopy)
+  }
+}
+object ObjectValue{
+  def apply():ObjectValue = ObjectValue(MMap())
+}
+
+case class ListValue(list:ArrayBuffer[StackValue]) extends StackValue{
+  override def stringRepresentation: String = list.mkString("[", ",", "]")
+}
+
 
 case class Closure(bindings: List[String], free:MMap[String, StackValue], body:List[Instruction]) extends StackValue{override def stringRepresentation = "Closure"}
 
+case class NativeObject(obj: Any) extends StackValue{
+  override def stringRepresentation: String = obj.toString()
+}
+
 case class NativeFunction(name:String, f:List[StackValue] => StackValue) extends StackValue{override def stringRepresentation = s"<$name>"}
+case class NativeFunctionException(msg:String) extends RuntimeException(msg)

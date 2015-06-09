@@ -26,6 +26,14 @@ trait DSLParser extends JavaTokenParsers
 
   lazy val parser:Parser[List[Statement]] = newline.* ~> (statement <~ (newline.* ~ ";".?)).* <~ EOF
 
+  lazy val integer:Parser[Int] = wholeNumber.flatMap{n =>
+    try{
+      success(n.toInt)
+    } catch{
+      case e:NumberFormatException => failure(s"could not convert $n to an integer")
+    }
+  }
+
   lazy val expression:Parser[Expression] = binExp <~ newline.?
 
   lazy val sortedBinaryOperators:Seq[Parser[(String, (Expression, String, Expression) => Expression)]] = binaryOperators.mapValues(_.map{case (op, f) => literal(op).map((_, f))}.reduceRight(_ | _)).toSeq.sortBy(-_._1).map(_._2) //reverse sorted to build up parser from the bottom
@@ -49,9 +57,11 @@ trait DSLStatements extends PluggableParsers with ImplicitConversions{this:DSLPa
   lazy val assignment = (ident <~ "=") ~ expression ^^ {case variable ~ exp => Assignment(variable, exp)}
   lazy val expressionStatement: Parser[Statement] = expression.map(ExpressionStatement)
   lazy val assignField = referrable ~ ("." ~> ident).+ ~ ("=" ~> expression) ^^ AssignField
+  lazy val assignIndex = referrable ~ ("[" ~> expression <~ "]").+ ~ ("=" ~> expression) ^^ AssignIndex
   lazy val whileStatement = ("while" ~> "(" ~> expression <~ ")") ~ statement ^^ WhileStatement
 
   override def statements: Seq[Parser[Statement]] = super.statements ++ Seq(
+    assignIndex,
     assignField,
     assignment,
     whileStatement,
@@ -77,7 +87,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
   lazy val variable:Parser[VariableExpression] = ident ^^ VariableExpression.apply
 
   lazy val realNumber:Parser[RealNumberConstant] = floatingPointNumber ^^ (x => RealNumberConstant(x.toDouble))
-  lazy val naturalNumber:Parser[NaturalNumberConstant] = wholeNumber ^^ {x => NaturalNumberConstant(x.toInt)}
+  lazy val naturalNumber:Parser[NaturalNumberConstant] = integer ^^ NaturalNumberConstant
   //parses either natural or real
   lazy val number:Parser[Expression] = floatingPointNumber ^^ {case n => n.optToInt.map(NaturalNumberConstant).getOrElse(RealNumberConstant(n.toDouble))}
 
@@ -96,9 +106,13 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
     case exp ~ argumentLists => argumentLists.foldLeft(exp)((acc, cur) => Application(acc, cur))
   }
 
-  lazy val objectExp:Parser[ObjectExpression] = "[" ~> newline.* ~> repsep((ident <~ newline.* <~ "=" <~ newline.*) ~ expression, newline.*) <~ newline.* <~ "]" ^^ {_.map {case id ~ expr => (id, expr)}.toMap} ^^ ObjectExpression
+  lazy val objectExp:Parser[ObjectExpression] = "{" ~> newline.* ~> repsep((ident <~ newline.* <~ "=" <~ newline.*) ~ expression, ",".? ~ newline.*) <~ newline.* <~ "}" ^^ {_.map {case id ~ expr => (id, expr)}.toMap} ^^ ObjectExpression
+
+  lazy val indexExp:Parser[IndexExpression] = referrable ~ ("[" ~> expression <~ "]").+ ^^ IndexExpression
 
   lazy val objectField:Parser[ObjectFieldExpression] = referrable ~ ("." ~> ident).+ ^^ ObjectFieldExpression
+
+  lazy val listExp:Parser[ListExpression] = "[" ~> newline.* ~> repsep(expression, "," ~ newline.*) <~ "]" <~ newline.* ^^ ListExpression
 
   lazy val ifElse:Parser[IfElseExpression] = ("if" ~> "(" ~> expression <~ ")") ~ expression ~ ("else" ~> expression).? ^^ IfElseExpression
 
@@ -108,7 +122,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
 
   lazy val referrable: Parser[Expression] =
     parensExp |
-    blockExp |
+//    blockExp |
     variable
 
   //TODO something like this: operands.fi.lter(!_.equals(app)).reduceRight(_ | _)
@@ -127,6 +141,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
     string |
     lambda |
     parensExp |
+    listExp |
     objectExp |
     blockExp |
     variable

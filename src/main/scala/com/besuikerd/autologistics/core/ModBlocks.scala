@@ -1,19 +1,14 @@
 package com.besuikerd.autologistics.core
 
-import com.besuikerd.autologistics.block.BlockLogisticController
-import com.besuikerd.autologistics.core.ModBlockNames
+import com.besuikerd.autologistics.block.{BlockLogisticCable, BlockLogisticController}
 import com.besuikerd.autologistics.tile.TileLogisticController
-import net.minecraft.block.material.Material
 import net.minecraftforge.fml.common.registry.GameRegistry
 
 object ModBlocks {
-  final val LOGISTICS_CONTROLLER = new BlockLogisticController()
+  final val LogisticController = new BlockLogisticController().register()
+  final val LogisticCable = new BlockLogisticCable().register()
 
-  def registerBlocks(): Unit ={
-    GameRegistry.registerBlock(LOGISTICS_CONTROLLER, ModBlockNames.LOGISTICS_CONTROLLER)
-  }
+  def init(): Unit = {
 
-  def registerTiles(): Unit ={
-    GameRegistry.registerTileEntity(classOf[TileLogisticController], ModBlockNames.LOGISTICS_CONTROLLER)
   }
 }
