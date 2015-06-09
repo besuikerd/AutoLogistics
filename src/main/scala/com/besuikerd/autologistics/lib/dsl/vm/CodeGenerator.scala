@@ -12,7 +12,16 @@ object CodeGenerator {
     case ExpressionStatement(e) => generate(e) :+ Pop
     case Assignment(binding, l:LambdaExpression) => lambdaInstructions(Some(binding), l) :+ Put(binding)
     case Assignment(binding, e) => generate(e) :+ Put(binding)
-    case AssignField(objExp, fields, binding) => generate(binding) ++ generate(objExp) :+ UpdateField(fields)
+    case AssignField(objExp, fields, binding) => {
+      val (init, last) = fields.splitAt(fields.length - 1)
+      val getFields = init.flatMap{s => List(Push(StringValue(s)), GetField)}
+      generate(objExp) ++ getFields ++ (Push(StringValue(last.head)) +: generate(binding) :+ PutField)
+    }
+    case AssignIndex(obj, indexes, binding) => {
+      val (init, last) = indexes.splitAt(indexes.length - 1)
+      val getIndexes = init.flatMap(e => generate(e) :+ GetField)
+      generate(obj) ++ getIndexes ++ generate(last.head) ++ generate(binding) :+ PutField
+    }
 
     case WhileStatement(condition, body) => {
       var bodyStatements = generate(body)
@@ -64,6 +73,11 @@ object CodeGenerator {
 
     case ObjectExpression(mapping) => mapping.values.flatMap(generate).toList :+ PushObject(mapping.keys.toList.reverse)
     case ObjectFieldExpression(exp, bindings) => generate(exp) :+ Select(bindings)
+    case ListExpression(values) => values.reverse.flatMap(generate) :+ PushList(values.length)
+    case IndexExpression(exp, indexes) => {
+      val getIndexes = indexes.flatMap{e => generate(e) :+ GetField}
+      generate(exp) ++ getIndexes
+    }
 
     case NaturalNumberConstant(n) => List(Push(NaturalNumber(n)))
     case RealNumberConstant(n) => List(Push(RealNumber(n)))

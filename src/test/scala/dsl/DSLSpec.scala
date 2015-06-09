@@ -43,7 +43,13 @@ with ParsingSpec
 
     val program =
       """
-        |x = 5
+        |x = {
+        | bla = {
+        |   list = [1,2,3]
+        | }
+        |}
+        |y = x.bla.list[1]
+        |println(y)
       """.stripMargin
 
 
@@ -169,11 +175,13 @@ with ParsingSpec
   it should "successfully parse the following expressions" in {
     val program =
       """
-        |x["bla"] = 25
+        |x = []
+        |x[0] = 2
       """.stripMargin
 
     parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ p =>
       println(p)
+      CodeGenerator.generate(p).foreach(println)
     }
   }
 

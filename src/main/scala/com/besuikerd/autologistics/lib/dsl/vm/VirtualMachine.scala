@@ -1,7 +1,7 @@
 package com.besuikerd.autologistics.lib.dsl.vm
 
 import org.scalatest.fixture
-import scala.collection.mutable.{Map => MMap, ArrayBuffer}
+import scala.collection.mutable.{Map => MMap, ListBuffer, ArrayBuffer}
 import com.besuikerd.autologistics.lib.collection.Stack
 import scala.util.control.Breaks._
 
@@ -190,6 +190,14 @@ case class PushObject(bindings:List[String]) extends DefaultInstruction(machine 
   machine.push(ObjectValue(fields))
 })
 
+case class PushList(length:Int) extends DefaultInstruction(machine => {
+  val list = ArrayBuffer[StackValue]()
+  for(i <- 0 until length){
+    list += machine.pop()
+  }
+  machine.push(ListValue(list))
+})
+
 case class Select(fields:List[String]) extends DefaultInstruction(machine => {
   machine.pop() match{
     case ObjectValue(bindings) => {
@@ -249,6 +257,42 @@ case class UpdateField(fields:List[String]) extends DefaultInstruction(machine =
     case other => machine.crash(s"cannot assign field to $other")
   }
 })
+
+
+object GetField extends DefaultInstruction(machine => {
+  (machine.pop(), machine.pop()) match{
+    case (StringValue(s), ObjectValue(mapping)) => {
+      mapping.get(s) match{
+        case Some(value) => machine.push(value)
+        case None => machine.crash(s"field not found: $s")
+      }
+    }
+    case (NaturalNumber(i), ListValue(list)) => {
+      if(i < list.length){
+        machine.push(list(i))
+      } else{
+        machine.crash(s"index out of bounds: $i")
+      }
+    }
+    case (otherVal, otherIndex) => machine.crash(s"cannot get field $otherIndex from $otherVal")
+  }
+})
+
+object PutField extends DefaultInstruction(machine => {
+  (machine.pop(), machine.pop(), machine.pop()) match{
+    case (value, StringValue(s), ObjectValue(mapping)) => {
+      mapping.put(s, value)
+    }
+    case (value, NaturalNumber(i), ListValue(list)) => {
+      for(j <- list.length to i){
+        list += NilValue
+      }
+      list.update(i, value)
+    }
+    case (otherVal, _, otherIndex) => machine.crash(s"cannot put field $otherIndex to $otherVal")
+  }
+})
+
 
 case class UpdateIndex(level:Int) extends DefaultInstruction(machine => {
   machine.pop() match{
