@@ -13,8 +13,8 @@ wood = <minecraft:oak_log>
 furnace = <minecraft:furnace>
 
 while(true){
-  chest[wood] >> furnace[top]
-  chest[charcoal] >> furnace[north]
-  furnace[bottom] >> chest
+  chest@[wood] >> furnace@[top]
+  chest@[charcoal] >> furnace@[north]
+  furnace@[bottom] >> chest
 }
 ```
