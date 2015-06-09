@@ -6,6 +6,8 @@ import com.besuikerd.autologistics.lib.dsl._
 import com.besuikerd.autologistics.lib.dsl.parser.{DSLPrettyPrinter, DSLParser, DSLParserPluginRegistry}
 import com.besuikerd.autologistics.lib.dsl.vm.CodeGenerator
 import com.besuikerd.autologistics.lib.dsl.vm._
+import com.besuikerd.autologistics.tile.TileEntityMod
+import com.besuikerd.autologistics.tile.traits.{TileCable, TileLogistic, TileVirtualMachine}
 import org.scalatest.{FlatSpec, Inside, Matchers}
 import com.besuikerd.autologistics.lib.dsl.parser._
 import scala.collection.mutable.{Map => MMap}
@@ -119,39 +121,15 @@ with ParsingSpec
 
     val program =
       """
-        |
+        |print("value: ")
+        |println((<minecraft:chest>)@[north])
       """.stripMargin
 
     parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ statements =>
-      val vm = new VirtualMachine()
+      object tile extends TileEntityMod with TileVirtualMachine with TileCable with TileLogistic
+      val vm = tile.virtualMachine
 
       statements foreach println
-
-      vm.addNative("_filter", { args =>
-        val filters = args(1).asInstanceOf[ObjectValue]
-        println(s"filtering ${args(0)}, kvCount=${filters.mapping.size}, args:${args.tail.tail.map(_.stringRepresentation).mkString("[", ",", "]")}")
-
-        val argsMapping = args.drop(2).zipWithIndex.map{x => val swapped = x.swap; (swapped._1.toString, swapped._2)}
-
-        filters.mapping ++= argsMapping
-
-        ObjectValue(MMap(
-          "assets/autologistics/models/item" -> args(0),
-          "filters" -> args(1)
-        ))
-      })
-
-      vm.addNative("_getItem", {args =>
-        println("got item: " + args(0))
-        args(0)
-      })
-
-      vm.addNative("_transferTo", {args =>
-        println(s"transferring from ${args(0).stringRepresentation} to ${args(1).stringRepresentation}")
-        NilValue
-      })
-
-      vm.globals.put("north", StringValue("north"))
 
 
       val code = CodeGenerator.generate(statements)
@@ -175,8 +153,7 @@ with ParsingSpec
   it should "successfully parse the following expressions" in {
     val program =
       """
-        |x = []
-        |x[0] = 2
+         |item
       """.stripMargin
 
     parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ p =>

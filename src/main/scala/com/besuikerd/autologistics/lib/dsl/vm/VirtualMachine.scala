@@ -47,6 +47,9 @@ class VirtualMachine {
 
     //push empty global closure on the stack
     scopes.push(Closure(List(), globals, program.reverse))
+
+    println(globals)
+
     instructions.clear()
     instructions ::= program
   }
@@ -198,67 +201,6 @@ case class PushList(length:Int) extends DefaultInstruction(machine => {
   machine.push(ListValue(list))
 })
 
-case class Select(fields:List[String]) extends DefaultInstruction(machine => {
-  machine.pop() match{
-    case ObjectValue(bindings) => {
-      var mFields = fields
-      var mBindings = bindings
-      breakable {
-        while (mFields.tail.nonEmpty) {
-          mBindings.get(mFields.head) match {
-            case Some(ObjectValue(bindings)) => mBindings = bindings
-            case Some(other) => {
-              machine.crash(s"cannot select fields from $other")
-              break()
-            }
-            case None => {
-              machine.crash("cannot find value: " + mFields.head)
-              break()
-            }
-          }
-          mFields = mFields.tail
-        }
-        mBindings.get(mFields.head) match{
-          case Some(value) => machine.push(value)
-          case None => machine.push(NilValue)
-        }
-      }
-    }
-    case other => machine.crash(s"cannot select fields from $other")
-  }
-})
-
-case class UpdateField(fields:List[String]) extends DefaultInstruction(machine => {
-  machine.pop() match {
-    case ObjectValue(bindings) => {
-      var mFields = fields
-      var mBindings = bindings
-      breakable {
-
-        while (mFields.nonEmpty) {
-          mBindings.get(mFields.head) match {
-            case Some(ObjectValue(bindings)) => mBindings = bindings
-            case Some(other) if mFields.size > 1 => {
-              machine.crash(s"cannot select fields from $other")
-              break()
-            }
-            case None if mFields.size > 1 => {
-              machine.crash("cannot find value: " + mFields.head)
-              break()
-            }
-            case other => { //last field
-              mBindings.put(mFields.head, machine.pop())
-            }
-          }
-          mFields = mFields.tail
-        }
-      }
-    }
-    case other => machine.crash(s"cannot assign field to $other")
-  }
-})
-
-
 object GetField extends DefaultInstruction(machine => {
   (machine.pop(), machine.pop()) match{
     case (StringValue(s), ObjectValue(mapping)) => {
@@ -382,11 +324,14 @@ object NilValue extends StackValue{override def stringRepresentation = "null"}
 object Recurse extends StackValue{override def stringRepresentation = "_recursive_call"}
 
 case class ObjectValue(mapping:MMap[String, StackValue]) extends StackValue{
-  override def stringRepresentation = toString()
+  override def stringRepresentation = {
+    mapping.toList.map{case (k,v) => s"$k = ${v.stringRepresentation}"}.mkString("{", ", ", "}")
+  }
   def copy():ObjectValue = {
     val mappingCopy = MMap[String, StackValue]()
     mappingCopy ++= mapping.mapValues {
       case o:ObjectValue => o.copy()
+      case l:ListValue => l.copy()
       case other => other
     }
     ObjectValue(mappingCopy)
@@ -398,6 +343,14 @@ object ObjectValue{
 
 case class ListValue(list:ArrayBuffer[StackValue]) extends StackValue{
   override def stringRepresentation: String = list.mkString("[", ",", "]")
+
+  def copy():ListValue = {
+    ListValue(ArrayBuffer(list:_*))
+  }
+}
+
+object ListValue{
+  def apply():ListValue = ListValue(ArrayBuffer())
 }
 
 

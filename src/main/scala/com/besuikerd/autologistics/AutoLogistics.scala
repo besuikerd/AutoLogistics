@@ -1,7 +1,6 @@
 package com.besuikerd.autologistics
 
-import com.besuikerd.autologistics.core.ModBlocks
-import com.besuikerd.autologistics.core.dsl.ModItems
+import com.besuikerd.autologistics.core.{ModItems, ModBlocks}
 import net.minecraft.client.Minecraft
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.Mod.EventHandler

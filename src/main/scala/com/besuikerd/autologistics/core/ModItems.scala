@@ -1,4 +1,4 @@
-package com.besuikerd.autologistics.core.dsl
+package com.besuikerd.autologistics.core
 
 import com.besuikerd.autologistics.item.ItemInventorySelector
 

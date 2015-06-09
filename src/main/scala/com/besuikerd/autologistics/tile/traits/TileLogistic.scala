@@ -3,11 +3,12 @@ package com.besuikerd.autologistics.tile.traits
 import com.besuikerd.autologistics.lib.dsl.vm._
 import com.besuikerd.autologistics.tile.TileEntityMod
 import com.besuikerd.autologistics.lib.inventory._
-import net.minecraft.inventory.IInventory
+import net.minecraft.inventory.{ISidedInventory, IInventory}
 import net.minecraft.item.{ItemStack, ItemBlock, Item}
+import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraft.block.Block
-import scala.collection.mutable.{Map => MMap}
+import scala.collection.mutable.{Map => MMap, ArrayBuffer}
 
 trait TileLogistic extends TileEntityMod{
   this: TileEntityMod
@@ -18,44 +19,49 @@ trait TileLogistic extends TileEntityMod{
   virtualMachine.addNative("_itemFilter", nativeItemFilter)
   virtualMachine.addNative("_transferTo", nativeTransferTo)
 
-  val directions = Set("north", "east", "south", "west", "up", "down")
-  directions.foreach(dir => virtualMachine.globals.put(dir, StringValue(dir)))
+  val directions = Map(
+    "north" -> EnumFacing.NORTH,
+    "east" -> EnumFacing.EAST,
+    "south" -> EnumFacing.SOUTH,
+    "west" -> EnumFacing.WEST,
+    "up" -> EnumFacing.UP,
+    "down" -> EnumFacing.DOWN
+  )
+  directions.keys.foreach(dir => virtualMachine.globals.put(dir, StringValue(dir)))
 
   def nativeGetItem(values:List[StackValue]): StackValue = {
     checkArgCount(values, 2)
     val (mod :: xs) = values
     val (name :: _) = xs
     ObjectValue(MMap(
-      "filter" -> ObjectValue(),
+      "filter" -> ObjectValue(MMap(
+        "sides" -> ListValue(),
+        "items" -> ListValue()
+      )),
       "mod" -> mod,
       "name" -> name
     ))
   }
 
   def nativeItemFilter(values:List[StackValue]): StackValue = {
-    checkArgCount(values, 3)
-    val (item :: xs) = values
-    val (kv :: args) = xs
-
-
-    item match{
-      case obj:ObjectValue => {
-        val itemCopy = obj.copy()
-        itemCopy.mapping.get("filter") match{
-          case Some(ObjectValue(filters)) => {
-            filters ++= kv.asInstanceOf[ObjectValue].mapping
-            args.collect {
-              case value@StringValue(s) if directions.contains(s) => filters.put("direction", value)
-              case value@ObjectValue(filterArgs) if filterArgs.contains("item") => filters.put("item", value)
-              case value: RealNumber => filters.put("amount", value)
-            }
-          }
-          case Some(other) => throw new NativeFunctionException("can not filter " + other.stringRepresentation)
-          case None => throw new NativeFunctionException("can not filter object without filter field")
+    checkArgCount(values, 2)
+    values match{
+      case List(item:ObjectValue, filters:ListValue, _*)=> {
+        val itemCopy = item.copy()
+        for{
+          ObjectValue(filterMapping) <- itemCopy.mapping.get("filter")
+          ListValue(items) <- filterMapping.get("items")
+          ListValue(sides) <- filterMapping.get("sides")
+        } {
+          val itemFilters = filters.list.collect{case o@ObjectValue(mapping) if mapping.contains("mod") && mapping.contains("name") => o}
+          val sideFilters = filters.list.collect{case v@StringValue(s) if directions.contains(s) => v}
+          items ++= itemFilters
+          sides ++= sideFilters
         }
+        for{n@RealNumber(_) <- itemCopy.mapping.get("amount")}{itemCopy.mapping.put("amount", n)}
         itemCopy
       }
-      case other => throw new NativeFunctionException("can not filter " + other.stringRepresentation)
+      case other => throw NativeFunctionException(s"invalid arguments for item filter: $values")
     }
   }
 
@@ -94,51 +100,23 @@ trait TileLogistic extends TileEntityMod{
                           (fromInv, fromInvIndex) <- fromInventories.view.zipWithIndex
                           (fromStack, fromStackIndex) <- fromInv.toIterable.zipWithIndex if fromStack != null && passesFromFilter(fromInv, fromStackIndex, fromFilter)
                           (toInv, toInvIndex) <- toInventories.zipWithIndex
-                          (toStack, toStackIndex) <- toInv.toIterable.zipWithIndex if toStack == null || toStack.isItemEqual(fromStack) && toStack.stackSize < toStack.getMaxStackSize
+                          (toStack, toStackIndex) <- toInv.toIterable.zipWithIndex if (toStack == null || toStack.isItemEqual(fromStack) && toStack.stackSize < toStack.getMaxStackSize) && passesToFilter(fromStack, toInv, toStackIndex, toFilter)
                         } yield (fromInvIndex, fromStackIndex, toInvIndex, toStackIndex)
 
                         transfer.headOption.foreach{ case (fromInvIndex, fromStackIndex, toInvIndex, toStackIndex) =>
                           val fromStack = fromInventories(fromInvIndex).getStackInSlot(fromStackIndex)
-                          val toStack = if(toInventories(toInvIndex).getStackInSlot(toStackIndex) == null) new ItemStack(fromStack.getItem, 0) else toInventories(toInvIndex).getStackInSlot(toStackIndex)
+                          val toStack = if(toInventories(toInvIndex).getStackInSlot(toStackIndex) == null) fromStack.splitStack(0) else toInventories(toInvIndex).getStackInSlot(toStackIndex)
                           val maxItems = toStack.getMaxStackSize - toStack.stackSize
                           val transferredItemCount = Math.min(maxItems, fromStack.stackSize)
                           fromStack.stackSize -= transferredItemCount
                           toStack.stackSize += transferredItemCount
+
+
                           toInventories(toInvIndex).setInventorySlotContents(toStackIndex, toStack)
                           if(fromStack.stackSize == 0){
                             fromInventories(fromInvIndex).setInventorySlotContents(fromStackIndex, null)
                           }
                         }
-
-                        /*
-                        val fromSlots = for{
-                          (inventory, i) <- fromInventories.zipWithIndex
-                          (slot, j) <- inventory.toList.zipWithIndex if slot != null //&& GameRegistry.findUniqueIdentifierFor(slot.getItem).toString.equals(s"$mod:$name")
-                        } yield (i, j)
-
-                        val toSlots = for{
-                          (inventory, i) <- toInventories.zipWithIndex
-                          fromSlot <- fromSlots.map{case (i,j) => fromInventories(i).getStackInSlot(j)}
-                          (slot, j) <- inventory.toList.zipWithIndex if slot == null || slot.isItemEqual(fromSlot) && slot.getMaxStackSize < slot.stackSize
-                        } yield (i,j)
-                        println(toSlots)
-
-                        if(fromSlots.nonEmpty && toSlots.nonEmpty){
-                          val (fromInvIndex, fromSlotIndex) = fromSlots.head
-                          val fromStack = fromInventories(fromInvIndex).getStackInSlot(fromSlotIndex)
-                          val (toInvIndex, toSlotIndex) = toSlots.head
-                          val toStack = if(toInventories(toInvIndex).getStackInSlot(toSlotIndex) == null) new ItemStack(fromStack.getItem, 0) else toInventories(toInvIndex).getStackInSlot(toSlotIndex)
-                          val maxItems = toStack.getMaxStackSize - toStack.stackSize
-
-                          val transferredItemCount = Math.min(maxItems, fromStack.stackSize)
-                          fromStack.stackSize -= transferredItemCount
-                          toStack.stackSize += transferredItemCount
-                          toInventories(toInvIndex).setInventorySlotContents(toSlotIndex, toStack)
-                          if(fromStack.stackSize == 0){
-                            fromInventories(fromInvIndex).setInventorySlotContents(fromSlotIndex, null)
-                          }
-                        }
-                        */
                       }
                     }
                   }
@@ -155,13 +133,50 @@ trait TileLogistic extends TileEntityMod{
   }
 
   def passesFromFilter(inventory:IInventory, stackIndex:Int, filter:MMap[String, StackValue]):Boolean = {
-
-
-
-    true
+    val stack = inventory.getStackInSlot(stackIndex)
+    if(inventory.isInstanceOf[ISidedInventory]){
+      val iSidedInventory = inventory.asInstanceOf[ISidedInventory]
+      val validFacing = for{
+        ListValue(sides) <- filter.get("sides")
+        ListValue(items) <- filter.get("items") if items.isEmpty || items.exists(v => matchesItemFilter(stack, v))
+        Some(facing) <- (if(sides.isEmpty) directions.keys.map(StringValue) else sides).collectFirst{
+          case StringValue(s) => directions.get(s)
+          case _ => None
+        } if iSidedInventory.getSlotsForFace(facing).contains(stackIndex) && iSidedInventory.canExtractItem(stackIndex, inventory.getStackInSlot(stackIndex), facing)
+      } yield facing
+      validFacing.isDefined
+    } else{
+      (for{ListValue(items) <- filter.get("items")} yield items.isEmpty || items.exists(v => matchesItemFilter(stack, v))).getOrElse(false)
+    }
   }
 
-  def passesToFilter(inventory:IInventory, stackIndex:Int, filter:MMap[String, StackValue]):Boolean = {
-    true
+  def matchesItemFilter(stack:ItemStack, value:StackValue): Boolean ={
+    (value match{
+      case ObjectValue(mapping) => for{
+        StringValue(mod) <- mapping.get("mod")
+        StringValue(name) <- mapping.get("name")
+      } yield {
+          stack.getItem.equals(Item.getByNameOrId(s"$mod:$name"))
+        }
+      case other => None
+    }).getOrElse(false)
+  }
+
+  def passesToFilter(fromStack:ItemStack, inventory:IInventory, stackIndex:Int, filter:MMap[String, StackValue]):Boolean = {
+    inventory match{
+      case inventory:ISidedInventory => {
+        val validFacing = for {
+          ListValue(sides) <- filter.get("sides")
+          ListValue(items) <- filter.get("items") if items.isEmpty || items.exists(v => matchesItemFilter(fromStack, v))
+          facing <- (if (sides.isEmpty) directions.values else for{StringValue(s) <- sides; facing <- directions.get(s)} yield facing).find{ facing =>
+            inventory.getSlotsForFace(facing).contains(stackIndex) && inventory.canInsertItem(stackIndex, fromStack, facing)
+          }
+        } yield facing
+        validFacing.isDefined
+      }
+      case _ => {
+        (for{ListValue(items) <- filter.get("items")} yield items.isEmpty || items.exists(v => matchesItemFilter(fromStack, v))).getOrElse(false)
+      }
+    }
   }
 }

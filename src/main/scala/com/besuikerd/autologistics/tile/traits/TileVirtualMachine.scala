@@ -20,12 +20,12 @@ trait TileVirtualMachine extends TileEntityMod
   virtualMachine.addNative("say", nativeSay)
 
   def nativePrint(values:List[StackValue]): StackValue = {
-    values.foreach(print)
+    values.foreach(x => print(x.stringRepresentation))
     NilValue
   }
 
   def nativePrintln(values:List[StackValue]): StackValue = {
-    values.foreach(println)
+    values.foreach(x => println(x.stringRepresentation))
     NilValue
   }
 

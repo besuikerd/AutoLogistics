@@ -8,3 +8,4 @@ gradle/
 *.iws
 gradlew
 gradlew.bat
+logs/

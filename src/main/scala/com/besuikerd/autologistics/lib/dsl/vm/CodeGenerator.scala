@@ -43,7 +43,6 @@ object CodeGenerator {
       val statements = body.flatMap(generate)
       if(statements.nonEmpty){
         val(xs, x) = (statements.init, statements.last)
-        println("last in block: " + x)
         val fixedStatements = if(x equals Pop) xs else statements :+ Push(NilValue)
         OpenScope +: fixedStatements :+ CloseScope
       } else List(Push(NilValue))
@@ -72,7 +71,7 @@ object CodeGenerator {
     case Or(e1, _, e2) => generate(e1) ++ generate(e2) :+ OrInstruction
 
     case ObjectExpression(mapping) => mapping.values.flatMap(generate).toList :+ PushObject(mapping.keys.toList.reverse)
-    case ObjectFieldExpression(exp, bindings) => generate(exp) :+ Select(bindings)
+    case ObjectFieldExpression(exp, bindings) => generate(IndexExpression(exp, bindings.map(StringLiteral)))
     case ListExpression(values) => values.reverse.flatMap(generate) :+ PushList(values.length)
     case IndexExpression(exp, indexes) => {
       val getIndexes = indexes.flatMap{e => generate(e) :+ GetField}

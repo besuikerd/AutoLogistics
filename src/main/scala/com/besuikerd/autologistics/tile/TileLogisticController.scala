@@ -33,10 +33,12 @@ class TileLogisticController extends TileEntityMod
       |chest = <minecraft:chest>
       |tchest = <minecraft:trapped_chest>
       |furnace = <minecraft:furnace>
-      |
+      |coal = <minecraft:coal>
+      |log = <minecraft:log>
       |while(true) {
-      | chest >> furnace
-      | furnace >> tchest
+      | chest@[coal] >> furnace@[north]
+      | chest@[log] >> furnace@[up]
+      | furnace@[down] >> chest
       |}
     """.stripMargin
 
@@ -44,7 +46,7 @@ class TileLogisticController extends TileEntityMod
 
   override def update(): Unit = {
     if(!virtualMachine.isTerminated()){
-      virtualMachine.run(1)
+      virtualMachine.run(5)
     } else if(virtualMachine.isErrorState()){
       println(virtualMachine.instructions.top)
     }

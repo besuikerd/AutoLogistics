@@ -14,12 +14,18 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
     case mod ~ name => Application("_getItem", List(StringLiteral(mod), StringLiteral(name)))
   }
 
-  lazy val filtered:Parser[Expression] = referrable ~ ("[" ~> repsepSplit((ident <~ "=") ~ expression, expression, ",")  <~ "]") ^^ {
+  lazy val filtered:Parser[Expression] = referrable ~ ("@" ~> listExp) ^^ {
+    case e ~ filter => Application("_itemFilter", List(e, filter))
+  }
+
+  /*
+  lazy val filtered:Parser[Expression] = referrable ~  ("[" ~> repsepSplit((ident <~ "=") ~ expression, expression, ",")  <~ "]") ^^ {
     case expr ~ ((a,b)) => {
       val as = a.map{case a~b => (a,b)}.toMap
       Application("_itemFilter", expr :: ObjectExpression(as) :: b)
     }
   }
+  */
 
   lazy val coordinate = "(" ~> integer ~ ("," ~> integer) ~ ("," ~> integer)  <~ ")"
 
