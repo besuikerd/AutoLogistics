@@ -2,6 +2,7 @@ package com.besuikerd.autologistics.core.dsl
 
 import com.besuikerd.autologistics.lib.dsl._
 import com.besuikerd.autologistics.lib.dsl.parser._
+import com.besuikerd.autologistics.lib.dsl.vm.NaturalNumber
 
 object AutoLogisticsParser extends DSLParser
   with AutoLogisticsParserExtensions
@@ -10,8 +11,8 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
   with ParserImplicits
 { this: DSLParser =>
 
-  lazy val itemRef:Parser[Expression] = ("<" ~> ident <~ ":") ~ (ident <~ ">") ^^ {
-    case mod ~ name => Application("_getItem", List(StringLiteral(mod), StringLiteral(name)))
+  lazy val itemRef:Parser[Expression] = ("<" ~> ident <~ ":") ~ ident ~ ((":" ~> naturalNumber).? <~ ">") ^^ {
+    case mod ~ name ~ meta => Application("_getItem", List(StringLiteral(mod), StringLiteral(name), meta.getOrElse(NaturalNumberConstant(-1))))
   }
 
   lazy val filtered:Parser[Expression] = referrable ~ ("@" ~> listExp) ^^ {

@@ -30,17 +30,20 @@ trait TileLogistic extends TileEntityMod{
   directions.keys.foreach(dir => virtualMachine.globals.put(dir, StringValue(dir)))
 
   def nativeGetItem(values:List[StackValue]): StackValue = {
-    checkArgCount(values, 2)
-    val (mod :: xs) = values
-    val (name :: _) = xs
-    ObjectValue(MMap(
-      "filter" -> ObjectValue(MMap(
-        "sides" -> ListValue(),
-        "items" -> ListValue()
-      )),
-      "mod" -> mod,
-      "name" -> name
-    ))
+    values match{
+      case List(mod:StringValue, name:StringValue, meta:NaturalNumber, _*) =>{
+        ObjectValue(MMap(
+          "filter" -> ObjectValue(MMap(
+            "sides" -> ListValue(),
+            "items" -> ListValue()
+          )),
+          "mod" -> mod,
+          "name" -> name,
+          "meta" -> meta
+        ))
+      }
+      case otherwise => throw NativeFunctionException(s"Wrong arguments for item filter")
+    }
   }
 
   def nativeItemFilter(values:List[StackValue]): StackValue = {
@@ -73,24 +76,26 @@ trait TileLogistic extends TileEntityMod{
     itemFrom match{
       case ObjectValue(fromMapping) => {
         val fromSuccess = for {
-          StringValue(mod) <- fromMapping.get("mod")
-          StringValue(name) <- fromMapping.get("name")
+          StringValue(fromMod) <- fromMapping.get("mod")
+          StringValue(fromName) <- fromMapping.get("name")
+          NaturalNumber(fromMeta) <- fromMapping.get("meta")
           ObjectValue(fromFilter) <- fromMapping.get("filter")
         } yield {
-            val fromBlock = Block.getBlockFromName(mod + ":" + name)
+            val fromBlock = Block.getBlockFromName(fromMod + ":" + fromName)
             if (fromBlock == null) {
-              throw new NativeFunctionException(s"Could not find block $mod:$name")
+              throw new NativeFunctionException(s"Could not find block $fromMod:$fromName")
             } else {
               itemTo match {
                 case ObjectValue(toMapping) => {
                   val toSuccess = for {
-                    StringValue(mod) <- toMapping.get("mod")
-                    StringValue(name) <- toMapping.get("name")
+                    StringValue(toMod) <- toMapping.get("mod")
+                    StringValue(toName) <- toMapping.get("name")
+                    NaturalNumber(toMeta) <- toMapping.get("meta")
                     ObjectValue(toFilter) <- toMapping.get("filter")
                   } yield {
-                    val toBlock = Block.getBlockFromName(mod + ":" + name)
+                    val toBlock = Block.getBlockFromName(toMod + ":" + toName)
                     if(toBlock == null){
-                      throw new NativeFunctionException(s"Could not find block $mod:$name")
+                      throw new NativeFunctionException(s"Could not find block $toMod:$toName")
                     } else{
                       val inventories = findInventories
                       val fromInventories = inventories.filter(_.getBlockType.equals(fromBlock))
@@ -111,7 +116,6 @@ trait TileLogistic extends TileEntityMod{
                           fromStack.stackSize -= transferredItemCount
                           toStack.stackSize += transferredItemCount
 
-
                           toInventories(toInvIndex).setInventorySlotContents(toStackIndex, toStack)
                           if(fromStack.stackSize == 0){
                             fromInventories(fromInvIndex).setInventorySlotContents(fromStackIndex, null)
@@ -131,6 +135,8 @@ trait TileLogistic extends TileEntityMod{
     }
     itemTo
   }
+
+  def matchesMetadata(stack:ItemStack, meta:Int) = meta == -1 || stack.getMetadata == meta
 
   def passesFromFilter(inventory:IInventory, stackIndex:Int, filter:MMap[String, StackValue]):Boolean = {
     val stack = inventory.getStackInSlot(stackIndex)
@@ -155,8 +161,9 @@ trait TileLogistic extends TileEntityMod{
       case ObjectValue(mapping) => for{
         StringValue(mod) <- mapping.get("mod")
         StringValue(name) <- mapping.get("name")
+        NaturalNumber(meta) <- mapping.get("meta")
       } yield {
-          stack.getItem.equals(Item.getByNameOrId(s"$mod:$name"))
+          stack.getItem.equals(Item.getByNameOrId(s"$mod:$name")) && matchesMetadata(stack, meta)
         }
       case other => None
     }).getOrElse(false)

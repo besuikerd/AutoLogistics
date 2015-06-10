@@ -14,7 +14,6 @@ trait TileCable extends TileEntityMod{
   def findInventories: IndexedSeq[TileEntity with IInventory] = findConnectedTiles[IInventory].map{
     case t:TileEntityChest if t.getBlockType.isInstanceOf[BlockChest] => {
       val blockChest = t.getBlockType.asInstanceOf[BlockChest]
-
       val inv = blockChest.getLockableContainer(t.getWorld, t.getPos)
       new TileEntity with TileWrapper with IInventoryWrapper{
         val tile = t
