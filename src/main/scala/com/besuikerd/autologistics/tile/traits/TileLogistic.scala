@@ -104,8 +104,6 @@ trait TileLogistic extends TileEntityMod{
         val maxItems = toStack.getMaxStackSize - toStack.stackSize
         val transferredItemCount = Array(maxItems, fromStack.stackSize, toLimit, fromLimit).min
         fromStack.stackSize -= transferredItemCount
-        println("toLimit: " + toLimit)
-        println("fromLimit: " + fromLimit)
         toStack.stackSize += transferredItemCount
         toInventories(toInvIndex).setInventorySlotContents(toStackIndex, toStack)
         if(fromStack.stackSize == 0){
@@ -183,9 +181,6 @@ trait TileLogistic extends TileEntityMod{
         NaturalNumber(meta) <- mapping.get("meta")
       } yield {
           val itemMatch = if(mod.equals("ore")){
-
-            println(OreDictionary.itemMatches(OreDictionary.getOres(name).get(0), stack, false))
-            println(OreDictionary.getOres(name).iterator.exists {s => OreDictionary.itemMatches(s, stack, false)})
             OreDictionary.getOres(name).iterator.exists {s => OreDictionary.itemMatches(s, stack, false)}
 
           } else {
@@ -224,8 +219,9 @@ trait TileLogistic extends TileEntityMod{
   def passesAmount(stack:ItemStack, filter:MMap[String, StackValue], slots:Array[Int], inventory: IInventory, diffFunction: (Int, Int) => Int): Int = {
     val optPass = for{
       NaturalNumber(amount) <- filter.get("amount")
+      ListValue(items) <- filter.get("items")
     } yield {
-        val count = slots.map(inventory.getStackInSlot).filter(s => s != null && s.isItemEqual(stack)).foldRight(0)(_.stackSize + _)
+        val count = slots.map(inventory.getStackInSlot).filter(s => s != null && (items.isEmpty || items.exists(i => matchesItemFilter(s, i)))).foldRight(0)(_.stackSize + _)
         diffFunction(count, amount)
       }
     optPass.getOrElse(stack.getMaxStackSize)
