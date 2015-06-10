@@ -13,32 +13,26 @@ class TileLogisticController extends TileEntityMod
   with IUpdatePlayerListBox
 {
 
-  val temp_program =
-    """
-      |charcoal = <minecraft:charcoal>
-      |chest = <minecraft:chest>
-      |wood = <minecraft:oak_wood>
-      |tchest = <minecraft:trapped_chest>
-      |furnace = <minecraft:furnace>
-      |
-      |while(true){
-      |  chest[wood] >> furnace[top]
-      |  tchest >> furnace[bottom, charcoal, 10]
-      |  furnace[charcoal] >> chest
-      |}
-    """.stripMargin
+//  val simpleProgram =
+//    """
+//      |chestWood = ~(2, 0, 0)
+//      |chestCharcoal = ~(2, 1, 0)
+//      |furnace = <minecraft:furnace>
+//      |charcoal = <minecraft:coal:1>
+//      |log = <ore:logWood>
+//      |while(true) {
+//      |  chestWood >> furnace@[up]
+//      |  chestCharcoal >> furnace@[north, 1]
+//      |  furnace@[down, charcoal] >> chestCharcoal
+//      |}
+//    """.stripMargin
 
   val simpleProgram =
     """
-      |chest = <minecraft:chest>
-      |tchest = <minecraft:trapped_chest>
-      |furnace = (585, 62, -151)
-      |charcoal = <minecraft:coal:1>
-      |log = <ore:logWood>
-      |while(true) {
-      | chest@[charcoal] >> furnace@[north]
-      | chest@[log] >> furnace@[up]
-      | furnace@[down] >> chest
+      |fst = ~(-2, 0, 0)
+      |snd = ~(2, 0, 0)
+      |while(true){
+      |  fst@[32] >> snd
       |}
     """.stripMargin
 
@@ -50,6 +44,5 @@ class TileLogisticController extends TileEntityMod
     } else if(virtualMachine.isErrorState()){
       println(virtualMachine.instructions.top)
     }
-
   }
 }

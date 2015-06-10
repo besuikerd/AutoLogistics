@@ -19,15 +19,6 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
     case e ~ filter => Application("_itemFilter", List(e, filter))
   }
 
-  /*
-  lazy val filtered:Parser[Expression] = referrable ~  ("[" ~> repsepSplit((ident <~ "=") ~ expression, expression, ",")  <~ "]") ^^ {
-    case expr ~ ((a,b)) => {
-      val as = a.map{case a~b => (a,b)}.toMap
-      Application("_itemFilter", expr :: ObjectExpression(as) :: b)
-    }
-  }
-  */
-
   lazy val coordinate = "(" ~> integer ~ ("," ~> integer) ~ ("," ~> integer)  <~ ")"
 
   lazy val relativeCoordinate = "~" ~> coordinate ^^ {
@@ -47,7 +38,6 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
       "z" -> NaturalNumberConstant(z)
     ))
   }
-
 
   override def operands:Seq[Parser[Expression]] = Seq(relativeCoordinate, absCoordinate, itemRef, filtered) ++ super.operands
   override def binaryOperators:Map[Int, Seq[(String, (Expression, String, Expression) => Expression)]] = super.binaryOperators ++ Map(
