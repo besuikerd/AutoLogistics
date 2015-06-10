@@ -1,15 +1,32 @@
 package com.besuikerd.autologistics.tile.traits
 
+import com.besuikerd.autologistics.lib.inventory.IInventoryWrapper
 import com.besuikerd.autologistics.tile._
+import net.minecraft.block.BlockChest
 import net.minecraft.inventory.IInventory
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.tileentity.{TileEntityChest, TileEntity}
 import net.minecraft.world.IBlockAccess
 
 import scala.collection.mutable.{Set => MSet}
 import scala.reflect._
 
 trait TileCable extends TileEntityMod{
-  def findInventories: IndexedSeq[TileEntity with IInventory] = findConnectedTiles[IInventory]
+  def findInventories: IndexedSeq[TileEntity with IInventory] = findConnectedTiles[IInventory].map{
+    case t:TileEntityChest if t.getBlockType.isInstanceOf[BlockChest] => {
+      val blockChest = t.getBlockType.asInstanceOf[BlockChest]
+
+      val inv = blockChest.getLockableContainer(t.getWorld, t.getPos)
+      new TileEntity with TileWrapper with IInventoryWrapper{
+        val tile = t
+        val inventory = inv
+
+        override def markDirty(): Unit = {
+          tile.markDirty()
+        }
+      }
+    }
+    case otherwise => otherwise
+  }
 
 
   def findConnectedTiles[A:ClassTag]: IndexedSeq[TileEntity with A] = {

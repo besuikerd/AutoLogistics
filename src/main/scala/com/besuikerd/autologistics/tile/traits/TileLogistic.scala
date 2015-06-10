@@ -134,19 +134,19 @@ trait TileLogistic extends TileEntityMod{
 
   def passesFromFilter(inventory:IInventory, stackIndex:Int, filter:MMap[String, StackValue]):Boolean = {
     val stack = inventory.getStackInSlot(stackIndex)
-    if(inventory.isInstanceOf[ISidedInventory]){
-      val iSidedInventory = inventory.asInstanceOf[ISidedInventory]
-      val validFacing = for{
-        ListValue(sides) <- filter.get("sides")
-        ListValue(items) <- filter.get("items") if items.isEmpty || items.exists(v => matchesItemFilter(stack, v))
-        Some(facing) <- (if(sides.isEmpty) directions.keys.map(StringValue) else sides).collectFirst{
-          case StringValue(s) => directions.get(s)
-          case _ => None
-        } if iSidedInventory.getSlotsForFace(facing).contains(stackIndex) && iSidedInventory.canExtractItem(stackIndex, inventory.getStackInSlot(stackIndex), facing)
-      } yield facing
-      validFacing.isDefined
-    } else{
-      (for{ListValue(items) <- filter.get("items")} yield items.isEmpty || items.exists(v => matchesItemFilter(stack, v))).getOrElse(false)
+    inventory match{
+      case inventory:ISidedInventory => {
+        val iSidedInventory = inventory.asInstanceOf[ISidedInventory]
+        val validFacing = for{
+          ListValue(sides) <- filter.get("sides")
+          ListValue(items) <- filter.get("items") if items.isEmpty || items.exists(v => matchesItemFilter(stack, v))
+          facing <- (if (sides.isEmpty) directions.values else for{StringValue(s) <- sides; facing <- directions.get(s)} yield facing).find{ facing =>
+            inventory.getSlotsForFace(facing).contains(stackIndex) && inventory.canExtractItem(stackIndex, stack, facing)
+          }
+        } yield facing
+        validFacing.isDefined
+      }
+      case inventory => (for{ListValue(items) <- filter.get("items")} yield items.isEmpty || items.exists(v => matchesItemFilter(stack, v))).getOrElse(false)
     }
   }
 
