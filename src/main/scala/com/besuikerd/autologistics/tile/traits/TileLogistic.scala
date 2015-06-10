@@ -8,7 +8,9 @@ import net.minecraft.item.{ItemStack, ItemBlock, Item}
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraft.block.Block
+import net.minecraftforge.oredict.OreDictionary
 import scala.collection.mutable.{Map => MMap, ArrayBuffer}
+import scala.collection.JavaConversions._
 
 trait TileLogistic extends TileEntityMod{
   this: TileEntityMod
@@ -115,7 +117,6 @@ trait TileLogistic extends TileEntityMod{
                           val transferredItemCount = Math.min(maxItems, fromStack.stackSize)
                           fromStack.stackSize -= transferredItemCount
                           toStack.stackSize += transferredItemCount
-
                           toInventories(toInvIndex).setInventorySlotContents(toStackIndex, toStack)
                           if(fromStack.stackSize == 0){
                             fromInventories(fromInvIndex).setInventorySlotContents(fromStackIndex, null)
@@ -163,7 +164,16 @@ trait TileLogistic extends TileEntityMod{
         StringValue(name) <- mapping.get("name")
         NaturalNumber(meta) <- mapping.get("meta")
       } yield {
-          stack.getItem.equals(Item.getByNameOrId(s"$mod:$name")) && matchesMetadata(stack, meta)
+          val itemMatch = if(mod.equals("ore")){
+
+            println(OreDictionary.itemMatches(OreDictionary.getOres(name).get(0), stack, false))
+            println(OreDictionary.getOres(name).iterator.exists {s => OreDictionary.itemMatches(s, stack, false)})
+            OreDictionary.getOres(name).iterator.exists {s => OreDictionary.itemMatches(s, stack, false)}
+
+          } else {
+            stack.getItem.equals(Item.getByNameOrId(s"$mod:$name"))
+          }
+          itemMatch && matchesMetadata(stack, meta)
         }
       case other => None
     }).getOrElse(false)
