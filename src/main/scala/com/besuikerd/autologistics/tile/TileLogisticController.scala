@@ -32,14 +32,13 @@ class TileLogisticController extends TileEntityMod
     """
       |chest = <minecraft:chest>
       |tchest = <minecraft:trapped_chest>
-      |furnace = <minecraft:furnace>
+      |furnace = (585, 62, -151)
       |charcoal = <minecraft:coal:1>
-      |log = <ore:oreIron>
+      |log = <ore:logWood>
       |while(true) {
       | chest@[charcoal] >> furnace@[north]
       | chest@[log] >> furnace@[up]
       | furnace@[down] >> chest
-      |
       |}
     """.stripMargin
 

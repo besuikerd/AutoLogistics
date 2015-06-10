@@ -121,8 +121,9 @@ with ParsingSpec
 
     val program =
       """
-        |print("value: ")
-        |println((<minecraft:chest>)@[north])
+        |x = ~(1,2,3)
+        |filtered = x@[north]
+        |println(filtered)
       """.stripMargin
 
     parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ statements =>
