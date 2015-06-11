@@ -7,6 +7,8 @@ import scala.util.control.Breaks._
 
 
 class VirtualMachine {
+  import VirtualMachine._
+
 
   val stack = Stack[StackValue]()
   val scopes = Stack[Closure]()
@@ -14,10 +16,12 @@ class VirtualMachine {
 
   val globals = MMap[String, StackValue]()
 
+  val natives = MMap[String, NativeFunction]()
+
   load(Nil)
 
-  def addNative(name:String, f:List[StackValue] => StackValue):Unit = {
-    globals.put(name, NativeFunction(name, f))
+  def addNative(name:String, f:NativeFunction):Unit = {
+    natives.put(name, f)
   }
 
   def addNativePartial(name:String)(f:List[StackValue] => StackValue):Unit = {
@@ -54,11 +58,15 @@ class VirtualMachine {
     instructions ::= program
   }
 
-  def get(name:String):Option[StackValue] = scopes.map(_.free.get(name)).find(_.isDefined) match{
-    case Some(Some(value)) => Some(value)
-    case Some(None) => None
-    case None => None
-  }
+//  def get(name:String):Option[StackValue] = scopes.map(_.free.get(name)).find(_.isDefined) match{
+//    case Some(Some(value)) => Some(value)
+//    case Some(None) => None
+//    case None => None
+//  }
+
+  def get(name:String):Option[StackValue] = scopes.map(_.free.get(name)).collectFirst {
+    case Some(value) => value
+  }.orElse(natives.get(name).map(_ => NativeFunctionValue(name)))
 
   def openScope():Unit = openScope(Closure(List(), MMap(), List()))
   def openScope(closure:Closure) = scopes.push(closure)
@@ -66,6 +74,10 @@ class VirtualMachine {
   def pop() = stack.pop()
   def push(value:StackValue) = stack.push(value)
   def crash(msg:String) = instructions.push(Crash(msg))
+}
+
+object VirtualMachine{
+  type NativeFunction = List[StackValue] => StackValue
 }
 
 trait Instruction{
@@ -96,11 +108,14 @@ case class Get(s:String) extends DefaultInstruction(machine =>{
 case class Call(argCount:Int) extends DefaultInstruction(machine => {
   val args = (for(_ <- 0 until argCount) yield machine.pop()).toList.reverse
   machine.pop() match{
-    case NativeFunction(name, f) => {
-      try{
-        machine.push(f(args))
-      } catch{
-        case NativeFunctionException(e) => machine.crash(e)
+    case NativeFunctionValue(name) => {
+      machine.natives.get(name) match{
+        case Some(f) => try{
+          machine.push(f(args))
+        } catch{
+          case NativeFunctionException(e) => machine.crash(e)
+        }
+        case _ => machine.crash(s"native function not found: $name")
       }
     }
 
@@ -343,9 +358,5 @@ object ListValue{
 
 case class Closure(bindings: List[String], free:MMap[String, StackValue], body:List[Instruction]) extends StackValue{override def stringRepresentation = "Closure"}
 
-case class NativeObject(obj: Any) extends StackValue{
-  override def stringRepresentation: String = obj.toString()
-}
-
-case class NativeFunction(name:String, f:List[StackValue] => StackValue) extends StackValue{override def stringRepresentation = s"<$name>"}
+case class NativeFunctionValue(name:String) extends StackValue{override def stringRepresentation = s"<$name>"}
 case class NativeFunctionException(msg:String) extends RuntimeException(msg)

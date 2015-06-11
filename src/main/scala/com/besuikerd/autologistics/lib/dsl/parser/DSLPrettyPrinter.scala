@@ -33,6 +33,11 @@ object DSLPrettyPrinter{
           |${statements.map(prettifyLS(_, level + 1)).mkString("\n")}
           |$tabs}
         """.stripMargin
+      case ListExpression(exps) =>
+        s"""${tabs}List[
+           |${exps.map(prettifyLevelled(_, level + 1)).mkString("\n")}
+           |$tabs]
+         """.stripMargin
       case x => tabs ++ x.toString
     }
   }
@@ -58,6 +63,12 @@ object DSLPrettyPrinter{
            |${prettifyLevelled(obj, level + 1)}
            |$tabs${fields.mkString("\n")}
            |${prettifyLevelled(binding, level + 1)}
+           |$tabs)
+         """.stripMargin
+      case WhileStatement(pred, e) =>
+        s"""${tabs}WhileStatement(
+           |${prettifyLevelled(pred, level + 1)}
+           |${prettifyLS(e, level + 1)}
            |$tabs)
          """.stripMargin
       case other => tabs ++ other.toString
