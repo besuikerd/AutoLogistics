@@ -8,6 +8,7 @@ import com.besuikerd.autologistics.lib.dsl.vm.CodeGenerator
 import com.besuikerd.autologistics.lib.dsl.vm._
 import com.besuikerd.autologistics.tile.TileEntityMod
 import com.besuikerd.autologistics.tile.traits.{TileCable, TileLogistic, TileVirtualMachine}
+import net.minecraft.nbt.NBTTagCompound
 import org.scalatest.{FlatSpec, Inside, Matchers}
 import com.besuikerd.autologistics.lib.dsl.parser._
 import scala.collection.mutable.{Map => MMap}
@@ -129,8 +130,12 @@ with ParsingSpec
       val code = CodeGenerator.generate(statements)
       vm.load(code)
 
-      vm.run(10000)
+      vm.run(5)
 
+      val tag = new NBTTagCompound()
+      tile.writeVMToNBT(tag)
+
+      println(tag)
 
       println("scopes: " + vm.scopes)
       println("instructions: " + vm.instructions)

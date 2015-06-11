@@ -52,8 +52,6 @@ class VirtualMachine {
     //push empty global closure on the stack
     scopes.push(Closure(List(), globals, program.reverse))
 
-    println(globals)
-
     instructions.clear()
     instructions ::= program
   }
@@ -249,7 +247,7 @@ object PutField extends DefaultInstruction(machine => {
     case (otherVal, _, otherIndex) => machine.crash(s"cannot put field $otherIndex to $otherVal")
   }
 })
-
+/*
 case class GetIndex(level:Int) extends DefaultInstruction(machine => {
   machine.pop() match{
     case obj@ObjectValue(bindings) => {
@@ -290,6 +288,7 @@ case class GetIndex(level:Int) extends DefaultInstruction(machine => {
     case other => machine.crash(s"cannot get index for $other")
   }
 })
+*/
 
 case class Load(instructions:List[Instruction]) extends DefaultInstruction(machine => {
   machine.instructions ::= instructions
