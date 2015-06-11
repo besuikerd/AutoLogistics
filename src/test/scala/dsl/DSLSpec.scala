@@ -45,13 +45,6 @@ with ParsingSpec
 
     val program =
       """
-        |x = {
-        | bla = {
-        |   list = [1,2,3]
-        | }
-        |}
-        |y = x.bla.list[1]
-        |println(y)
       """.stripMargin
 
 
@@ -121,9 +114,9 @@ with ParsingSpec
 
     val program =
       """
-        |x = ~(1,2,3)
-        |filtered = x@[north]
-        |println(filtered)
+        |  fac = \n -> if(n == 0) 1 else fac(n - 1) * n
+        |  fac5 = fac(5)
+        |  println(fac5)
       """.stripMargin
 
     parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ statements =>

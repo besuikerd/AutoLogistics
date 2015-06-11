@@ -235,19 +235,6 @@ object PutField extends DefaultInstruction(machine => {
   }
 })
 
-
-case class UpdateIndex(level:Int) extends DefaultInstruction(machine => {
-  machine.pop() match{
-    case ObjectValue(bindings) => {
-
-    }
-    case ListValue(bindings) => {
-
-    }
-    case other => machine.crash(s"cannot update index for $other")
-  }
-})
-
 case class GetIndex(level:Int) extends DefaultInstruction(machine => {
   machine.pop() match{
     case obj@ObjectValue(bindings) => {

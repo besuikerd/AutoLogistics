@@ -15,6 +15,7 @@ trait TileVirtualMachine extends TileEntityMod
 {
   val virtualMachine = new VirtualMachine
 
+  virtualMachine.addNative("length", nativeLength)
   virtualMachine.addNative("print", nativePrint)
   virtualMachine.addNative("println", nativePrintln)
   virtualMachine.addNative("say", nativeSay)
@@ -34,6 +35,13 @@ trait TileVirtualMachine extends TileEntityMod
       values.foreach(value => x.asInstanceOf[EntityPlayerMP].addChatComponentMessage(new ChatComponentText(value.stringRepresentation)))
     })
     NilValue
+  }
+
+  def nativeLength(values:List[StackValue]): StackValue = {
+    values match {
+      case ListValue(list) :: _ => NaturalNumber(list.length)
+      case other => throw NativeFunctionException(s"cannot get length of $other")
+    }
   }
 
   def checkArgCount[A](values:List[A], n:Int): Unit ={

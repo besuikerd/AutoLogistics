@@ -1,2 +1,2 @@
-include ':StevesFactoryManager'
-project(':StevesFactoryManager').projectDir = new File(settingsDir, '../StevesFactoryManager')
+//include ':StevesFactoryManager'
+//project(':StevesFactoryManager').projectDir = new File(settingsDir, '../StevesFactoryManager')
