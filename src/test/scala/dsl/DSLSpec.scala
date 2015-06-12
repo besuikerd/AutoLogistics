@@ -155,7 +155,7 @@ with ParsingSpec
         |fst = ~(-2, 0, 0)
         |snd = ~(2, 0, 0)
         |while(true){
-        |  fst@[256] >> snd@[<minecraft:stone>, 64]
+        |  fst@[256] >> snd@[<north, minecraft:stone>, 64]
         |}
       """.stripMargin
 

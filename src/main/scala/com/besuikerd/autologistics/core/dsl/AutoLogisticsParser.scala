@@ -15,7 +15,7 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
     case mod ~ name ~ meta => Application("_getItem", List(StringLiteral(mod), StringLiteral(name), meta.getOrElse(NaturalNumberConstant(-1))))
   }
 
-  lazy val filtered:Parser[Expression] = referrable ~ ("@" ~> listExp | variable) ^^ {
+  lazy val filtered:Parser[Expression] = referrable ~ ("@" ~> listExp | referrable) ^^ {
     case e ~ filter => Application("_itemFilter", List(e, filter))
   }
 
