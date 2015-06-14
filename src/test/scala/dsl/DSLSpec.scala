@@ -1,16 +1,15 @@
 package dsl
 
-import com.besuikerd.autologistics.core.dsl.AutoLogisticsParser
-import com.besuikerd.autologistics.lib
-import com.besuikerd.autologistics.lib.dsl._
-import com.besuikerd.autologistics.lib.dsl.parser.{DSLPrettyPrinter, DSLParser, DSLParserPluginRegistry}
-import com.besuikerd.autologistics.lib.dsl.vm.CodeGenerator
-import com.besuikerd.autologistics.lib.dsl.vm._
-import com.besuikerd.autologistics.tile.TileEntityMod
-import com.besuikerd.autologistics.tile.traits.{TileCable, TileLogistic, TileVirtualMachine}
+import com.besuikerd.autologistics.common.lib
+import com.besuikerd.autologistics.common.lib.dsl._
+import com.besuikerd.autologistics.common.lib.dsl.parser.{DSLPrettyPrinter, DSLParser, DSLParserPluginRegistry}
+import com.besuikerd.autologistics.common.lib.dsl.vm.CodeGenerator
+import com.besuikerd.autologistics.common.lib.dsl.vm._
+import com.besuikerd.autologistics.common.tile.TileEntityMod
+import com.besuikerd.autologistics.common.tile.traits.{TileCable, TileLogistic, TileVirtualMachine}
 import net.minecraft.nbt.NBTTagCompound
 import org.scalatest.{FlatSpec, Inside, Matchers}
-import com.besuikerd.autologistics.lib.dsl.parser._
+import com.besuikerd.autologistics.common.lib.dsl.parser._
 import scala.collection.mutable.{Map => MMap}
 
 class DSLSpec extends FlatSpec
@@ -47,6 +46,7 @@ with ParsingSpec
     val program =
       """
       """.stripMargin
+
 
 
 
@@ -124,18 +124,19 @@ with ParsingSpec
       object tile extends TileEntityMod with TileVirtualMachine with TileCable with TileLogistic
       val vm = tile.virtualMachine
 
-      statements foreach println
+      statements foreach (x => println(DSLPrettyPrinter.prettify(x)))
 
 
       val code = CodeGenerator.generate(statements)
       vm.load(code)
 
       vm.run(5)
-
       val tag = new NBTTagCompound()
       tile.writeVMToNBT(tag)
-
+      tile.readVMFromNBT(tag)
       println(tag)
+
+      vm.run(1000)
 
       println("scopes: " + vm.scopes)
       println("instructions: " + vm.instructions)
@@ -153,9 +154,10 @@ with ParsingSpec
     val program =
       """
         |fst = ~(-2, 0, 0)
+        |
         |snd = ~(2, 0, 0)
         |while(true){
-        |  fst@[256] >> snd@[<north, minecraft:stone>, 64]
+        |  fst@[256] >> snd@[north, <minecraft:stone>, 64]
         |}
       """.stripMargin
 
