@@ -59,6 +59,8 @@ trait TileVirtualMachine extends TileEntityMod
 
   abstract override def readFromNBT(compound: NBTTagCompound): Unit = {
     super.readFromNBT(compound)
+    readVMFromNBT(compound)
+    println("read from nbt")
   }
 
   override def writeToNBT(compound: NBTTagCompound): Unit = {

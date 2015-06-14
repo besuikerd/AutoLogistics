@@ -16,8 +16,7 @@ object AutoLogistics {
 
 
   @SidedProxy(serverSide = "com.besuikerd.autologistics.common.CommonProxy", clientSide = "com.besuikerd.autologistics.client.ClientProxy")
-  private var _proxy:CommonProxy = null
-  def proxy = _proxy
+  var proxy:CommonProxy = null
 
   @EventHandler
   def init(event: FMLInitializationEvent): Unit = {

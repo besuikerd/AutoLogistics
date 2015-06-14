@@ -36,13 +36,25 @@ class TileLogisticController extends TileEntityMod
       |}
     """.stripMargin
 
-  load(simpleProgram)
+  val count =
+    """
+      |i = 0
+      |while(true){
+      |  i = i + 1
+      |  println(i)
+      |}
+    """.stripMargin
+
+  load(count)
 
   override def update(): Unit = {
+
     if(!virtualMachine.isTerminated()){
       virtualMachine.run(5)
     } else if(virtualMachine.isErrorState()){
       println(virtualMachine.instructions.top)
     }
+
+    markDirty()
   }
 }

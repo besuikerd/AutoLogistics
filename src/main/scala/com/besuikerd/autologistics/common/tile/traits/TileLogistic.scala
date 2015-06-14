@@ -104,11 +104,15 @@ trait TileLogistic extends TileEntityMod{
         val toStack = if(toInventories(toInvIndex).getStackInSlot(toStackIndex) == null) fromStack.splitStack(0) else toInventories(toInvIndex).getStackInSlot(toStackIndex)
         val maxItems = toStack.getMaxStackSize - toStack.stackSize
         val transferredItemCount = Array(maxItems, fromStack.stackSize, toLimit, fromLimit).min
-        fromStack.stackSize -= transferredItemCount
-        toStack.stackSize += transferredItemCount
-        toInventories(toInvIndex).setInventorySlotContents(toStackIndex, toStack)
-        if(fromStack.stackSize == 0){
-          fromInventories(fromInvIndex).setInventorySlotContents(fromStackIndex, null)
+        if(transferredItemCount > 0){
+          fromStack.stackSize -= transferredItemCount
+          toStack.stackSize += transferredItemCount
+          toInventories(toInvIndex).setInventorySlotContents(toStackIndex, toStack)
+          if(fromStack.stackSize == 0){
+            fromInventories(fromInvIndex).setInventorySlotContents(fromStackIndex, null)
+          }
+          fromInventories(fromInvIndex).markDirty()
+          toInventories(toInvIndex).markDirty()
         }
       }
     }
