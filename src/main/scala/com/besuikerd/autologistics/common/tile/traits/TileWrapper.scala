@@ -11,7 +11,7 @@ import net.minecraft.util.{AxisAlignedBB, BlockPos}
 import net.minecraft.world.World
 
 trait TileWrapper extends TileEntity{
-  val tile:TileEntity
+  def tile:TileEntity
 
   override def setWorldObj(worldIn: World): Unit = tile.setWorldObj(worldIn)
 

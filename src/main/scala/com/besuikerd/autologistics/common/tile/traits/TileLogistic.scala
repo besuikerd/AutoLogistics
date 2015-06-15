@@ -4,6 +4,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
 import com.besuikerd.autologistics.common.lib.inventory._
 import net.minecraft.inventory.{ISidedInventory, IInventory}
+import net.minecraft.item.crafting.CraftingManager
 import net.minecraft.item.{ItemStack, ItemBlock, Item}
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.{BlockPos, EnumFacing}
@@ -85,6 +86,74 @@ trait TileLogistic extends TileEntityMod{
     val itemFrom = values(0)
     val itemTo = values(1)
 
+    println(itemTo)
+
+    (itemFrom, itemTo) match {
+      case (oLeft@ObjectValue(left), oRight@ObjectValue(right)) if isMoveItemsType(left) && isMoveItemsType(right) => moveItems(oLeft, oRight)
+      case (oLeft@ObjectValue(left), lRight@ListValue(right)) if isMoveItemsType(left) && isCraftingRecipe(right) => craftFrom(oLeft, lRight)
+      case (oLeft@ObjectValue(left), oRight@ObjectValue(right)) if isCraftingInputResultType(left) && isMoveItemsType(right) => craftTo(oLeft, oRight)
+      case _ => {
+        println("NOPE")
+        itemTo
+      }
+    }
+  }
+
+  def isMoveItemsType(mapping:MMap[String, StackValue]) = mapping.contains("type") || mapping.contains("mod") && mapping.contains("name")
+  def isCraftingRecipe(list:ArrayBuffer[StackValue]) = {println("isCrafting"); list.length <= 3 && list.forall {
+    case ListValue(sublist) => sublist.length <= 3
+    case _ => false
+  }}
+  def isCraftingInputResultType(mapping:MMap[String, StackValue]) = mapping.contains("recipe") && mapping.contains("input")
+
+  def craftFrom (left:ObjectValue, right:ListValue):StackValue = {
+      ObjectValue(MMap[String, StackValue]() ++ Map(
+        "input" -> left,
+        "recipe" -> right
+      ))
+  }
+
+  def craftTo: (ObjectValue, ObjectValue) => StackValue = { case (ObjectValue(left), oRight@ObjectValue(right)) =>
+    println("craftTo")
+    for{
+      input @ ObjectValue(_) <- left.get("input")
+      ListValue(recipe) <- left.get("recipe")
+    } yield {
+      val allInventories = findInventories.map{
+        case t:TileEntity with ISidedInventory => DummyISidedInventory(t,t)
+        case t => DummyIInventory(t,t)
+      }
+
+      val slots = for{
+        (ListValue(row), i) <- recipe.zipWithIndex
+        (item@ObjectValue(mapping), j) <- row.zipWithIndex
+        ObjectValue(craftSlotFilter) <- mapping.get("filter")
+      } yield {
+          for{
+            (fromInventories, ObjectValue(fromFilter)) <-  getInventories(allInventories, input)
+            found <- (for{
+              (fromInv, fromInvIndex) <- fromInventories.view.zipWithIndex
+              (fromStack, fromStackIndex) <- fromInv.toIterable.zipWithIndex if fromStack != null
+              fromLimit <- passesFromFilter(fromInv, fromStackIndex, fromFilter).toList if fromLimit > 0
+              craftLimit <- passesFromFilter(fromInv, fromStackIndex, craftSlotFilter) if craftLimit > 0
+            } yield{
+
+                println(fromStackIndex)
+                fromInventories(fromInvIndex).decrStackSize(fromStackIndex, 1)
+                (fromInvIndex, fromStackIndex)
+            }).headOption
+          } yield found
+      }
+
+      if(slots.forall(_.isDefined)){
+        println("valid recipe!")
+      }
+
+    }
+    oRight
+  }
+
+  def moveItems(itemFrom:ObjectValue, itemTo:ObjectValue): StackValue = {
     val allInventories = findInventories
     for {
       (fromInventories, ObjectValue(fromFilter)) <- getInventories(allInventories, itemFrom) if fromInventories.nonEmpty
@@ -119,6 +188,7 @@ trait TileLogistic extends TileEntityMod{
     itemTo
   }
 
+
   def getInventories(allInventories:IndexedSeq[TileEntity with IInventory], item:StackValue):Option[(IndexedSeq[TileEntity with IInventory], ObjectValue)] = item match{
     case ObjectValue(mapping) => {
       val byName = for{
@@ -130,9 +200,10 @@ trait TileLogistic extends TileEntityMod{
         if(block == null){
           throw NativeFunctionException(s"Could not find block $mod:$name")
         }
+
+          println(name)
         (allInventories.filter(_.getBlockType.equals(block)), filter)
       }
-
       byName.orElse{
         for{
           StringValue(tpe) <- mapping.get("type")

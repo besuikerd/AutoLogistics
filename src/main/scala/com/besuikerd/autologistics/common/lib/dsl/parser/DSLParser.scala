@@ -36,18 +36,58 @@ trait DSLParser extends JavaTokenParsers
 
   lazy val expression:Parser[Expression] = binExp <~ newline.?
 
-  lazy val sortedBinaryOperators:Seq[Parser[(String, (Expression, String, Expression) => Expression)]] = binaryOperators.mapValues(_.map{case (op, f) => literal(op).map((_, f))}.reduceRight(_ | _)).toSeq.sortBy(-_._1).map(_._2) //reverse sorted to build up parser from the bottom
-  lazy val binExp = {
-    sortedBinaryOperators.foldRight(operand){ (cur, acc) =>
-      def next: Parser[Expression] = (acc ~ (cur ~ next).*) ^^ {
+  lazy val sortedBinaryOperators:List[Parser[(String, (Expression, String, Expression) => Expression)]] = binaryOperators.mapValues(_.map{case (op, f) => literal(op).map((_, f))}.reduceRight(_ | _)).toList.sortBy(-_._1).map(_._2) //reverse sorted to build up parser from the bottom
+
+  lazy val binExp:Parser[Expression] = {
+
+    /*def chain(list: List[Parser[(String, (Expression, String, Expression) => Expression)]]): Parser[Expression] = {
+
+      list match {
+        case x :: Nil => {
+          def next: Parser[Expression] = operand ~ (x ~ next).* ^^ {
+            case exp ~ List() => exp
+            case exp ~ xs => xs.foldLeft(exp) {
+              case (acc, op ~ exp) => {
+                println(exp)
+                op._2(acc, op._1, exp)
+              }
+            }
+          }
+          next
+        }
+        case x :: xs => {
+          def next: Parser[Expression] = chain(xs) ~ (x ~ next).* ^^ {
+            case exp ~ List() => exp
+            case exp ~ xs => xs.foldLeft(exp) {
+              case (acc, op ~ exp) => {
+                println(exp)
+                op._2(acc, op._1, exp)
+              }
+            }
+          }
+          next
+        }
+
+      }
+    }
+    chain(sortedBinaryOperators)
+  }*/
+
+
+      sortedBinaryOperators.foldRight(operand){case (cur, acc) =>
+      def next: Parser[Expression] = (acc ~ (cur ~ acc).*) ^^ {
         case exp ~ List() => exp
-        case exp ~ xs => xs.foldRight(exp) {
-          case (op ~ exp, acc) => op._2(acc, op._1, exp) //Application(VariableExpression(op), List(acc, exp))
+        case exp ~ xs => xs.foldLeft(exp) {
+          case (acc, op ~ exp) => {
+            println(exp)
+            op._2(acc, op._1, exp)
+          } //Application(VariableExpression(op), List(acc, exp))
         }
       }
       next
     }
   }
+
 
   lazy val statement: Parser[Statement] = statements.reduceRight(_ | _) <~ ";".?
   lazy val operand:Parser[Expression] = operands.reduceRight(_ | _)
@@ -112,7 +152,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
 
   lazy val objectField:Parser[ObjectFieldExpression] = referrable ~ ("." ~> ident).+ ^^ ObjectFieldExpression
 
-  lazy val listExp:Parser[ListExpression] = "[" ~> newline.* ~> repsep(expression, "," ~ newline.*) <~ "]" <~ newline.* ^^ ListExpression
+  lazy val listExp:Parser[ListExpression] = "[" ~> newline.* ~> repsep(expression, ",".? ~ newline.*) <~ "]" <~ newline.* ^^ ListExpression
 
   lazy val ifElse:Parser[IfElseExpression] = ("if" ~> "(" ~> expression <~ ")") ~ expression ~ ("else" ~> expression).? ^^ IfElseExpression
 

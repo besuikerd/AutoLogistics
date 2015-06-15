@@ -13,4 +13,6 @@ class ClientProxy extends CommonProxy{
     case Side.CLIENT => Minecraft.getMinecraft.thePlayer
     case Side.SERVER => super.getPlayer(ctx)
   }
+
+  override def getSide = Side.CLIENT
 }

@@ -1,10 +1,13 @@
 package com.besuikerd.autologistics.common.tile
 
+import com.besuikerd.autologistics.AutoLogistics
 import com.besuikerd.autologistics.common.tile.traits.{TileLogistic, TileVirtualMachine, TileCable}
 import net.minecraft.inventory.IInventory
 import net.minecraft.server.gui.IUpdatePlayerListBox
 import net.minecraft.tileentity.TileEntity
+import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.registry.GameRegistry
+import net.minecraftforge.fml.relauncher.Side
 
 class TileLogisticController extends TileEntityMod
   with TileVirtualMachine
@@ -12,7 +15,6 @@ class TileLogisticController extends TileEntityMod
   with TileCable
   with IUpdatePlayerListBox
 {
-
   val simpleProgram =
     """
       |chestWood = ~(2, 0, 0)
@@ -28,13 +30,24 @@ class TileLogisticController extends TileEntityMod
     """.stripMargin
 
   val simpleProgram2 =
-    """
-      |fst = ~(-2, 0, 0)
-      |snd = ~(2, 0, 0)
-      |while(true){
-      |  fst@[256] >> snd@[<minecraft:stone>, 64]
-      |}
-    """.stripMargin
+//    """
+//      |planks = <minecraft:planks>
+//      |input = ~(-2, 0, 0)
+//      |output = ~(2, 0, 0)
+//      |while(true){
+//      | input >> [
+//      |   [planks planks]
+//      |   [planks planks]
+//      | ] >> output
+//      |}
+//    """.stripMargin
+  """
+    |i = <minecraft:planks>
+    |recipe = [[i i] [i i]]
+    |in = ~(-2, 0, 0)
+    |out = ~(2, 0, 0)
+    |in >> recipe >> out
+  """.stripMargin
 
   val count =
     """
@@ -45,16 +58,22 @@ class TileLogisticController extends TileEntityMod
       |}
     """.stripMargin
 
-  load(count)
+  load(simpleProgram2)
 
   override def update(): Unit = {
-
-    if(!virtualMachine.isTerminated()){
-      virtualMachine.run(5)
-    } else if(virtualMachine.isErrorState()){
-      println(virtualMachine.instructions.top)
+    if(AutoLogistics.proxy.getSideOfThread == Side.SERVER) {
+      if (!virtualMachine.isTerminated()) {
+        try{
+          virtualMachine.run(5)
+        } catch{
+          case e:Exception => {
+            e.printStackTrace()
+            load(simpleProgram2)
+          }
+        }
+      } else if (virtualMachine.isErrorState()) {
+        println(virtualMachine.instructions.top)
+      }
     }
-
-    markDirty()
   }
 }

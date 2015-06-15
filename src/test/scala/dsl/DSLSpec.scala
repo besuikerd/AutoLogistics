@@ -45,6 +45,7 @@ with ParsingSpec
 
     val program =
       """
+         println(2 - 3 - 4)
       """.stripMargin
 
 
@@ -115,9 +116,19 @@ with ParsingSpec
 
     val program =
       """
-        |  fac = \n -> if(n == 0) 1 else fac(n - 1) * n
-        |  fac5 = fac(5)
-        |  println(fac5)
+        |wheat = <minecraft:wheat>
+        |egg = <minecraft:egg>
+        |sugar = <minecraft:sugar_cane>
+        |milk = <minecraft:milk_bucket>
+        |bucket = <minecraft:bucket>
+        |
+        |cake = [
+        |  [milk null milk]
+        |  [sugar egg sugar]
+        |  [wheat wheat wheat]
+        |]
+        |
+        |println(~(1,1,1) >> cake)
       """.stripMargin
 
     parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ statements =>
@@ -153,11 +164,14 @@ with ParsingSpec
   it should "successfully parse the following expressions" in {
     val program =
       """
-        |fst = ~(-2, 0, 0)
-        |
-        |snd = ~(2, 0, 0)
+        |planks = <minecraft:planks>
+        |input = ~(-2, 0, 0)
+        |output = ~(2, 0, 0)
         |while(true){
-        |  fst@[256] >> snd@[north, <minecraft:stone>, 64]
+        | input >> [
+        |   [planks planks]
+        |   [planks planks]
+        | ] >> output
         |}
       """.stripMargin
 

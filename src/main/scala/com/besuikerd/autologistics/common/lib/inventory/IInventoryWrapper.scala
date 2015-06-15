@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.util.IChatComponent
 
 trait IInventoryWrapper extends IInventory{
-  val inventory:IInventory
+  def inventory:IInventory
 
   override def closeInventory(player: EntityPlayer): Unit = inventory.closeInventory(player)
 

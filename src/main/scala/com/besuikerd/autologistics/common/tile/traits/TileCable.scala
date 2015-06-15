@@ -3,27 +3,41 @@ package com.besuikerd.autologistics.common.tile.traits
 import com.besuikerd.autologistics.common.lib.inventory.IInventoryWrapper
 import com.besuikerd.autologistics.common.tile._
 import net.minecraft.block.BlockChest
-import net.minecraft.inventory.IInventory
+import net.minecraft.inventory.{InventoryLargeChest, IInventory}
 import net.minecraft.tileentity.{TileEntityChest, TileEntity}
 
-import scala.collection.mutable.{Set => MSet}
+import scala.collection.mutable.{Set => MSet, ArrayBuffer}
 import scala.reflect._
 
 trait TileCable extends TileEntityMod{
-  def findInventories: IndexedSeq[TileEntity with IInventory] = findConnectedTiles[IInventory].map{
-    case t:TileEntityChest if t.getBlockType.isInstanceOf[BlockChest] => {
-      val blockChest = t.getBlockType.asInstanceOf[BlockChest]
-      val inv = blockChest.getLockableContainer(t.getWorld, t.getPos)
-      new TileEntity with TileWrapper with IInventoryWrapper{
-        val tile = t
-        val inventory = inv
-
-        override def markDirty(): Unit = {
-          tile.markDirty()
+  def findInventories: IndexedSeq[TileEntity with IInventory] = {
+    val foundInventories = findConnectedTiles[IInventory].map{
+      case t:TileEntityChest if t.getBlockType.isInstanceOf[BlockChest] => {
+        val blockChest = t.getBlockType.asInstanceOf[BlockChest]
+        blockChest.getLockableContainer(t.getWorld, t.getPos) match{
+          case inv:InventoryLargeChest => new TileChestWrapper(t, inv)
+          case _ => t
         }
       }
+      case otherwise => otherwise
     }
-    case otherwise => otherwise
+
+    val foundDoubleChests = ArrayBuffer[TileEntityChest]()
+    val filteredInventories = foundInventories.filter{
+      case t:TileChestWrapper => if(!foundDoubleChests.exists(t.inventory.isPartOfLargeChest(_))){
+        foundDoubleChests += t.tile
+        true
+      } else false
+      case _ => true
+    }
+
+    filteredInventories
+  }
+
+  private class TileChestWrapper(override val tile:TileEntityChest, override val inventory:InventoryLargeChest) extends TileEntity with TileWrapper with IInventoryWrapper{
+    override def markDirty(): Unit = {
+      tile.markDirty()
+    }
   }
 
   def findConnectedTiles[A:ClassTag]: IndexedSeq[TileEntity with A] = {
