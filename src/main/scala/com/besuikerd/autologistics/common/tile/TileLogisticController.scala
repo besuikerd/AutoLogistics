@@ -42,8 +42,13 @@ class TileLogisticController extends TileEntityMod
 //      |}
 //    """.stripMargin
   """
-    |i = <minecraft:planks>
-    |recipe = [[i i] [i i]]
+    |wheat = <minecraft:wheat>
+    |sugar = <minecraft:sugar>
+    |egg = <minecraft:egg>
+    |milk = <minecraft:milk_bucket>
+    |recipe = [
+    | [wheat wheat wheat]
+    |]
     |in = ~(-2, 0, 0)
     |out = ~(2, 0, 0)
     |in >> recipe >> out

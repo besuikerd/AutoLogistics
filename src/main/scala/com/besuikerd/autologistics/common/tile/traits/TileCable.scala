@@ -16,7 +16,7 @@ trait TileCable extends TileEntityMod{
         val blockChest = t.getBlockType.asInstanceOf[BlockChest]
         blockChest.getLockableContainer(t.getWorld, t.getPos) match{
           case inv:InventoryLargeChest => new TileChestWrapper(t, inv)
-          case _ => t
+          case other => t
         }
       }
       case otherwise => otherwise

@@ -3,7 +3,7 @@ package com.besuikerd.autologistics.common.tile.traits
 import com.besuikerd.autologistics.common.lib.dsl.vm._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
 import com.besuikerd.autologistics.common.lib.inventory._
-import net.minecraft.inventory.{ISidedInventory, IInventory}
+import net.minecraft.inventory.{InventoryCrafting, ISidedInventory, IInventory}
 import net.minecraft.item.crafting.CraftingManager
 import net.minecraft.item.{ItemStack, ItemBlock, Item}
 import net.minecraft.tileentity.TileEntity
@@ -92,10 +92,7 @@ trait TileLogistic extends TileEntityMod{
       case (oLeft@ObjectValue(left), oRight@ObjectValue(right)) if isMoveItemsType(left) && isMoveItemsType(right) => moveItems(oLeft, oRight)
       case (oLeft@ObjectValue(left), lRight@ListValue(right)) if isMoveItemsType(left) && isCraftingRecipe(right) => craftFrom(oLeft, lRight)
       case (oLeft@ObjectValue(left), oRight@ObjectValue(right)) if isCraftingInputResultType(left) && isMoveItemsType(right) => craftTo(oLeft, oRight)
-      case _ => {
-        println("NOPE")
-        itemTo
-      }
+      case _ => itemTo
     }
   }
 
@@ -118,35 +115,51 @@ trait TileLogistic extends TileEntityMod{
     for{
       input @ ObjectValue(_) <- left.get("input")
       ListValue(recipe) <- left.get("recipe")
-    } yield {
-      val allInventories = findInventories.map{
+      allInventories <- Some(findInventories)
+      (fromInventories, ObjectValue(fromFilter)) <-  getInventories(allInventories, input)
+      fakeInventories <- Some(fromInventories.map{
         case t:TileEntity with ISidedInventory => DummyISidedInventory(t,t)
         case t => DummyIInventory(t,t)
-      }
+      })
+    } yield {
 
       val slots = for{
         (ListValue(row), i) <- recipe.zipWithIndex
         (item@ObjectValue(mapping), j) <- row.zipWithIndex
         ObjectValue(craftSlotFilter) <- mapping.get("filter")
       } yield {
+          val craftSlot = i * 3 + j
+          val allInventories = findInventories
           for{
-            (fromInventories, ObjectValue(fromFilter)) <-  getInventories(allInventories, input)
             found <- (for{
               (fromInv, fromInvIndex) <- fromInventories.view.zipWithIndex
               (fromStack, fromStackIndex) <- fromInv.toIterable.zipWithIndex if fromStack != null
               fromLimit <- passesFromFilter(fromInv, fromStackIndex, fromFilter).toList if fromLimit > 0
               craftLimit <- passesFromFilter(fromInv, fromStackIndex, craftSlotFilter) if craftLimit > 0
             } yield{
-
-                println(fromStackIndex)
                 fromInventories(fromInvIndex).decrStackSize(fromStackIndex, 1)
-                (fromInvIndex, fromStackIndex)
+                (craftSlot, fromInvIndex, fromStackIndex)
             }).headOption
           } yield found
       }
 
       if(slots.forall(_.isDefined)){
-        println("valid recipe!")
+        println("ingredients found")
+        val inventoryCrafting = new InventoryCrafting(new DummyContainer, 3, 3)
+        for{
+          Some(tuple@(craftSlot, invIndex, stackIndex)) <- slots
+        }{
+          val stack = fromInventories(invIndex).getStackInSlot(stackIndex)
+          println(tuple)
+
+          inventoryCrafting.setInventorySlotContents(craftSlot, stack)
+        }
+        val craftResult = CraftingManager.getInstance().findMatchingRecipe(inventoryCrafting, getWorld)
+        println(craftResult)
+
+        if(craftResult != null){
+
+        }
       }
 
     }
