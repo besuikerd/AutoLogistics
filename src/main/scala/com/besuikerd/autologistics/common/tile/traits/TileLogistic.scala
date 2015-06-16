@@ -110,14 +110,14 @@ trait TileLogistic extends TileEntityMod{
       ))
   }
 
-  def craftTo: (ObjectValue, ObjectValue) => StackValue = { case (ObjectValue(left), oRight@ObjectValue(right)) =>
+  def craftTo: (ObjectValue, ObjectValue) => StackValue = { case (ObjectValue(left), output) =>
     println("craftTo")
     for{
       input @ ObjectValue(_) <- left.get("input")
       ListValue(recipe) <- left.get("recipe")
       allInventories <- Some(findInventories)
       (fromInventories, ObjectValue(fromFilter)) <-  getInventories(allInventories, input)
-      fakeInventories <- Some(fromInventories.map{
+      fakeFromInventories <- Some(fromInventories.map{
         case t:TileEntity with ISidedInventory => DummyISidedInventory(t,t)
         case t => DummyIInventory(t,t)
       })
@@ -126,19 +126,16 @@ trait TileLogistic extends TileEntityMod{
       val slots = for{
         (ListValue(row), i) <- recipe.zipWithIndex
         (item@ObjectValue(mapping), j) <- row.zipWithIndex
-        ObjectValue(craftSlotFilter) <- mapping.get("filter")
       } yield {
           val craftSlot = i * 3 + j
-          val allInventories = findInventories
           for{
             found <- (for{
-              (fromInv, fromInvIndex) <- fromInventories.view.zipWithIndex
-              (fromStack, fromStackIndex) <- fromInv.toIterable.zipWithIndex if fromStack != null
+              (fromInv, fromInvIndex) <- fakeFromInventories.view.zipWithIndex
+              (fromStack, fromStackIndex) <- fromInv.toIterable.zipWithIndex if fromStack != null && matchesItemFilter(fromStack, item)
               fromLimit <- passesFromFilter(fromInv, fromStackIndex, fromFilter).toList if fromLimit > 0
-              craftLimit <- passesFromFilter(fromInv, fromStackIndex, craftSlotFilter) if craftLimit > 0
             } yield{
-                fromInventories(fromInvIndex).decrStackSize(fromStackIndex, 1)
-                (craftSlot, fromInvIndex, fromStackIndex)
+                val stack = fromInv.decrStackSize(fromStackIndex, 1)
+                (stack, craftSlot, fromInvIndex, fromStackIndex)
             }).headOption
           } yield found
       }
@@ -147,23 +144,43 @@ trait TileLogistic extends TileEntityMod{
         println("ingredients found")
         val inventoryCrafting = new InventoryCrafting(new DummyContainer, 3, 3)
         for{
-          Some(tuple@(craftSlot, invIndex, stackIndex)) <- slots
+          Some(tuple@(stack, craftSlot, invIndex, stackIndex)) <- slots
         }{
-          val stack = fromInventories(invIndex).getStackInSlot(stackIndex)
           println(tuple)
-
           inventoryCrafting.setInventorySlotContents(craftSlot, stack)
         }
         val craftResult = CraftingManager.getInstance().findMatchingRecipe(inventoryCrafting, getWorld)
         println(craftResult)
 
         if(craftResult != null){
+          val remainder = CraftingManager.getInstance().func_180303_b(inventoryCrafting, getWorld).filter(_ != null)
+          val toItems = craftResult +: remainder
+          println(toItems.mkString("[", ",", "]"))
+
+          val toSlots = for{
+//            (toInv, toInvIndex) <- getInventories(fakeInventories.view.zipWithIndex)
+            ObjectValue(outFilter) <- output.mapping.get("filter")
+            (toInventories, toFilter) <- getInventories(allInventories, output)
+            fakeToInventories <- Some(fromInventories.map{
+              case t:TileEntity with ISidedInventory => DummyISidedInventory(t,t)
+              case t => DummyIInventory(t,t)
+            })
+            item <- toItems
+            (toInv, toInvIndex) <- fakeToInventories.zipWithIndex
+            (toStack, toStackIndex) <- toInv.toIterable.zipWithIndex if toStack == null || toStack.isItemEqual(item) && matchesItemFilter(item, output)
+            toLimit <- passesToFilter(toStack, toInv, toStackIndex, outFilter) if toLimit > 0
+          } {
+            if(toStack == null){
+              toInv.setInventorySlotContents(toInvIndex, toStack)
+              println((toInvIndex, toInv.getStackInSlot(toInvIndex)))
+            }
+          }
 
         }
       }
 
     }
-    oRight
+    output
   }
 
   def moveItems(itemFrom:ObjectValue, itemTo:ObjectValue): StackValue = {
@@ -269,6 +286,8 @@ trait TileLogistic extends TileEntityMod{
         StringValue(name) <- mapping.get("name")
         NaturalNumber(meta) <- mapping.get("meta")
       } yield {
+          println(mod + ":" + name + ":" + meta)
+
           val itemMatch = if(mod.equals("ore")){
             OreDictionary.getOres(name).iterator.exists {s => OreDictionary.itemMatches(s, stack, false)}
 
@@ -281,17 +300,17 @@ trait TileLogistic extends TileEntityMod{
     }).getOrElse(false)
   }
 
-  def passesToFilter(fromStack:ItemStack, inventory:IInventory, stackIndex:Int, filter:MMap[String, StackValue]):Option[Int] = {
+  def passesToFilter(toStack:ItemStack, inventory:IInventory, stackIndex:Int, filter:MMap[String, StackValue]):Option[Int] = {
     val diffFunction =(count:Int, limit:Int) => limit - count
     inventory match{
       case inventory:ISidedInventory => {
         for {
           ListValue(sides) <- filter.get("sides")
-          ListValue(items) <- filter.get("items") if items.isEmpty || items.exists(v => matchesItemFilter(fromStack, v))
+          ListValue(items) <- filter.get("items") if items.isEmpty || items.exists(v => matchesItemFilter(toStack, v))
           amount <- (if (sides.isEmpty) directions.values else for{StringValue(s) <- sides; facing <- directions.get(s)} yield facing).view.map{ facing =>
             val faceSlots = inventory.getSlotsForFace(facing)
-            if(faceSlots.contains(stackIndex) && inventory.canInsertItem(stackIndex, fromStack, facing)){
-              passesAmount(fromStack, filter, faceSlots, inventory, diffFunction)
+            if(faceSlots.contains(stackIndex) && inventory.canInsertItem(stackIndex, toStack, facing)){
+              passesAmount(toStack, filter, faceSlots, inventory, diffFunction)
             } else 0
           }.find(_ > 0)
         } yield amount
@@ -299,7 +318,7 @@ trait TileLogistic extends TileEntityMod{
       case _ => {
         for{
           ListValue(items) <- filter.get("items")
-          amount <- Some(passesAmount(fromStack, filter, (0 until inventory.getSizeInventory).toArray, inventory, diffFunction)) if (items.isEmpty || items.exists(v => matchesItemFilter(fromStack, v))) && amount > 0
+          amount <- Some(passesAmount(toStack, filter, (0 until inventory.getSizeInventory).toArray, inventory, diffFunction)) if (items.isEmpty || items.exists(v => matchesItemFilter(toStack, v))) && amount > 0
         } yield amount
       }
     }

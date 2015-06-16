@@ -47,6 +47,8 @@ class TileLogisticController extends TileEntityMod
     |egg = <minecraft:egg>
     |milk = <minecraft:milk_bucket>
     |recipe = [
+    | [milk milk milk]
+    | [sugar egg sugar]
     | [wheat wheat wheat]
     |]
     |in = ~(-2, 0, 0)

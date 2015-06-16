@@ -10,8 +10,7 @@ trait DummyIInventory extends IInventoryWrapper{
 
   override def decrStackSize(index: Int, count: Int): ItemStack = {
     val stack = getStackInSlot(index)
-    stack.stackSize -= count
-    stack
+    stack.splitStack(1)
   }
 
   override def getStackInSlot(index: Int): ItemStack = {
@@ -19,7 +18,7 @@ trait DummyIInventory extends IInventoryWrapper{
       slots(index) = inventory.getStackInSlot(index).copy()
     }
     val stack = slots(index)
-    if(stack != null && stack.stackSize <= 0) null else stack
+    if(stack != null && stack.stackSize <= 0) {println(stack.stackSize); null} else stack
   }
 
   override def getStackInSlotOnClosing(index: Int): ItemStack = getStackInSlot(index)
