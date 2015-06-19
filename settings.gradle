@@ -1,2 +1,0 @@
-//include ':StevesFactoryManager'
-//project(':StevesFactoryManager').projectDir = new File(settingsDir, '../StevesFactoryManager')
