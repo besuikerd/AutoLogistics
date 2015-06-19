@@ -116,19 +116,9 @@ with ParsingSpec
 
     val program =
       """
-        |wheat = <minecraft:wheat>
-        |egg = <minecraft:egg>
-        |sugar = <minecraft:sugar_cane>
-        |milk = <minecraft:milk_bucket>
-        |bucket = <minecraft:bucket>
-        |
-        |cake = [
-        |  [milk null milk]
-        |  [sugar egg sugar]
-        |  [wheat wheat wheat]
-        |]
-        |
-        |println(~(1,1,1) >> cake)
+        |chest = <minecraft:chest>
+        |println(chest@[<minecraft:iron_ingot> 64 north])
+        |println(chest)
       """.stripMargin
 
     parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ statements =>
@@ -164,15 +154,10 @@ with ParsingSpec
   it should "successfully parse the following expressions" in {
     val program =
       """
-        |planks = <minecraft:planks>
-        |input = ~(-2, 0, 0)
-        |output = ~(2, 0, 0)
-        |while(true){
-        | input >> [
-        |   [planks planks]
-        |   [planks planks]
-        | ] >> output
-        |}
+        |chest = <minecraft:chest>
+        |println(chest@[<minecraft:iron_ingot> 64 north])
+        |println(chest)
+        |
       """.stripMargin
 
     parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ p =>

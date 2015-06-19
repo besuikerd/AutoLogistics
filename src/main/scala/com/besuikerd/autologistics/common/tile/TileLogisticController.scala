@@ -30,18 +30,16 @@ class TileLogisticController extends TileEntityMod
     """.stripMargin
 
   val simpleProgram2 =
-//    """
-//      |planks = <minecraft:planks>
-//      |input = ~(-2, 0, 0)
-//      |output = ~(2, 0, 0)
-//      |while(true){
-//      | input >> [
-//      |   [planks planks]
-//      |   [planks planks]
-//      | ] >> output
-//      |}
-//    """.stripMargin
-  """
+    """
+      |planks = <minecraft:planks>
+      |input = ~(-2, 0, 0)
+      |output = ~(2, 0, 0)
+      |input >> output
+      |
+    """.stripMargin
+
+
+  val craft = """
     |wheat = <minecraft:wheat>
     |sugar = <minecraft:sugar>
     |egg = <minecraft:egg>
@@ -65,7 +63,7 @@ class TileLogisticController extends TileEntityMod
       |}
     """.stripMargin
 
-  load(simpleProgram2)
+  load(simpleProgram)
 
   override def update(): Unit = {
     if(AutoLogistics.proxy.getSideOfThread == Side.SERVER) {

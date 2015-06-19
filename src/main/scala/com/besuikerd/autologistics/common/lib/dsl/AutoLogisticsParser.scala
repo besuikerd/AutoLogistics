@@ -10,7 +10,14 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
 { this: DSLParser =>
 
   lazy val itemRef:Parser[Expression] = ("<" ~> ident <~ ":") ~ ident ~ ((":" ~> naturalNumber).? <~ ">") ^^ {
-    case mod ~ name ~ meta => Application("_getItem", List(StringLiteral(mod), StringLiteral(name), meta.getOrElse(NaturalNumberConstant(-1))))
+    case mod ~ name ~ meta => {
+      val mapping = Map[String, Expression](
+        "type" -> StringLiteral("item"),
+        "mod" -> StringLiteral(mod),
+        "name" -> StringLiteral(name)
+      )
+      ObjectExpression(meta.map(x => mapping + ("meta" -> x)).getOrElse(mapping))
+    }
   }
 
   lazy val filtered:Parser[Expression] = referrable ~ ("@" ~> (listExp | referrable)) ^^ {
