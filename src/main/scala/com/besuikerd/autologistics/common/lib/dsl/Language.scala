@@ -1,9 +1,6 @@
 package com.besuikerd.autologistics.common.lib.dsl
 
-import com.besuikerd.autologistics.common.lib.dsl.vm.Instruction
-
-import scala.tools.nsc.doc.model.ImplicitConversion
-import scala.util.parsing.combinator.JavaTokenParsers
+import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.Instruction
 
 object Language{
 }
@@ -13,7 +10,7 @@ sealed abstract class ASTNode
 //Statements
 sealed abstract class Statement extends ASTNode
 
-case class Assignment(variable:String, binding:Expression) extends Statement
+case class Assignment(variable:String, binding:Expression, isLocal:Boolean) extends Statement
 case class AssignField(obj:Expression, fields:List[String], binding:Expression) extends Statement
 case class AssignIndex(obj:Expression, indexes:List[Expression], binding:Expression) extends Statement
 case class ExpressionStatement(expression:Expression) extends Statement

@@ -37,6 +37,7 @@ minecraft {
 
 dependencies {
     compile 'org.scalatest:scalatest_2.11:2.2.5'
+    testCompile 'junit:junit:4.12'
     //compile project(':StevesFactoryManager')
 }
 

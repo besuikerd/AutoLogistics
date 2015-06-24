@@ -1,17 +1,18 @@
-package com.besuikerd.autologistics.common.lib.dsl.vm
+package com.besuikerd.autologistics.common.lib.dsl.old.vm
 
 import com.besuikerd.autologistics.common.lib.dsl._
+import com.besuikerd.autologistics.common.lib.dsl.old._
 
 import scala.collection.mutable.ListBuffer
 
-object CodeGenerator {
+object OldCodeGenerator {
   def generate(list:List[Statement]):List[Instruction] = OpenScope +: list.map(generate).flatten :+ CloseScope
 
   def generate(ast:ASTNode):List[Instruction] = ast match {
 
     case ExpressionStatement(e) => generate(e) :+ Pop
-    case Assignment(binding, l:LambdaExpression) => lambdaInstructions(Some(binding), l) :+ Put(binding)
-    case Assignment(binding, e) => generate(e) :+ Put(binding)
+    case Assignment(binding, l:LambdaExpression, isLocal) => lambdaInstructions(Some(binding), l) :+ Put(binding)
+    case Assignment(binding, e, isLocal) => generate(e) :+ Put(binding)
     case AssignField(objExp, fields, binding) => {
       val (init, last) = fields.splitAt(fields.length - 1)
       val getFields = init.flatMap{s => List(Push(StringValue(s)), GetField)}
@@ -48,7 +49,7 @@ object CodeGenerator {
       } else List(Push(NilValue))
     }
 
-    case Instructions(instructions) => instructions
+    case Instructions(instructions) => ??? //instructions
 
     case IfElseExpression(condition, ifExp, elseExp) => generate(condition) :+ Branch(generate(ifExp), elseExp.map(generate).getOrElse(List(Push(NilValue))))
 

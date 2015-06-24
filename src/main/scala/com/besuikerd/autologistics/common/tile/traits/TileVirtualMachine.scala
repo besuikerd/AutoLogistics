@@ -2,9 +2,10 @@ package com.besuikerd.autologistics.common.tile.traits
 
 
 import java.io.{DataInput, DataOutput}
-import com.besuikerd.autologistics.common.lib.collection.Stack
+import com.besuikerd.autologistics.common.lib.collection.OldStack$
 import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser
-import com.besuikerd.autologistics.common.lib.dsl.vm._
+import com.besuikerd.autologistics.common.lib.dsl.old.vm._
+import com.besuikerd.autologistics.common.lib.dsl.old._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
 import com.google.common.base.{Predicates}
 import com.google.common.io.ByteStreams
@@ -19,7 +20,7 @@ import scala.collection.mutable.{Map => MMap, ArrayBuffer}
 
 trait TileVirtualMachine extends TileEntityMod
 {
-  val virtualMachine = new VirtualMachine
+  val virtualMachine = new OldVirtualMachine
 
   virtualMachine.addNative("length", nativeLength)
   virtualMachine.addNative("print", nativePrint)
@@ -103,7 +104,7 @@ trait TileVirtualMachine extends TileEntityMod
   def load(program:String): Unit ={
     AutoLogisticsParser.parse(AutoLogisticsParser.parser, program) match{
       case AutoLogisticsParser.Success(ast, _) => {
-        val instructions = CodeGenerator.generate(ast)
+        val instructions = OldCodeGenerator.generate(ast)
         println(ast)
         virtualMachine.load(instructions)
       }

@@ -1,26 +1,25 @@
-package com.besuikerd.autologistics.common.lib.dsl.vm
+package com.besuikerd.autologistics.common.lib.dsl.old.vm
 
-import org.scalatest.fixture
-import scala.collection.mutable.{Map => MMap, ListBuffer, ArrayBuffer}
-import com.besuikerd.autologistics.common.lib.collection.Stack
+import com.besuikerd.autologistics.common.lib.collection.OldStack
+
+import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.util.control.Breaks._
 
 
-class VirtualMachine {
-  import VirtualMachine._
+class OldVirtualMachine {
+  import OldVirtualMachine._
 
-
-  val stack = Stack[StackValue]()
-  val scopes = Stack[Closure]()
-  val instructions = Stack[Instruction]()
+  val stack = OldStack[StackValue]()
+  val scopes = OldStack[Closure]()
+  val instructions = OldStack[Instruction]()
 
   val globals = MMap[String, StackValue]()
 
-  val natives = MMap[String, NativeFunction]()
+  val natives = MMap[String, OldNativeFunction]()
 
   load(Nil)
 
-  def addNative(name:String, f:NativeFunction):Unit = {
+  def addNative(name:String, f:OldNativeFunction):Unit = {
     natives.put(name, f)
   }
 
@@ -77,16 +76,13 @@ class VirtualMachine {
   def crash(msg:String) = instructions.push(Crash(msg))
 }
 
-object VirtualMachine{
-  type NativeFunction = List[StackValue] => StackValue
+object OldVirtualMachine{
+  type OldNativeFunction = List[StackValue] => StackValue
 }
 
-trait Instruction{
-  def execute(machine: VirtualMachine):Unit
-}
 
-sealed abstract class DefaultInstruction(val f:VirtualMachine => Unit) extends Instruction{
-  override def execute(machine: VirtualMachine): Unit = f(machine)
+sealed abstract class DefaultInstruction(val f:OldVirtualMachine => Unit) extends Instruction{
+  override def execute(machine: OldVirtualMachine): Unit = f(machine)
 }
 
 

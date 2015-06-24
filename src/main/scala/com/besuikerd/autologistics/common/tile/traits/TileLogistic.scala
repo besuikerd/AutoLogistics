@@ -1,6 +1,7 @@
 package com.besuikerd.autologistics.common.tile.traits
 
-import com.besuikerd.autologistics.common.lib.dsl.vm._
+import com.besuikerd.autologistics.common.lib.dsl.old.vm._
+import com.besuikerd.autologistics.common.lib.dsl.old._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
 import com.besuikerd.autologistics.common.lib.inventory._
 import net.minecraft.inventory.{InventoryCrafting, ISidedInventory, IInventory}

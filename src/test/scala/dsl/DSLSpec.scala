@@ -3,8 +3,8 @@ package dsl
 import com.besuikerd.autologistics.common.lib
 import com.besuikerd.autologistics.common.lib.dsl._
 import com.besuikerd.autologistics.common.lib.dsl.parser.{DSLPrettyPrinter, DSLParser, DSLParserPluginRegistry}
-import com.besuikerd.autologistics.common.lib.dsl.vm.CodeGenerator
-import com.besuikerd.autologistics.common.lib.dsl.vm._
+import com.besuikerd.autologistics.common.lib.dsl.old.vm.OldCodeGenerator
+import com.besuikerd.autologistics.common.lib.dsl.old.vm._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
 import com.besuikerd.autologistics.common.tile.traits.{TileCable, TileLogistic, TileVirtualMachine}
 import net.minecraft.nbt.NBTTagCompound
@@ -72,7 +72,7 @@ with ParsingSpec
 
     parsing(parser)(parser.parser, program){ statements =>
       statements.foreach{s => println(DSLPrettyPrinter.prettify(s))}
-      val instructions = CodeGenerator.generate(statements)
+      val instructions = OldCodeGenerator.generate(statements)
       instructions.foreach{
         case PushClosure(optName, bindings, free, body) =>
           println(s"PushClosure($optName, $bindings, $free")
@@ -83,7 +83,7 @@ with ParsingSpec
 
       println("========================")
 
-      val vm = new VirtualMachine()
+      val vm = new OldVirtualMachine()
       vm.load(instructions)
       vm.addNativePartial("print"){args => args.foreach(a => print(a.stringRepresentation)); NilValue}
       vm.addNativePartial("println"){args => args.foreach(a => println(a.stringRepresentation)); NilValue}
@@ -128,7 +128,7 @@ with ParsingSpec
       statements foreach (x => println(DSLPrettyPrinter.prettify(x)))
 
 
-      val code = CodeGenerator.generate(statements)
+      val code = OldCodeGenerator.generate(statements)
       vm.load(code)
 
       vm.run(5)
@@ -162,7 +162,7 @@ with ParsingSpec
 
     parsing(AutoLogisticsParser)(AutoLogisticsParser.parser, program){ p =>
       p.foreach(x => println(DSLPrettyPrinter.prettify(x)))
-      CodeGenerator.generate(p).foreach(println)
+      OldCodeGenerator.generate(p).foreach(println)
     }
   }
 

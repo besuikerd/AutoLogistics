@@ -4,17 +4,17 @@ import scala.collection.generic._
 import scala.collection.mutable
 import scala.collection.mutable.{Builder, ListBuffer}
 
-trait Stack[A]
+trait OldStack[A]
 extends mutable.AbstractSeq[A]
   with mutable.Seq[A]
-  with mutable.SeqLike[A, Stack[A]]
-  with GenericTraversableTemplate[A, Stack]
-  with mutable.Cloneable[Stack[A]]
+  with mutable.SeqLike[A, OldStack[A]]
+  with GenericTraversableTemplate[A, OldStack]
+  with mutable.Cloneable[OldStack[A]]
   with Serializable
 {
   protected var elems:List[A]
 
-  override def companion = Stack
+  override def companion = OldStack
 
   def push(elem: A): Unit = elems = elem :: elems
   def top() = elems.head
@@ -41,18 +41,18 @@ extends mutable.AbstractSeq[A]
   override def iterator: Iterator[A] = elems.iterator
 }
 
-object Stack extends SeqFactory[Stack]{
+object OldStack extends SeqFactory[OldStack]{
 
-  def apply[A](list:List[A]): Stack[A] = new Stack[A]{override var elems = list}
+  def apply[A](list:List[A]): OldStack[A] = new OldStack[A]{override var elems = list}
 
-  class StackBuilder[A] extends Builder[A, Stack[A]] {
+  class StackBuilder[A] extends Builder[A, OldStack[A]] {
     val lbuff = new ListBuffer[A]
     def +=(elem: A) = { lbuff += elem; this }
     def clear() = lbuff.clear()
-    def result = Stack(lbuff.result)
+    def result = OldStack(lbuff.result)
   }
 
-  implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, Stack[A]] = ReusableCBF.asInstanceOf[GenericCanBuildFrom[A]]
-  def newBuilder[A]: Builder[A, Stack[A]] = new StackBuilder[A]
-  val empty: Stack[Nothing] = Stack(Nil)
+  implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, OldStack[A]] = ReusableCBF.asInstanceOf[GenericCanBuildFrom[A]]
+  def newBuilder[A]: Builder[A, OldStack[A]] = new StackBuilder[A]
+  val empty: OldStack[Nothing] = OldStack(Nil)
 }

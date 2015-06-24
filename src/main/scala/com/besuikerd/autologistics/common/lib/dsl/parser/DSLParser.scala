@@ -1,7 +1,7 @@
 package com.besuikerd.autologistics.common.lib.dsl.parser
 
 import com.besuikerd.autologistics.common.lib.dsl
-import com.besuikerd.autologistics.common.lib.dsl.vm.Branch
+import com.besuikerd.autologistics.common.lib.dsl.old.vm.Branch
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.{Parsers, ImplicitConversions, JavaTokenParsers}
@@ -79,7 +79,6 @@ trait DSLParser extends JavaTokenParsers
         case exp ~ List() => exp
         case exp ~ xs => xs.foldLeft(exp) {
           case (acc, op ~ exp) => {
-            println(exp)
             op._2(acc, op._1, exp)
           } //Application(VariableExpression(op), List(acc, exp))
         }
@@ -94,16 +93,19 @@ trait DSLParser extends JavaTokenParsers
 }
 
 trait DSLStatements extends PluggableParsers with ImplicitConversions{this:DSLParser =>
-  lazy val assignment = (ident <~ "=") ~ expression ^^ {case variable ~ exp => Assignment(variable, exp)}
+  lazy val assignment = (ident <~ "=") ~ expression
+  lazy val assignmentStatement = assignment ^^ {case variable ~ exp => Assignment(variable, exp, false)}
+  lazy val assignmentStatementLocal = "local" ~> assignment ^^ {case variable ~ exp => Assignment(variable, exp, true)}
   lazy val expressionStatement: Parser[Statement] = expression.map(ExpressionStatement)
   lazy val assignField = referrable ~ ("." ~> ident).+ ~ ("=" ~> expression) ^^ AssignField
   lazy val assignIndex = referrable ~ ("[" ~> expression <~ "]").+ ~ ("=" ~> expression) ^^ AssignIndex
-  lazy val whileStatement = ("while" ~> "(" ~> expression <~ ")") ~ statement ^^ WhileStatement
+  lazy val whileStatement = ("while" ~> "(" ~> expression <~ ")") ~ (blockExp ^^ ExpressionStatement | statement) ^^ WhileStatement
 
   override def statements: Seq[Parser[Statement]] = super.statements ++ Seq(
     assignIndex,
     assignField,
-    assignment,
+    assignmentStatementLocal,
+    assignmentStatement,
     whileStatement,
     expressionStatement
   )
