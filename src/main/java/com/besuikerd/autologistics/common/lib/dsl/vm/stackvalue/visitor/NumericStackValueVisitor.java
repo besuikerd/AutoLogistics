@@ -4,7 +4,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.DoubleValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.IntegerValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.NumericStackValue;
 
-public class NumericStackValueVisitor extends BaseStackValueVisitor<Void, NumericStackValue<?>> {
+public class NumericStackValueVisitor extends BaseStackValueVisitor<Void, NumericStackValue<?>, RuntimeException> {
     public static final NumericStackValueVisitor instance = new NumericStackValueVisitor();
 
     @Override

@@ -1,7 +1,7 @@
 package com.besuikerd.autologistics.common.lib.dsl.vm.instruction.logical;
 
 
-import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.InstructionVisitor;
+import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.visitor.InstructionVisitor;
 
 public class AndInstruction extends LogicalInstruction{
     public static final AndInstruction instance = new AndInstruction();
@@ -12,7 +12,7 @@ public class AndInstruction extends LogicalInstruction{
     }
 
     @Override
-    public <ARG, RES> RES accept(InstructionVisitor<ARG, RES> visitor, ARG arg) {
+    public <ARG, RES, THROWS extends Throwable> RES accept(InstructionVisitor<ARG, RES, THROWS> visitor, ARG arg) throws THROWS {
         return visitor.visitAndInstruction(this, arg);
     }
 }

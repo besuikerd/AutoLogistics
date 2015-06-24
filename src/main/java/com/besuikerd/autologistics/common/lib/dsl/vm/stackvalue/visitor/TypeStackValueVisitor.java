@@ -1,8 +1,9 @@
 package com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
+import static com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValues.*;
 
-public class TypeStackValueVisitor extends BaseStackValueVisitor<Void, String>{
+public class TypeStackValueVisitor extends BaseStackValueVisitor<Void, String, RuntimeException>{
     public static final TypeStackValueVisitor instance = new TypeStackValueVisitor();
 
     @Override
@@ -12,46 +13,51 @@ public class TypeStackValueVisitor extends BaseStackValueVisitor<Void, String>{
 
     @Override
     public String visitIntegerValue(IntegerValue value, Void aVoid) {
-        return "int";
+        return INT.type;
     }
 
     @Override
     public String visitDoubleValue(DoubleValue value, Void aVoid) {
-        return "double";
+        return DOUBLE.type;
     }
 
     @Override
     public String visitStringValue(StringValue value, Void aVoid) {
-        return "string";
+        return STRING.type;
     }
 
     @Override
     public String visitBooleanValue(BooleanValue value, Void aVoid) {
-        return "boolean";
+        return BOOLEAN.type;
     }
 
     @Override
     public String visitNilValue(NilValue value, Void aVoid) {
-        return "null";
+        return NIL.type;
     }
 
     @Override
     public String visitObjectValue(ObjectValue value, Void aVoid) {
-        return "object";
+        return OBJECT.type;
+    }
+
+    @Override
+    public String visitRecurse(Recurse value, Void aVoid) {
+        return RECURSE.type;
     }
 
     @Override
     public String visitListValue(ListValue value, Void aVoid) {
-        return "list";
+        return LIST.type;
     }
 
     @Override
     public String visitNativeFunctionValue(NativeFunctionValue value, Void aVoid) {
-        return "native";
+        return NATIVE.type;
     }
 
     @Override
     public String visitClosureValue(ClosureValue value, Void aVoid) {
-        return "closure";
+        return CLOSURE.type;
     }
 }

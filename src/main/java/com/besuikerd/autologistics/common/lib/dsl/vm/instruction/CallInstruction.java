@@ -1,11 +1,12 @@
 package com.besuikerd.autologistics.common.lib.dsl.vm.instruction;
 
+import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.visitor.InstructionVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ClosureValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.NativeFunctionValue;
-import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.BaseStackValueVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.SafeBaseStackValueVisitor;
 import scala.Tuple2;
 
 import java.util.Iterator;
@@ -30,7 +31,7 @@ public class CallInstruction implements Instruction{
     }
 
     @Override
-    public <ARG, RES> RES accept(InstructionVisitor<ARG, RES> visitor, ARG arg) {
+    public <ARG, RES, THROWS extends Throwable> RES accept(InstructionVisitor<ARG, RES, THROWS> visitor, ARG arg) throws THROWS {
         return visitor.visitCallInstruction(this, arg);
     }
 
@@ -39,7 +40,7 @@ public class CallInstruction implements Instruction{
         return "CallInstruction(" + argCount + ")";
     }
 
-    private class CallInstructionVisitor extends BaseStackValueVisitor<Tuple2<VirtualMachine, List<StackValue>>, Void>{
+    private class CallInstructionVisitor extends SafeBaseStackValueVisitor<Tuple2<VirtualMachine, List<StackValue>>, Void> {
         @Override
         public Void visitNativeFunctionValue(NativeFunctionValue value, Tuple2<VirtualMachine, List<StackValue>> arg) {
             VirtualMachine machine = arg._1();

@@ -1,5 +1,6 @@
 package com.besuikerd.autologistics.common.lib.dsl.vm.instruction;
 
+import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.visitor.InstructionVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.NilValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ListValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ObjectValue;
@@ -34,7 +35,7 @@ public class PutFieldInstruction implements Instruction{
     }
 
     @Override
-    public <ARG, RES> RES accept(InstructionVisitor<ARG, RES> visitor, ARG arg) {
-        return null;
+    public <ARG, RES, THROWS extends Throwable> RES accept(InstructionVisitor<ARG, RES, THROWS> visitor, ARG arg) throws THROWS {
+        return visitor.visitPutFieldInstruction(this, arg);
     }
 }

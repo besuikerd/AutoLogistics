@@ -39,7 +39,7 @@ case class ObjectExpression(fields:Map[String, Expression]) extends Expression
 
 case class ListExpression(values:List[Expression]) extends Expression
 
-case class Instructions(instructions:List[Instruction]) extends Expression
+//case class Instructions(instructions:List[Instruction]) extends Expression
 
 //Binary operations
 sealed abstract class BinaryExpression(val e1:Expression, val operator:String, val e2:Expression) extends Expression

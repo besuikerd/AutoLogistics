@@ -49,7 +49,7 @@ object OldCodeGenerator {
       } else List(Push(NilValue))
     }
 
-    case Instructions(instructions) => ??? //instructions
+//    case Instructions(instructions) => ??? //instructions
 
     case IfElseExpression(condition, ifExp, elseExp) => generate(condition) :+ Branch(generate(ifExp), elseExp.map(generate).getOrElse(List(Push(NilValue))))
 

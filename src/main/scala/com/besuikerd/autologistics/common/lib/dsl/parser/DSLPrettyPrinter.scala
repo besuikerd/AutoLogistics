@@ -52,7 +52,7 @@ object DSLPrettyPrinter{
            |${prettifyLevelled(e, level + 1)}
            |$tabs)
          """.stripMargin
-      case Assignment(binding, e) =>
+      case Assignment(binding, e, _) =>
         s"""${tabs}Assignment(
            |$tabs\t$binding
            |${prettifyLevelled(e, level + 1)}

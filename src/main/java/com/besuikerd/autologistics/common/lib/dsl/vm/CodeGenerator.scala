@@ -96,9 +96,9 @@ object CodeGenerator {
       stack.add(CloseScopeInstruction.instance)
     }
 
-    case Instructions(instructions) => for(instruction <- instructions){
-      stack.add(instruction)
-    }
+//    case Instructions(instructions) => for(instruction <- instructions){
+//      stack.add(instruction)
+//    }
 
     case IfElseExpression(condition, ifExp, elseExp) => {
       generate(condition, stack)

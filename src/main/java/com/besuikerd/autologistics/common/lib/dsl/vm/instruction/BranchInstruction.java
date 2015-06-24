@@ -2,6 +2,7 @@ package com.besuikerd.autologistics.common.lib.dsl.vm.instruction;
 
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
+import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.visitor.InstructionVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.BooleanStackValueVisitor;
 
 import java.util.Collection;
@@ -27,7 +28,7 @@ public class BranchInstruction implements Instruction {
     }
 
     @Override
-    public <ARG, RES> RES accept(InstructionVisitor<ARG, RES> visitor, ARG arg) {
+    public <ARG, RES, THROWS extends Throwable> RES accept(InstructionVisitor<ARG, RES, THROWS> visitor, ARG arg) throws THROWS {
         return visitor.visitBranchInstruction(this, arg);
     }
 }

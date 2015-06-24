@@ -4,5 +4,5 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.StackVal
 
 public interface StackValue {
     String stringRepresentation();
-    <A,B> B accept(StackValueVisitor<A,B> visitor, A arg);
+    <A,B, T extends Throwable> B accept(StackValueVisitor<A,B, T> visitor, A arg) throws T;
 }

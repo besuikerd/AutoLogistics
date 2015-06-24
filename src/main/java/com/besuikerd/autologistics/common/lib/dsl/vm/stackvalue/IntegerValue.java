@@ -9,7 +9,7 @@ public class IntegerValue extends NumericStackValue<Integer>{
     }
 
     @Override
-    public <A, B> B accept(StackValueVisitor<A, B> visitor, A arg) {
+    public <A, B, T extends Throwable> B accept(StackValueVisitor<A, B, T> visitor, A arg) throws T {
         return visitor.visitIntegerValue(this, arg);
     }
 }

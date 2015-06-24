@@ -1,6 +1,7 @@
 package com.besuikerd.autologistics.common.lib.dsl.vm.instruction;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
+import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.visitor.InstructionVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ListValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
 
@@ -24,7 +25,7 @@ public class PushListInstruction implements Instruction{
     }
 
     @Override
-    public <ARG, RES> RES accept(InstructionVisitor<ARG, RES> visitor, ARG arg) {
+    public <ARG, RES, THROWS extends Throwable> RES accept(InstructionVisitor<ARG, RES, THROWS> visitor, ARG arg) throws THROWS {
         return visitor.visitPushListInstruction(this, arg);
     }
 }
