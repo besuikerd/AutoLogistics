@@ -1,7 +1,7 @@
 .gradle/
 .idea/
 build/
-eclipse/
+minecraft/
 gradle/
 *.iml
 *.ipr
