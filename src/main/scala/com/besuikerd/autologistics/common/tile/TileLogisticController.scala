@@ -52,8 +52,7 @@ class TileLogisticController extends TileEntityMod
     """
       |i = 0
       |while(true){
-      |  i = i + 1
-      |  println(i)
+      |  say("hello world!");
       |}
     """.stripMargin
 
@@ -67,7 +66,6 @@ class TileLogisticController extends TileEntityMod
         } catch{
           case e:Exception => {
             e.printStackTrace()
-            load(simpleProgram2)
           }
         }
       } else if (virtualMachine.isErrorState) {

@@ -121,8 +121,11 @@ public class DataInputInstructionParser {
                     return AndInstruction.instance;
                 case OR:
                     return OrInstruction.instance;
+                default:
+                    throw new IllegalArgumentException("unknown instruction with ordinal value " + ordinal);
             }
+        } else{
+            return null;
         }
-        return null;
     }
 }

@@ -12,7 +12,8 @@ public class WorldUtil {
         int halfX = x >> 1;
         int halfZ = y >> 1;
 
-        AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox(x - halfX, 0, z + halfZ, x + halfX, 255, z + halfZ);
+        AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox(x - halfX, 0, z - halfZ, x + halfX, 255, z + halfZ);
+
         List entities = world.getEntitiesWithinAABB(cls, aabb);
         return (List<A>) entities;
     }

@@ -196,6 +196,13 @@ public class DefaultVirtualMachine implements VirtualMachine{
         serializeScopes(output);
     }
 
+    @Override
+    public void deserialize(DataInput input) throws IOException{
+        deserializeStack(input);
+        deserializeInstructions(input);
+        deserializeScopes(input);
+    }
+
     protected void serializeStack(DataOutput output) throws IOException{
         output.writeInt(stack.size());
         for(StackValue value : stack){
@@ -210,19 +217,12 @@ public class DefaultVirtualMachine implements VirtualMachine{
         }
     }
 
+
     protected void serializeScopes(DataOutput output) throws IOException{
         output.writeInt(scopes.size());
         for(ClosureValue value : scopes){
             value.accept(DataOutputStackValueVisitor.instance, output);
         }
-    }
-
-
-    @Override
-    public void deserialize(DataInput input) throws IOException{
-        deserializeStack(input);
-        deserializeInstructions(input);
-        deserializeScopes(input);
     }
 
     protected void deserializeStack(DataInput input) throws IOException{
@@ -247,5 +247,17 @@ public class DefaultVirtualMachine implements VirtualMachine{
         for(int i = 0 ; i < length ; i++){
             scopes.add((ClosureValue) DataInputStackValueParser.parse(input));
         }
+    }
+
+    public Stack<StackValue> getStack() {
+        return stack;
+    }
+
+    public Stack<Instruction> getInstructions() {
+        return instructions;
+    }
+
+    public Stack<ClosureValue> getScopes() {
+        return scopes;
     }
 }

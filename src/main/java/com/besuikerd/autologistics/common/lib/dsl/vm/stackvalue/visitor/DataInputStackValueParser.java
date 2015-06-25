@@ -45,6 +45,8 @@ public class DataInputStackValueParser {
                     return new ObjectValue(mapping);
                 case RECURSE:
                     return Recurse.instance;
+                case NATIVE:
+                    return new NativeFunctionValue(input.readUTF());
                 case CLOSURE:
                     length = input.readInt();
                     List<String> bindings = new ArrayList<String>(length);
@@ -55,7 +57,9 @@ public class DataInputStackValueParser {
                     length = input.readInt();
                     Map<String, StackValue> free = new HashMap<String, StackValue>();
                     for (int i = 0; i < length; i++) {
-                        free.put(input.readUTF(), parse(input));
+                        String key = input.readUTF();
+                        StackValue value = parse(input);
+                        free.put(key, value);
                     }
 
                     length = input.readInt();
@@ -64,8 +68,11 @@ public class DataInputStackValueParser {
                         body.add(DataInputInstructionParser.parse(input));
                     }
                     return new ClosureValue(bindings, free, body);
+                default:
+                    throw new IllegalArgumentException("unknown stackvalue with ordinal value " + ordinal);
             }
+        } else{
+            return null;
         }
-        return null;
     }
 }

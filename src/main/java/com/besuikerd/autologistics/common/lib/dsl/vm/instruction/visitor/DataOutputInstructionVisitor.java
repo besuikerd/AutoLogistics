@@ -14,7 +14,8 @@ public class DataOutputInstructionVisitor extends BaseInstructionVisitor<DataOut
 
     @Override
     public Void visitInstruction(Instruction instruction, DataOutput dataOutput) throws IOException {
-        dataOutput.writeInt(instruction.accept(OrdinalInstructionVisitor.instance, null));
+        int ordinal = instruction.accept(OrdinalInstructionVisitor.instance, null);
+        dataOutput.write(ordinal);
         return null;
     }
 

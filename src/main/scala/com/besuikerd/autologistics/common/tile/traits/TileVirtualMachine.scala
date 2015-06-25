@@ -4,7 +4,7 @@ package com.besuikerd.autologistics.common.tile.traits
 import java.io.{DataInput, DataOutput}
 import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser
 import com.besuikerd.autologistics.common.lib.dsl.vm._
-import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.{NativeFunctionPrintln, NativeFunctionPrint, NativeFunctionKeys, NativeFunctionLength}
+import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction._
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue._
 import com.besuikerd.autologistics.common.tile._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
@@ -26,15 +26,17 @@ trait TileVirtualMachine extends TileEntityMod
   virtualMachine.addNative("println", NativeFunctionPrintln.instance)
   virtualMachine.addNative("say", nativeSay)
 
-  val nativeSay: ScalaNativeFunction = { (vm, args) =>
-    val players = this.getEntitiesWithinRange[EntityPlayer](10)
-    for{
-      arg <- args
-      player <- players
-    } {
-      player.addChatComponentMessage(new ChatComponentText(arg.stringRepresentation))
+  object nativeSay extends NativeFunction {
+    override def call(vm: VirtualMachine, args: JList[StackValue]): StackValue = {
+      val players = TileVirtualMachine.this.getEntitiesWithinRange[EntityPlayer](10)
+      for{
+        arg <- args
+        player <- players
+      } {
+        player.asInstanceOf[EntityPlayer].addChatComponentMessage(new ChatComponentText(arg.stringRepresentation))
+      }
+      NilValue.instance
     }
-    NilValue.instance
   }
 
   abstract override def readFromNBT(compound: NBTTagCompound): Unit = {

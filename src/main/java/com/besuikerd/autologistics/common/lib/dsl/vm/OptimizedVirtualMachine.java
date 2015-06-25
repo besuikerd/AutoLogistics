@@ -14,32 +14,65 @@ public class OptimizedVirtualMachine extends DefaultVirtualMachine{
 
     private Stack<Iterator<Instruction>> pushAllInstructions;
     private Iterator<Instruction> pushAllInstructionsIterator;
+    private Instruction peek;
+
+    private boolean crashed;
 
     public OptimizedVirtualMachine(){
         this.pushAllInstructions = new Stack<Iterator<Instruction>>();
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        crashed = false;
+    }
+
+    @Override
+    public void crash(String message) {
+        crashed = true;
+        super.crash(message);
+    }
+
+    @Override
     public Instruction popInstruction() {
         Instruction popped;
-        if(pushAllInstructionsIterator != null){
+        if(peek != null) {
+            popped = peek;
+            peek = null;
+        } else if(pushAllInstructionsIterator != null){
             popped = pushAllInstructionsIterator.next();
             if(!pushAllInstructionsIterator.hasNext()){
-                pushAllInstructionsIterator = pushAllInstructions.isEmpty() ? null : pushAllInstructions.pop();
+                if(pushAllInstructions.isEmpty()){
+                    pushAllInstructionsIterator = null;
+                } else{
+                    Iterator<Instruction> poppedIt = pushAllInstructions.pop();
+                    if(poppedIt.hasNext()){
+                        pushAllInstructionsIterator = poppedIt;
+                    }
+                }
             }
         } else{
-            popped = instructions.pop();
+            popped = super.popInstruction();
         }
         return popped;
     }
 
     @Override
     public void pushInstructions(Collection<Instruction> instructions) {
+        if(instructions.isEmpty()){
+            return;
+        }
+
         Iterator<Instruction> iterator = instructions.iterator();
+        if(peek != null){
+            pushAllInstructions.push(new PeekIterator<Instruction>(peek));
+            peek = null;
+        }
         if(pushAllInstructionsIterator != null){
             pushAllInstructions.push(pushAllInstructionsIterator);
-            pushAllInstructionsIterator = iterator;
         }
+        pushAllInstructionsIterator = iterator;
     }
 
     /**
@@ -51,10 +84,11 @@ public class OptimizedVirtualMachine extends DefaultVirtualMachine{
             while(pushAllInstructionsIterator.hasNext()){
                 instructions.add(insertPos, pushAllInstructionsIterator.next());
             }
+            pushAllInstructionsIterator = null;
         }
         for(Iterator<Instruction> it : pushAllInstructions){
             while(it.hasNext()){
-                instructions.add(insertPos, pushAllInstructionsIterator.next());
+                instructions.add(insertPos, it.next());
             }
         }
     }
@@ -74,4 +108,46 @@ public class OptimizedVirtualMachine extends DefaultVirtualMachine{
     }
 
     //TODO fix isErrorState and getErrorMessage
+
+    private Instruction peekInstruction(){
+        if(peek == null){
+            peek = popInstruction();
+        }
+        return peek;
+    }
+
+    private boolean hasInstructions(){
+        return peek != null || pushAllInstructionsIterator != null || !instructions.isEmpty();
+    }
+
+    @Override
+    public boolean isTerminated() {
+        return !hasInstructions();
+    }
+
+    @Override
+    public boolean isErrorState() {
+        return crashed;
+    }
+
+    private class PeekIterator<A> implements Iterator<A>{
+        boolean hasNext;
+        private A value;
+
+        public PeekIterator(A value) {
+            this.value = value;
+            this.hasNext = true;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return hasNext;
+        }
+
+        @Override
+        public A next() {
+            hasNext = false;
+            return value;
+        }
+    }
 }
