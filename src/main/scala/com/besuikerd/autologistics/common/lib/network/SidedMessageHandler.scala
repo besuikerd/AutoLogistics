@@ -1,11 +1,9 @@
 package com.besuikerd.autologistics.common.lib.network
 
 import com.besuikerd.autologistics.AutoLogistics
+import cpw.mods.fml.common.network.simpleimpl.{MessageContext, IMessageHandler, IMessage}
+import cpw.mods.fml.relauncher.Side
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.tileentity.TileEntity
-import net.minecraftforge.fml.common.network.simpleimpl.{IMessage, MessageContext, IMessageHandler}
-import net.minecraftforge.fml.relauncher.Side
 import scala.annotation.switch
 
 trait SidedMessageHandler[REQ <: IMessage, REPLY <: IMessage] extends IMessageHandler[REQ, REPLY] {

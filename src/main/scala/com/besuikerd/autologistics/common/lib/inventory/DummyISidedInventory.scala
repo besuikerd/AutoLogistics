@@ -9,11 +9,11 @@ import net.minecraft.util.EnumFacing
 trait DummyISidedInventory extends DummyIInventory with ISidedInventory{
   override def inventory:ISidedInventory
 
-  override def getSlotsForFace(side: EnumFacing): Array[Int] = inventory.getSlotsForFace(side)
+  override def canExtractItem(index : Int, stack : ItemStack, direction : Int): Boolean = inventory.canExtractItem(index, stack, direction)
 
-  override def canExtractItem(index: Int, stack: ItemStack, direction: EnumFacing): Boolean = inventory.canExtractItem(index, stack, direction)
+  override def canInsertItem(index : Int, stack : ItemStack, direction : Int): Boolean = inventory.canInsertItem(index, stack, direction)
 
-  override def canInsertItem(index: Int, itemStackIn: ItemStack, direction: EnumFacing): Boolean = inventory.canInsertItem(index, itemStackIn, direction)
+  override def getAccessibleSlotsFromSide(side : Int): Array[Int] = inventory.getAccessibleSlotsFromSide(side)
 }
 
 object DummyISidedInventory{

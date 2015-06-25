@@ -1,7 +1,8 @@
 package com.besuikerd.autologistics.common.item
 
+import cpw.mods.fml.common.registry.GameRegistry
 import net.minecraft.item.Item
-import net.minecraftforge.fml.common.registry.GameRegistry
+
 
 class ItemMod(name:String) extends Item{
   def register(): this.type ={

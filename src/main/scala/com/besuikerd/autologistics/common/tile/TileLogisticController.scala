@@ -2,18 +2,12 @@ package com.besuikerd.autologistics.common.tile
 
 import com.besuikerd.autologistics.AutoLogistics
 import com.besuikerd.autologistics.common.tile.traits.{TileLogistic, TileVirtualMachine, TileCable}
-import net.minecraft.inventory.IInventory
-import net.minecraft.server.gui.IUpdatePlayerListBox
-import net.minecraft.tileentity.TileEntity
-import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.common.registry.GameRegistry
-import net.minecraftforge.fml.relauncher.Side
+import cpw.mods.fml.relauncher.Side
 
 class TileLogisticController extends TileEntityMod
   with TileVirtualMachine
   with TileLogistic
   with TileCable
-  with IUpdatePlayerListBox
 {
   val simpleProgram =
     """
@@ -63,11 +57,11 @@ class TileLogisticController extends TileEntityMod
       |}
     """.stripMargin
 
-  load(simpleProgram)
+  load(count)
 
-  override def update(): Unit = {
+  override def updateEntity(): Unit = {
     if(AutoLogistics.proxy.getSideOfThread == Side.SERVER) {
-      if (!virtualMachine.isTerminated()) {
+      if (!virtualMachine.isTerminated) {
         try{
           virtualMachine.run(5)
         } catch{
@@ -76,8 +70,8 @@ class TileLogisticController extends TileEntityMod
             load(simpleProgram2)
           }
         }
-      } else if (virtualMachine.isErrorState()) {
-        println(virtualMachine.instructions.top)
+      } else if (virtualMachine.isErrorState) {
+        println(virtualMachine.getErrorMessage)
       }
     }
   }

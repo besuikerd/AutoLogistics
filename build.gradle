@@ -1,3 +1,5 @@
+import org.ajoberstar.grgit.*
+
 buildscript {
     repositories {
         mavenCentral()
@@ -12,6 +14,31 @@ buildscript {
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath 'org.ajoberstar:grgit:1.3.0'
+    }
+}
+
+repositories {
+    maven {
+        name = "chickenbones"
+        url = "http://chickenbones.net/maven/"
+    }
+
+    ivy {
+        name "CoFHLib"
+        artifactPattern "http://addons-origin.cursecdn.com/files/2243/944/[module]-[revision].[ext]"
+    }
+    ivy {
+        name "CoFHCore"
+        artifactPattern 'http://addons-origin.cursecdn.com/files/2243/947/[module]-[revision].[ext]'
+    }
+    ivy {
+        name "ThermalExpansion"
+        artifactPattern "http://addons-origin.cursecdn.com/files/2233/797/[module]-[revision].[ext]"
+    }
+    ivy {
+        name "ThermalFoundation"
+        artifactPattern "http://addons-origin.cursecdn.com/files/2243/149/[module]-[revision].[ext]"
     }
 }
 
@@ -19,26 +46,67 @@ apply plugin: 'scala'
 apply plugin: 'idea'
 apply plugin: 'forge'
 
+
 version = "0.0.1"
 group= "com.besuikerd.autologistics"
 archivesBaseName = "AutoLogistics"
 
 minecraft {
-    version = "1.8-11.14.1.1405"
-    runDir = "eclipse"
-    
-    // the mappings can be changed at any time, and must be in the following format.
-    // snapshot_YYYYMMDD   snapshot are built nightly.
-    // stable_#            stables are built at the discretion of the MCP team.
-    // Use non-default mappings at your own risk. they may not allways work.
-    // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20141130"
+    version = "1.7.10-10.13.4.1448-1.7.10"
+    runDir = "minecraft"
 }
 
+configurations.create('mod')
+configurations.mod {
+    description = 'mod dependencies'
+    transitive = true
+}
+
+def gitDependencyPath = 'lib'
+def String[] gitDependencies = []
+
+String getRepoName(String uri){
+    uri.replaceAll('^(.*/)+|\\.git', '')
+}
+
+
 dependencies {
-    compile 'org.scalatest:scalatest_2.11:2.2.5'
+    compile "codechicken:CodeChickenCore:1.7.10-1.0.4.29:src"
+    compile "codechicken:NotEnoughItems:1.7.10-1.0.3.74:src"
+    mod "codechicken:CodeChickenCore:1.7.10-1.0.4.29:dev"
+    mod "codechicken:NotEnoughItems:1.7.10-1.0.3.74:dev"
+
+    compile group: 'cofh', name: 'CoFHLib', version: '[1.7.10]1.0.3B1-164-dev', ext: 'jar'
+    compile group: 'cofh', name: 'CoFHCore', version: '[1.7.10]3.0.2-284-dev', ext: 'jar'
+    compile group: 'cofh', name: 'ThermalExpansion', version: '[1.7.10]4.0.0-176-dev', ext: 'jar'
+    compile group: 'cofh', name: 'ThermalFoundation', version: '[1.7.10]1.0.0-88-dev', ext: 'jar'
+
+    testCompile 'org.scalatest:scalatest_2.11:2.2.5'
     testCompile 'junit:junit:4.12'
-    //compile project(':StevesFactoryManager')
+}
+
+task cloneGitDependencies << {
+    gitDependencies.each {
+        def repo = getRepoName(it)
+        def destination = file("$gitDependencyPath/$repo")
+        if(!destination.exists()){
+            Grgit.clone(dir: destination, uri: it)
+        }
+    }
+}
+
+task cleanMods << {
+    deleteMods.execute()
+    copyMods.execute()
+}
+
+task deleteMods(type:Delete){
+    delete fileTree("${minecraft.runDir}/mods").include('*')
+}
+
+task copyMods(type:Copy) {
+    into "${minecraft.runDir}/mods/"
+    from configurations.mod
 }
 
 processResources

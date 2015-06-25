@@ -1,11 +1,9 @@
 package com.besuikerd.autologistics
 
 import com.besuikerd.autologistics.common.{CommonProxy, ModItems, ModBlocks}
-import net.minecraft.client.Minecraft
-import net.minecraftforge.fml.common.{SidedProxy, Mod}
-import net.minecraftforge.fml.common.Mod.EventHandler
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.relauncher.Side
+import cpw.mods.fml.common.Mod.EventHandler
+import cpw.mods.fml.common.event.FMLInitializationEvent
+import cpw.mods.fml.common.{SidedProxy, Mod}
 
 
 @Mod(name = AutoLogistics.MOD_NAME, modid = AutoLogistics.MOD_ID, version = AutoLogistics.MOD_VERSION, modLanguage = "scala")

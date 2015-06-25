@@ -9,10 +9,10 @@ abstract class TileEntityMod extends TileEntity{
   override def getDescriptionPacket: Packet = {
     val compound = new NBTTagCompound();
     writeToNBT(compound)
-    new S35PacketUpdateTileEntity(pos, 1, compound);
+    new S35PacketUpdateTileEntity(xCoord, yCoord, zCoord, 1, compound)
   }
 
   override def onDataPacket(net: NetworkManager, pkt: S35PacketUpdateTileEntity): Unit = {
-    readFromNBT(pkt.getNbtCompound)
+    readFromNBT(pkt.func_148857_g)
   }
 }

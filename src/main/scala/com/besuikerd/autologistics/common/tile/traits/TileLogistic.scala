@@ -1,16 +1,18 @@
 package com.besuikerd.autologistics.common.tile.traits
 
-import com.besuikerd.autologistics.common.lib.dsl.old.vm._
-import com.besuikerd.autologistics.common.lib.dsl.old._
+import java.util
+
+import com.besuikerd.autologistics.common.lib.dsl.vm._
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ObjectValue
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
 import com.besuikerd.autologistics.common.lib.inventory._
 import net.minecraft.inventory.{InventoryCrafting, ISidedInventory, IInventory}
 import net.minecraft.item.crafting.CraftingManager
 import net.minecraft.item.{ItemStack, ItemBlock, Item}
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.{BlockPos, EnumFacing}
-import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraft.block.Block
+import net.minecraft.util.EnumFacing
 import net.minecraftforge.oredict.OreDictionary
 import scala.collection.mutable.{Map => MMap, ArrayBuffer}
 import scala.collection.JavaConversions._
@@ -22,8 +24,8 @@ trait TileLogistic extends TileEntityMod{
     with TileCable
     with TileVirtualMachine =>
 
-  virtualMachine.addNative("_itemFilter", nativeItemFilter)
-  virtualMachine.addNative("_transferTo", nativeTransferTo)
+//  virtualMachine.addNative("_itemFilter", nativeItemFilter)
+//  virtualMachine.addNative("_transferTo", nativeTransferTo)
 
   val directions = Map(
     "north" -> EnumFacing.NORTH,
@@ -36,14 +38,18 @@ trait TileLogistic extends TileEntityMod{
     "bottom" -> EnumFacing.DOWN
   )
 
-  directions.keys.foreach(dir => virtualMachine.globals.put(dir, StringValue(dir)))
+  directions.keys.foreach(dir => virtualMachine.addGlobal(dir, new StringValue(dir)))
 
-  def createEmptyFilter() = ObjectValue(MMap(
-    "sides" -> ListValue(),
-    "items" -> ListValue()
-  ))
+  /*
 
-  def nativeItemFilter(values:List[StackValue]): StackValue = {
+  def createEmptyFilter(): ObjectValue = {
+    val obj = new ObjectValue()
+    obj.mapping.put("sides", new ListValue())
+    obj.mapping.put("items", new ListValue())
+    obj
+  }
+
+  val nativeItemFilter: ScalaNativeFunction = { (vm, values) =>
     checkArgCount(values, 2)
     values match{
       case List(item:ObjectValue, filters:ListValue, _*)=> {
@@ -250,6 +256,7 @@ trait TileLogistic extends TileEntityMod{
       }._1
     }
   }
+  */
 
   /*
   def moveItems(itemFrom:ObjectValue, itemTo:ObjectValue): StackValue = {
@@ -372,6 +379,8 @@ trait TileLogistic extends TileEntityMod{
   }
   */
 
+
+  /*
   def getInventories(allInventories:IndexedSeq[TileEntity with IInventory], item:StackValue):Option[(IndexedSeq[TileEntity with IInventory], ObjectValue)] = item match{
     case ObjectValue(mapping) => {
       val byName = for{
@@ -488,4 +497,6 @@ trait TileLogistic extends TileEntityMod{
       }
     optPass.map(n => Math.min(n, stack.stackSize)).getOrElse(stack.stackSize)
   }
+
+  */
 }

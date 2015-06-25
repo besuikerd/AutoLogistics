@@ -2,13 +2,9 @@ package com.besuikerd.autologistics.common.block
 
 import com.besuikerd.autologistics.common.{ModMaterials, ModBlockNames}
 import com.besuikerd.autologistics.common.tile.TileLogisticController
-import net.minecraft.block.material.Material
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import cpw.mods.fml.common.registry.GameRegistry
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.BlockPos
 import net.minecraft.world.World
-import net.minecraftforge.fml.common.registry.GameRegistry
 
 class BlockLogisticController extends TileBlock(ModMaterials.machine, ModBlockNames.LogisticController){
 

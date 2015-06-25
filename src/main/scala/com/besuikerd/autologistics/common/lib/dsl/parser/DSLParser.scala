@@ -1,8 +1,4 @@
 package com.besuikerd.autologistics.common.lib.dsl.parser
-
-import com.besuikerd.autologistics.common.lib.dsl
-import com.besuikerd.autologistics.common.lib.dsl.old.vm.Branch
-
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.{Parsers, ImplicitConversions, JavaTokenParsers}
 import com.besuikerd.autologistics.common.lib.dsl._

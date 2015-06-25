@@ -1,19 +1,25 @@
 package com.besuikerd.autologistics.common.lib.dsl.vm;
 
-//import com.besuikerd.autologistics.common.lib.collection.Stack;
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.CrashInstruction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.Instruction;
+import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.visitor.DataInputInstructionParser;
+import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.visitor.DataOutputInstructionVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ClosureValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.NativeFunctionValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.Recurse;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.DataInputStackValueParser;
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.DataOutputStackValueVisitor;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.*;
 
 public class DefaultVirtualMachine implements VirtualMachine{
     protected Stack<StackValue> stack;
     protected Stack<Instruction> instructions;
-
     protected Stack<ClosureValue> scopes;
 
     protected Map<String, StackValue> globals;
@@ -181,5 +187,65 @@ public class DefaultVirtualMachine implements VirtualMachine{
             }
         }
         return null;
+    }
+
+    @Override
+    public void serialize(DataOutput output) throws IOException {
+        serializeStack(output);
+        serializeInstructions(output);
+        serializeScopes(output);
+    }
+
+    protected void serializeStack(DataOutput output) throws IOException{
+        output.writeInt(stack.size());
+        for(StackValue value : stack){
+            value.accept(DataOutputStackValueVisitor.instance, output);
+        }
+    }
+
+    protected void serializeInstructions(DataOutput output) throws IOException{
+        output.writeInt(instructions.size());
+        for(Instruction instruction : instructions){
+            instruction.accept(DataOutputInstructionVisitor.instance, output);
+        }
+    }
+
+    protected void serializeScopes(DataOutput output) throws IOException{
+        output.writeInt(scopes.size());
+        for(ClosureValue value : scopes){
+            value.accept(DataOutputStackValueVisitor.instance, output);
+        }
+    }
+
+
+    @Override
+    public void deserialize(DataInput input) throws IOException{
+        deserializeStack(input);
+        deserializeInstructions(input);
+        deserializeScopes(input);
+    }
+
+    protected void deserializeStack(DataInput input) throws IOException{
+        int length = input.readInt();
+        stack.clear();
+        for(int i = 0 ; i < length ; i++){
+            stack.add(DataInputStackValueParser.parse(input));
+        }
+    }
+
+    protected void deserializeInstructions(DataInput input) throws IOException{
+        int length = input.readInt();
+        instructions.clear();
+        for(int i = 0 ; i < length ; i++){
+            instructions.add(DataInputInstructionParser.parse(input));
+        }
+    }
+
+    protected void deserializeScopes(DataInput input) throws IOException{
+        int length = input.readInt();
+        scopes.clear();
+        for(int i = 0 ; i < length ; i++){
+            scopes.add((ClosureValue) DataInputStackValueParser.parse(input));
+        }
     }
 }

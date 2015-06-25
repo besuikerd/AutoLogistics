@@ -10,48 +10,48 @@ import scala.collection.mutable.{Set => MSet, ArrayBuffer}
 import scala.reflect._
 
 trait TileCable extends TileEntityMod{
-  def findInventories: IndexedSeq[TileEntity with IInventory] = {
-    val foundInventories = findConnectedTiles[IInventory].map{
-      case t:TileEntityChest if t.getBlockType.isInstanceOf[BlockChest] => {
-        val blockChest = t.getBlockType.asInstanceOf[BlockChest]
-        blockChest.getLockableContainer(t.getWorld, t.getPos) match{
-          case inv:InventoryLargeChest => new TileChestWrapper(t, inv)
-          case other => t
-        }
-      }
-      case otherwise => otherwise
-    }
+//  def findInventories: IndexedSeq[TileEntity with IInventory] = {
+//    val foundInventories = findConnectedTiles[IInventory].map{
+//      case t:TileEntityChest if t.getBlockType.isInstanceOf[BlockChest] => {
+//        val blockChest = t.getBlockType.asInstanceOf[BlockChest]
+//        blockChest.getLockableContainer(t.getWorld, t.getPos) match{
+//          case inv:InventoryLargeChest => new TileChestWrapper(t, inv)
+//          case other => t
+//        }
+//      }
+//      case otherwise => otherwise
+//    }
+//
+//    val foundDoubleChests = ArrayBuffer[TileEntityChest]()
+//    val filteredInventories = foundInventories.filter{
+//      case t:TileChestWrapper => if(!foundDoubleChests.exists(t.inventory.isPartOfLargeChest(_))){
+//        foundDoubleChests += t.tile
+//        true
+//      } else false
+//      case _ => true
+//    }
+//    filteredInventories
+//  }
+  //TODO fix double chests?
 
-    val foundDoubleChests = ArrayBuffer[TileEntityChest]()
-    val filteredInventories = foundInventories.filter{
-      case t:TileChestWrapper => if(!foundDoubleChests.exists(t.inventory.isPartOfLargeChest(_))){
-        foundDoubleChests += t.tile
-        true
-      } else false
-      case _ => true
-    }
+//  private class TileChestWrapper(override val tile:TileEntityChest, override val inventory:InventoryLargeChest) extends TileEntity with TileWrapper with IInventoryWrapper{
+//    override def markDirty(): Unit = {
+//      tile.markDirty()
+//    }
+//  }
 
-    filteredInventories
-  }
-
-  private class TileChestWrapper(override val tile:TileEntityChest, override val inventory:InventoryLargeChest) extends TileEntity with TileWrapper with IInventoryWrapper{
-    override def markDirty(): Unit = {
-      tile.markDirty()
-    }
-  }
-
-  def findConnectedTiles[A:ClassTag]: IndexedSeq[TileEntity with A] = {
-    val traversed = MSet[TileCable]()
-    val found = MSet[TileEntity with A]()
-    findConnectedTiles[A](traversed, found)
-    found.toIndexedSeq
-  }
-
-  private def findConnectedTiles[A:ClassTag](traversed:MSet[TileCable], inventories:MSet[TileEntity with A]): Unit = {
-    traversed += this
-    this.neighbours[A].foreach(n => inventories.add(n.asInstanceOf[TileEntity with A]))
-    for{
-      cable <- this.neighbours[TileCable] if !traversed.contains(cable)
-    } cable.findConnectedTiles[A](traversed, inventories)
-  }
+//  def findConnectedTiles[A:ClassTag]: IndexedSeq[TileEntity with A] = {
+//    val traversed = MSet[TileCable]()
+//    val found = MSet[TileEntity with A]()
+//    findConnectedTiles[A](traversed, found)
+//    found.toIndexedSeq
+//  }
+//
+//  private def findConnectedTiles[A:ClassTag](traversed:MSet[TileCable], inventories:MSet[TileEntity with A]): Unit = {
+//    traversed += this
+//    this.neighbours[A].foreach(n => inventories.add(n.asInstanceOf[TileEntity with A]))
+//    for{
+//      cable <- this.neighbours[TileCable] if !traversed.contains(cable)
+//    } cable.findConnectedTiles[A](traversed, inventories)
+//  }
 }

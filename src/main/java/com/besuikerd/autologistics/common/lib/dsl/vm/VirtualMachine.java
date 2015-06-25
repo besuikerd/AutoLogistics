@@ -4,6 +4,9 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.Instruction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -37,4 +40,7 @@ public interface VirtualMachine {
     boolean isTerminated();
     boolean isErrorState();
     String getErrorMessage();
+
+    void serialize(DataOutput output) throws IOException;
+    void deserialize(DataInput input) throws IOException;
 }
