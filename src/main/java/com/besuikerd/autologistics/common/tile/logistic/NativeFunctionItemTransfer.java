@@ -1,104 +1,128 @@
 package com.besuikerd.autologistics.common.tile.logistic;
 
-import com.besuikerd.autologistics.common.block.BlockLogisticCable;
 import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.AbstractNativeFunction;
-import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.IntegerValue;
-import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ObjectValue;
-import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
-import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StringValue;
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
+import com.besuikerd.autologistics.common.lib.util.MathUtil;
+import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilter;
+import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilterItem;
+import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilterPosition;
+import com.besuikerd.autologistics.common.tile.logistic.itemcounter.InventoryItemCounterExtract;
+import com.besuikerd.autologistics.common.tile.logistic.itemcounter.InventoryItemCounterInsert;
 import com.besuikerd.autologistics.common.tile.traits.TileCable;
-import net.minecraft.block.Block;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NativeFunctionItemTransfer extends AbstractNativeFunction {
-    public static final NativeFunctionItemTransfer instance = new NativeFunctionItemTransfer();
 
     private TileEntity tile;
 
+    public NativeFunctionItemTransfer(TileEntity tile) {
+        this.tile = tile;
+    }
+
     @Override
     public StackValue call(VirtualMachine vm, List<StackValue> args) {
-        return null;
-    }
+        if(ensureLength(vm, args, 2)){
+            StackValue valueFrom = args.get(0);
+            StackValue valueTo = args.get(1);
 
-    public void transferTo(ObjectValue from, ObjectValue to){
-        List<IInventory> allInventories = new LazyTileFinder<IInventory>(IInventory.class, TileCable.class, tile).allValues();
-        List<IInventory> toInventories = filterInventories(allInventories, to);
-    }
-
-    private List<IInventory> filterInventories(List<IInventory> inventories, ObjectValue filter){
-        List<IInventory> filteredInventories = new ArrayList<IInventory>();
-        for(IInventory inv : inventories){
-            TileEntity tile = (TileEntity) inv;
-            if(filterByName(tile, filter) || filterByPosition(tile, filter)){
-                filteredInventories.add(inv);
+            ObjectValue from;
+            ObjectValue to;
+            if(
+                   (from = StackValues.tryExpectType(ObjectValue.class, valueFrom)) != null
+                && (to = StackValues.tryExpectType(ObjectValue.class, valueTo)) != null
+            ){
+                return transferTo(from, to);
             }
         }
-        return filteredInventories;
+        return NilValue.instance;
     }
 
+    public StackValue transferTo(ObjectValue from, ObjectValue to){
 
-    public boolean filterByPosition(TileEntity tile, ObjectValue filter){
-        StackValue optMod = filter.mapping.get("mod");
-        if(optMod != null && optMod instanceof StringValue){
+        LogisticFilter fromFilter;
+        LogisticFilter toFilter;
+        if(
+               (fromFilter = getFilter(from)) != null
+            && (toFilter = getFilter(to)) != null
+        ){
+            List<IInventory> allInventories = new LazyTileFinder<IInventory>(IInventory.class, TileCable.class, tile).allValues();
+            List<IInventory> toInventories = filterInventories(allInventories, toFilter);
 
-            StackValue optName = filter.mapping.get("name");
-            if(optName != null && optName instanceof StringValue){
-                StringValue mod = (StringValue) optMod;
-                StringValue name = (StringValue) optName;
+            for(IInventory fromInventory : allInventories){
+                TileEntity fromTile = (TileEntity) fromInventory;
+                if(fromFilter.passesBlockFilter(fromTile)){
+                    int fromLimit = fromFilter.getAmount() == -1 ? Integer.MAX_VALUE : fromFilter.getAmount() - InventoryItemCounterExtract.instance.count(fromInventory, fromFilter);
+                    if(fromLimit > 0){ // we are allowed to extract #fromLimit items
 
-                Block block = Block.getBlockFromName(mod.value + ":" + name.value);
-                //TODO ore dictionary
+                        transferLoop:
+                        for(int fromSlotIndex = 0 ; fromSlotIndex < fromInventory.getSizeInventory() ; fromSlotIndex++){
+                            ItemStack fromStack = fromInventory.getStackInSlot(fromSlotIndex);
+                            if(fromStack != null && InventoryItemCounterExtract.instance.canUseSlot(fromInventory, fromSlotIndex, fromStack, fromFilter)){
+                                boolean transferedItems = false;
+                                for(IInventory toInventory : toInventories){ //let's find an inventory that we can put this stuff into
+                                    int toLimit = toFilter.getAmount() == -1 ? Integer.MAX_VALUE : fromFilter.getAmount() - InventoryItemCounterInsert.instance.count(toInventory, toFilter);
+                                    if(toLimit > 0) { //we are allowed to insert #fromLimit items
 
-                if(tile.getBlockType().equals(block)){
-                    StackValue optMeta = filter.mapping.get("meta");
-                    if(optMeta != null && optMeta instanceof IntegerValue){
-                        IntegerValue meta = (IntegerValue) optMeta;
-                        if(tile.getBlockMetadata() != meta.value){
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-                return false;
-            }
-        }
-        return false;
-    }
-
-    public boolean filterByName(TileEntity tile, ObjectValue filter){
-        StackValue optType = filter.mapping.get("type");
-        if(optType != null && optType instanceof StringValue){
-            StackValue optX = filter.mapping.get("x");
-            if(optX != null && optX instanceof IntegerValue){
-                StackValue optY = filter.mapping.get("y");
-                if(optY != null && optY instanceof IntegerValue){
-                    StackValue optZ = filter.mapping.get("z");
-                    if(optZ != null && optZ instanceof IntegerValue){
-                        StringValue type = (StringValue) optType;
-                        IntegerValue x = (IntegerValue) optX;
-                        IntegerValue y = (IntegerValue) optY;
-                        IntegerValue z = (IntegerValue) optZ;
-
-                        if(type.value.equals("relative")){
-                            return
-                                this.tile.xCoord + x.value == tile.xCoord &&
-                                this.tile.yCoord + y.value == tile.yCoord &&
-                                this.tile.zCoord + z.value == tile.zCoord;
-                        } else if(type.value.equals("absolute")){
-                            return
-                                tile.xCoord == x.value &&
-                                tile.yCoord == y.value &&
-                                tile.zCoord == z.value;
+                                        for(int toSlotIndex = 0 ; toSlotIndex < toInventory.getSizeInventory() ; toSlotIndex++){
+                                            ItemStack toStack = toInventory.getStackInSlot(toSlotIndex);
+                                            if((toStack == null || fromStack.isItemEqual(toStack) && ItemStack.areItemStackTagsEqual(fromStack, toStack)) && InventoryItemCounterInsert.instance.canUseSlot(toInventory, toSlotIndex, fromStack, toFilter)){
+                                                if(toStack == null){ //empty slot; we can simply transfer the whole stack
+                                                    fromInventory.setInventorySlotContents(fromSlotIndex, null);
+                                                    toInventory.setInventorySlotContents(toSlotIndex, fromStack);
+                                                    break transferLoop;
+                                                } else{
+                                                    int toTransfer = MathUtil.min(fromLimit, toLimit, fromStack.stackSize, toStack.getMaxStackSize() - toStack.stackSize);
+                                                    fromInventory.decrStackSize(fromSlotIndex, toTransfer);
+                                                    toInventory.decrStackSize(toSlotIndex, -toTransfer);
+                                                    if(fromInventory.getStackInSlot(fromSlotIndex) == null){ //we transferred the whole fromStack!
+                                                        break transferLoop;
+                                                    } else{
+                                                        transferedItems = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if(transferedItems){ //we transferred part of the fromStack!
+                                    break transferLoop;
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-        return false;
+        return NilValue.instance;
+    }
+
+    private List<IInventory> filterInventories(List<IInventory> inventories, LogisticFilter filter){
+        List<IInventory> filtered = new ArrayList<IInventory>();
+        for(IInventory inventory : inventories){
+            TileEntity tile = (TileEntity) inventory;
+            if(filter.passesBlockFilter(tile)){
+                filtered.add(inventory);
+            }
+        }
+        return filtered;
+    }
+
+    private LogisticFilter getFilter(ObjectValue obj){
+        LogisticFilter filter;
+        if(
+               (filter = LogisticFilterItem.fromObjectValue(obj)) != null
+            || (filter = LogisticFilterPosition.fromObjectValue(obj)) != null
+        ){
+            filter = null;
+        }
+        return filter;
     }
 }

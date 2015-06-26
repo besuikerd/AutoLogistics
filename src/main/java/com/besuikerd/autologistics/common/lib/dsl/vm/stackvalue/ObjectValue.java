@@ -32,6 +32,10 @@ public class ObjectValue implements StackValue{
         return builder.toString();
     }
 
+    public void put(String key, StackValue value){
+        mapping.put(key, value);
+    }
+
     @Override
     public <A, B, T extends Throwable> B accept(StackValueVisitor<A, B, T> visitor, A arg) throws T {
         return visitor.visitObjectValue(this, arg);

@@ -18,21 +18,10 @@ public abstract class AbstractNativeFunction implements NativeFunction{
     }
 
     protected <A extends StackValue> A expectType(VirtualMachine vm, Class<A> cls, StackValue value){
-        if(cls.isInstance(value)){
-            return cls.cast(value);
-        } else{
-            vm.crash("expected type: " + StackValues.findOfClassString(cls) + ", got: " + value.accept(TypeStackValueVisitor.instance, null));
-            return null;
-        }
+        return StackValues.expectType(vm, cls, value);
     }
 
     protected <A extends StackValue> A extractField(VirtualMachine vm, Class<A> cls, String field, ObjectValue obj){
-        StackValue value = obj.mapping.get(field);
-        if(value == null){
-            vm.crash("field not found: " + field);
-            return null;
-        } else {
-            return expectType(vm, cls, value);
-        }
+        return StackValues.extractField(vm, cls, field, obj);
     }
 }

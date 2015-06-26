@@ -8,7 +8,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ObjectValue
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
 import com.besuikerd.autologistics.common.lib.inventory._
-import com.besuikerd.autologistics.common.tile.logistic.LazyTileFinder
+import com.besuikerd.autologistics.common.tile.logistic.{NativeFunctionItemFilter, NativeFunctionItemTransfer, LazyTileFinder}
 import net.minecraft.inventory.{InventoryCrafting, ISidedInventory, IInventory}
 import net.minecraft.item.crafting.CraftingManager
 import net.minecraft.item.{ItemStack, ItemBlock, Item}
@@ -43,6 +43,8 @@ trait TileLogistic extends TileEntityMod{
   directions.keys.foreach(dir => virtualMachine.addGlobal(dir, new StringValue(dir)))
 
   virtualMachine.addNative("find", FindInventories)
+  virtualMachine.addNative("_transferTo", new NativeFunctionItemTransfer(this))
+  virtualMachine.addNative("_itemFilter", NativeFunctionItemFilter.instance)
 
   object FindInventories extends NativeFunction{
     override def call(vm: VirtualMachine, args: util.List[StackValue]): StackValue = {
