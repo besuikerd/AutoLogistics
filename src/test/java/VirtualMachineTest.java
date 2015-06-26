@@ -1,4 +1,3 @@
-import com.besuikerd.autologistics.common.lib.collection.Stack;
 import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser;
 import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser$;
 import com.besuikerd.autologistics.common.lib.dsl.Statement;
@@ -80,7 +79,7 @@ public class VirtualMachineTest {
 
     }
 
-    public Stack<Instruction> load(String program){
+    public List<Instruction> load(String program){
         AutoLogisticsParser$.ParseResult<scala.collection.immutable.List<Statement>> parseResult = AutoLogisticsParser.parse(AutoLogisticsParser.parser(), program);
         if(parseResult instanceof AutoLogisticsParser$.Success){
             return CodeGenerator.generate(parseResult.get());
@@ -93,7 +92,7 @@ public class VirtualMachineTest {
     }
 
     public void run(String program){
-        Stack<Instruction> instructions = load(program);
+        List<Instruction> instructions = load(program);
 //        for(Instruction i : instructions){
 //            System.out.println(i);
 //        }

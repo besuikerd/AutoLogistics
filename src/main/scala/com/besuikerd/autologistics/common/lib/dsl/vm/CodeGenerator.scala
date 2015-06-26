@@ -1,8 +1,6 @@
 package com.besuikerd.autologistics.common.lib.dsl.vm
 
 import java.util.{ArrayList, List => JList}
-
-import com.besuikerd.autologistics.common.lib.collection.{LinkedStack, Stack}
 import com.besuikerd.autologistics.common.lib.dsl._
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.{Instruction, _}
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.compare._
@@ -13,8 +11,8 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue._
 import scala.collection.JavaConversions._
 
 object CodeGenerator {
-  def generate(statements:List[Statement]):Stack[Instruction] = {
-    val stack = new LinkedStack[Instruction]()
+  def generate(statements:List[Statement]):JList[Instruction] = {
+    val stack = new ArrayList[Instruction]()
     stack.add(OpenScopeInstruction.instance)
     for(s <- statements){
       generate(s, stack)
@@ -23,7 +21,7 @@ object CodeGenerator {
     stack
   }
 
-  def generate(node: ASTNode, stack:Stack[Instruction]): Unit = node match{
+  def generate(node: ASTNode, stack:JList[Instruction]): Unit = node match{
     case ExpressionStatement(e) => {generate(e, stack); stack.add(PopInstruction.instance)}
     case Assignment(binding, e, isLocal) => {
       e match{
@@ -61,9 +59,9 @@ object CodeGenerator {
     }
 
     case WhileStatement(condition, body) => {
-      val conditionStatements = new LinkedStack[Instruction]()
+      val conditionStatements = new ArrayList[Instruction]()
       generate(condition, conditionStatements)
-      val bodyStatements = new LinkedStack[Instruction]()
+      val bodyStatements = new ArrayList[Instruction]()
       generate(body, bodyStatements)
       bodyStatements.add(new LoadInstruction(conditionStatements))
       stack.addAll(conditionStatements)
@@ -75,7 +73,7 @@ object CodeGenerator {
     case BlockExpression(body) => {
       stack.add(OpenScopeInstruction.instance)
 
-      val statements = new LinkedStack[Instruction]()
+      val statements = new ArrayList[Instruction]()
       for(statement <- body){
         generate(statement, statements)
       }
@@ -102,9 +100,9 @@ object CodeGenerator {
 
     case IfElseExpression(condition, ifExp, elseExp) => {
       generate(condition, stack)
-      val ifInstructions = new LinkedStack[Instruction]()
+      val ifInstructions = new ArrayList[Instruction]()
       generate(ifExp, ifInstructions)
-      val elseInstructions = new LinkedStack[Instruction]()
+      val elseInstructions = new ArrayList[Instruction]()
       elseExp match{
         case Some(e) => generate(e, elseInstructions)
         case None => elseInstructions.add(new PushInstruction(NilValue.instance))
@@ -167,10 +165,10 @@ object CodeGenerator {
     case NullExpression => stack.add(PushInstruction.pushNil)
   }
 
-  private def lambdaInstructions(name:Option[String], lambda:LambdaExpression, stack:Stack[Instruction]): Unit ={
-    val bodyInstructions = new LinkedStack[Instruction]()
+  private def lambdaInstructions(name:Option[String], lambda:LambdaExpression, stack:JList[Instruction]): Unit ={
+    val bodyInstructions = new ArrayList[Instruction]()
     generate(lambda.body, bodyInstructions)
-    val pushClosureInstruction = new PushClosureInstruction(name.getOrElse(null), seqAsJavaList(lambda.bindings), findVariables(lambda.bindings, bodyInstructions), bodyInstructions)
+    val pushClosureInstruction = new PushClosureInstruction(name.orNull, seqAsJavaList(lambda.bindings), findVariables(lambda.bindings, bodyInstructions), bodyInstructions)
     stack.add(pushClosureInstruction)
   }
 

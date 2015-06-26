@@ -50,10 +50,7 @@ class TileLogisticController extends TileEntityMod
 
   val count =
     """
-      |i = 0
-      |while(true){
-      |  say("hello world!");
-      |}
+      |find()
     """.stripMargin
 
   load(count)

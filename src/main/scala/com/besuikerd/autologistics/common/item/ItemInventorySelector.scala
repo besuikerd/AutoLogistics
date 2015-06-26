@@ -3,6 +3,7 @@ package com.besuikerd.autologistics.common.item
 import com.besuikerd.autologistics.common.ModItemNames
 import com.besuikerd.autologistics.common.lib.util.ClipBoard
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.init.Items
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util._
@@ -10,6 +11,7 @@ import net.minecraft.world.World
 
 class ItemInventorySelector extends ItemMod(ModItemNames.InventorySelector){
   maxStackSize = 1
+  setTextureName("compass")
 
   final val KEY_COORDS = "coords"
 

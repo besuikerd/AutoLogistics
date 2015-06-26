@@ -1,6 +1,5 @@
 package com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue;
 
-import com.besuikerd.autologistics.common.lib.collection.Stack;
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.Instruction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.StackValueVisitor;
 

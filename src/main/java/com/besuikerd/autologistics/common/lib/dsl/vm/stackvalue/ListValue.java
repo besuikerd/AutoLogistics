@@ -34,4 +34,8 @@ public class ListValue implements StackValue{
     public <A, B, T extends Throwable> B accept(StackValueVisitor<A, B, T> visitor, A arg) throws T {
         return visitor.visitListValue(this, arg);
     }
+
+    public void append(StackValue value){
+        this.value.add(value);
+    }
 }
