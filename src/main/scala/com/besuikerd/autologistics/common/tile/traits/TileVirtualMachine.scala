@@ -67,7 +67,7 @@ trait TileVirtualMachine extends TileEntityMod
     AutoLogisticsParser.parse(AutoLogisticsParser.parser, program) match{
       case AutoLogisticsParser.Success(ast, _) => {
         val instructions = CodeGenerator.generate(ast)
-        println(ast)
+        //println(ast)
         virtualMachine.load(instructions)
       }
       case AutoLogisticsParser.NoSuccess(error, _) => {

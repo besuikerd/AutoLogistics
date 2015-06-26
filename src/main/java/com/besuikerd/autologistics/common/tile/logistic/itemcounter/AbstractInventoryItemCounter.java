@@ -1,5 +1,6 @@
 package com.besuikerd.autologistics.common.tile.logistic.itemcounter;
 
+import com.besuikerd.autologistics.common.lib.util.ArrayUtil;
 import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilter;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
@@ -37,7 +38,7 @@ public abstract class AbstractInventoryItemCounter implements InventoryItemCount
         if(inventory instanceof ISidedInventory){
             ISidedInventory sided = (ISidedInventory) inventory;
             for(EnumFacing side : filter.getValidSides()){
-                if(canCountSided(sided, slotIndex, stack, side)){
+                if(ArrayUtil.contains(sided.getAccessibleSlotsFromSide(side.ordinal()), slotIndex) && canCountSided(sided, slotIndex, stack, side)){
                     return true;
                 }
             }

@@ -1,25 +1,14 @@
 package com.besuikerd.autologistics.common.tile.traits
 
-import java.util
-
 import com.besuikerd.autologistics.common.lib.dsl.vm._
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunction
-import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ObjectValue
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
-import com.besuikerd.autologistics.common.lib.inventory._
 import com.besuikerd.autologistics.common.tile.logistic.{NativeFunctionItemFilter, NativeFunctionItemTransfer, LazyTileFinder}
 import net.minecraft.inventory.{InventoryCrafting, ISidedInventory, IInventory}
-import net.minecraft.item.crafting.CraftingManager
 import net.minecraft.item.{ItemStack, ItemBlock, Item}
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.block.Block
 import net.minecraft.util.EnumFacing
-import net.minecraftforge.oredict.OreDictionary
-import scala.collection.mutable.{Map => MMap, ArrayBuffer}
-import scala.collection.JavaConversions._
-import com.besuikerd.autologistics.common.lib.collection.TraversableExtensions.TraversableExtensions
-import com.besuikerd.autologistics.common.lib.collection.MMapExtensions.MMapExtensions
+import java.util.{List => JList}
 
 trait TileLogistic extends TileEntityMod{
   this: TileEntityMod
@@ -47,7 +36,7 @@ trait TileLogistic extends TileEntityMod{
   virtualMachine.addNative("_itemFilter", NativeFunctionItemFilter.instance)
 
   object FindInventories extends NativeFunction{
-    override def call(vm: VirtualMachine, args: util.List[StackValue]): StackValue = {
+    override def call(vm: VirtualMachine, args: JList[StackValue]): StackValue = {
       val it = new LazyTileFinder(classOf[IInventory], classOf[TileCable], TileLogistic.this)
       while(it.hasNext){
         println("found " + it.next())

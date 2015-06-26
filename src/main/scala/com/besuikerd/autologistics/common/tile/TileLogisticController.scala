@@ -9,20 +9,6 @@ class TileLogisticController extends TileEntityMod
   with TileLogistic
   with TileCable
 {
-  val simpleProgram =
-    """
-      |chestWood = ~(2, 0, 0)
-      |chestCharcoal = ~(2, 1, 0)
-      |furnace = <minecraft:furnace>
-      |charcoal = <minecraft:coal:1>
-      |log = <ore:logWood>
-      |while(true) {
-      |  chestWood@[log, 256] >> furnace@[up]
-      |  chestCharcoal >> furnace@[north, 1]
-      |  furnace@[down, charcoal] >> chestCharcoal
-      |}
-    """.stripMargin
-
   val simpleProgram2 =
     """
       |planks = <minecraft:planks>
@@ -31,7 +17,6 @@ class TileLogisticController extends TileEntityMod
       |input >> output
       |
     """.stripMargin
-
 
   val craft = """
     |wheat = <minecraft:wheat>
@@ -48,18 +33,48 @@ class TileLogisticController extends TileEntityMod
     |in >> recipe >> out
   """.stripMargin
 
-  val count =
+
+  val simpleProgram =
     """
-      |find()
+      |chestWood = ~(2, 0, 0)
+      |chestCharcoal = ~(2, 1, 0)
+      |furnace = <minecraft:furnace>
+      |charcoal = <minecraft:coal:1>
+      |log = <minecraft:log:0>
+      |while(true) {
+      |  chestWood@[log] >> furnace@[up]
+      |  chestCharcoal >> furnace@[north, 1]
+      |  furnace@[down, charcoal] >> chestCharcoal
+      |}
     """.stripMargin
 
-  load(count)
+  val ore =
+    """
+      |furnace = <thermalexpansion.Furnace>
+      |pulverizer = <thermalexpansion.Pulverizer>
+      |input = ~(2, 0, 0)
+      |buffer = ~(2, 1, 0)
+      |output = <thermalexpansion.Cache>
+      |while(true){
+      | input >> pulverizer@[up]
+      | pulverizer@[down west] >> buffer
+      | buffer >> furnace@[up]
+      | furnace@[west] >> output
+      |}
+    """.stripMargin
+
+  val count =
+    """
+      |<Chest> >> <Dropper>
+    """.stripMargin
+
+  load(ore)
 
   override def updateEntity(): Unit = {
     if(AutoLogistics.proxy.getSideOfThread == Side.SERVER) {
       if (!virtualMachine.isTerminated) {
         try{
-          virtualMachine.run(5)
+          virtualMachine.run(20)
         } catch{
           case e:Exception => {
             e.printStackTrace()

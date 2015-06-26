@@ -10,5 +10,5 @@ public interface LogisticFilter {
     EnumFacing[] getValidSides();
 
     boolean passesItemFilter(ItemStack stack);
-    boolean passesBlockFilter(TileEntity tile);
+    boolean passesBlockFilter(TileEntity from, TileEntity to);
 }

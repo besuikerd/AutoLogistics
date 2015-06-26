@@ -40,12 +40,22 @@ repositories {
         name "ThermalFoundation"
         artifactPattern "http://addons-origin.cursecdn.com/files/2243/149/[module]-[revision].[ext]"
     }
+
+    ivy {
+        name "ThermalDynamics"
+        artifactPattern "http://addons-origin.cursecdn.com/files/2244/301/[module]-[revision].[ext]"
+    }
 }
 
 apply plugin: 'scala'
 apply plugin: 'idea'
 apply plugin: 'forge'
 
+sourceSets.main.scala.srcDir "src/main/java"
+sourceSets.main.java.srcDirs = []
+
+sourceSets.test.scala.srcDir "src/main/java"
+sourceSets.test.java.srcDirs = []
 
 version = "0.0.1"
 group= "com.besuikerd.autologistics"
@@ -80,6 +90,7 @@ dependencies {
     compile group: 'cofh', name: 'CoFHCore', version: '[1.7.10]3.0.2-284-dev', ext: 'jar'
     compile group: 'cofh', name: 'ThermalExpansion', version: '[1.7.10]4.0.0-176-dev', ext: 'jar'
     compile group: 'cofh', name: 'ThermalFoundation', version: '[1.7.10]1.0.0-88-dev', ext: 'jar'
+    compile group: 'cofh', name: 'ThermalDynamics', version: '[1.7.10]1.0.0-137-dev', ext: 'jar'
 
     testCompile 'org.scalatest:scalatest_2.11:2.2.5'
     testCompile 'junit:junit:4.12'

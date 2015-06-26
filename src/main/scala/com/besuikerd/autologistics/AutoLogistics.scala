@@ -1,8 +1,10 @@
 package com.besuikerd.autologistics
 
+import com.besuikerd.autologistics.common.command.ItemIdCommand
+import com.besuikerd.autologistics.common.lib.network.PacketDispatcher
 import com.besuikerd.autologistics.common.{CommonProxy, ModItems, ModBlocks}
 import cpw.mods.fml.common.Mod.EventHandler
-import cpw.mods.fml.common.event.FMLInitializationEvent
+import cpw.mods.fml.common.event.{FMLServerStartingEvent, FMLInitializationEvent}
 import cpw.mods.fml.common.{SidedProxy, Mod}
 
 
@@ -20,5 +22,11 @@ object AutoLogistics {
   def init(event: FMLInitializationEvent): Unit = {
     ModBlocks.init()
     ModItems.init()
+    PacketDispatcher.instance.init()
+  }
+
+  @EventHandler
+  def serverLoad(event: FMLServerStartingEvent): Unit ={
+    event.registerServerCommand(new ItemIdCommand)
   }
 }

@@ -26,6 +26,15 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
     }
   }
 
+
+  lazy val stringCharacters:Parser[String] = """([^<>\p{Cntrl}\\]|\\[\\'<>bfnrt]|\\u[a-fA-F0-9]{4})*+""".r
+  lazy val itemName:Parser[Expression] = "<" ~> stringCharacters <~ ">"^^ {
+    case name => ObjectExpression(Map(
+      "type" -> StringLiteral("name"),
+      "name" -> StringLiteral(name)
+    ))
+  }
+
   lazy val coordinate = "(" ~> expression ~ ("," ~> expression) ~ ("," ~> expression)  <~ ")"
 
   lazy val relativeCoordinate = "~" ~> coordinate ^^ {
@@ -46,7 +55,7 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
     ))
   }
 
-  override def operands:Seq[Parser[Expression]] = Seq(relativeCoordinate, absCoordinate, itemRef, filtered) ++ super.operands
+  override def operands:Seq[Parser[Expression]] = Seq(relativeCoordinate, absCoordinate, itemRef, filtered, itemName) ++ super.operands
   override def binaryOperators:Map[Int, Seq[(String, (Expression, String, Expression) => Expression)]] = super.binaryOperators ++ Map(
     10 -> Seq((">>", Application.apply("_transferTo") _))
   )

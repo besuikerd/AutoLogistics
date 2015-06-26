@@ -1,7 +1,6 @@
 package com.besuikerd.autologistics.common.tile.logistic.filter;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 
@@ -11,8 +10,8 @@ public class LogisticFilterPosition extends AbstractLogisticFilter{
     private int y;
     private int z;
 
-    public LogisticFilterPosition(int meta, int amount, EnumFacing[] validSides, String type, int x, int y, int z) {
-        super(meta, amount, validSides);
+    public LogisticFilterPosition(int meta, int amount, EnumFacing[] validSides, ItemFilter[] itemFilters, String type, int x, int y, int z) {
+        super(meta, amount, validSides, itemFilters);
         this.type = type;
         this.x = x;
         this.y = y;
@@ -29,43 +28,37 @@ public class LogisticFilterPosition extends AbstractLogisticFilter{
 
     public static LogisticFilterPosition fromObjectValue(ObjectValue obj){
         StringValue type;
-        if((type = StackValues.tryExtractField(StringValue.class, "type", obj)) != null && type.value.equals("absolute") || type.value.equals("relative")) {
-            IntegerValue x;
-            IntegerValue y;
-            IntegerValue z;
-            if(
-                   (x = StackValues.tryExtractField(IntegerValue.class, "x", obj)) != null
-                && (y = StackValues.tryExtractField(IntegerValue.class, "y", obj)) != null
-                && (z = StackValues.tryExtractField(IntegerValue.class, "z", obj)) != null
-            ){
-                return new LogisticFilterPosition(obj, type.value, x.value, y.value, z.value);
-            }
+        IntegerValue x;
+        IntegerValue y;
+        IntegerValue z;
+        if(
+            ((type = StackValues.tryExtractField(StringValue.class, "type", obj)) != null && type.value.equals("absolute") || type.value.equals("relative"))
+            && (x = StackValues.tryExtractField(IntegerValue.class, "x", obj)) != null
+            && (y = StackValues.tryExtractField(IntegerValue.class, "y", obj)) != null
+            && (z = StackValues.tryExtractField(IntegerValue.class, "z", obj)) != null
+        ){
+            return new LogisticFilterPosition(obj, type.value, x.value, y.value, z.value);
         }
         return null;
     }
 
     @Override
-    public boolean passesItemFilter(ItemStack stack) {
-        return false;
-    }
-
-    @Override
-    public boolean passesBlockFilter(TileEntity tile) {
-        if(meta != -1 && tile.getBlockMetadata() != meta){
+    public boolean passesBlockFilter(TileEntity from, TileEntity to) {
+        if(meta != -1 && to.getBlockMetadata() != meta){
             return false;
         }
 
         if(type.equals("relative")){
             return
-                   tile.xCoord + x == tile.xCoord
-                && tile.yCoord + y == tile.yCoord
-                && tile.zCoord + z == tile.zCoord;
+                   from.xCoord + x == to.xCoord
+                && from.yCoord + y == to.yCoord
+                && from.zCoord + z == to.zCoord;
 
         } else if(type.equals("absolute")){
             return
-                   tile.xCoord == x
-                && tile.yCoord == y
-                && tile.zCoord == z;
+                    from.xCoord == x
+                && from.yCoord == y
+                && from.zCoord == z;
         }
         return false;
     }

@@ -2,6 +2,7 @@ package com.besuikerd.autologistics.common.tile.logistic.filter;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
 import com.besuikerd.autologistics.common.tile.logistic.StringFacing;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 
 public abstract class AbstractLogisticFilter implements LogisticFilter{
@@ -9,11 +10,13 @@ public abstract class AbstractLogisticFilter implements LogisticFilter{
     protected int meta;
     protected int amount;
     protected EnumFacing[] validSides;
+    protected ItemFilter[] itemFilters;
 
-    public AbstractLogisticFilter(int meta, int amount, EnumFacing[] validSides) {
+    public AbstractLogisticFilter(int meta, int amount, EnumFacing[] validSides, ItemFilter[] itemFilters) {
         this.meta = meta;
         this.amount = amount;
         this.validSides = validSides;
+        this.itemFilters = itemFilters;
     }
 
     public AbstractLogisticFilter(ObjectValue obj){
@@ -22,22 +25,23 @@ public abstract class AbstractLogisticFilter implements LogisticFilter{
 
     protected void extractAttributes(ObjectValue obj){
         int meta = -1;
-        IntegerValue optMeta = null;
+        IntegerValue optMeta;
         if ((optMeta = StackValues.tryExtractField(IntegerValue.class, "meta", obj)) != null) {
             meta = optMeta.value;
         }
         this.meta = meta;
 
+        int amount = -1;
+        EnumFacing[] validSides = EnumFacing.values();
+        ItemFilter[] itemFilters = new ItemFilter[0];
         ObjectValue filter;
         if((filter = StackValues.tryExtractField(ObjectValue.class, "filter", obj)) != null){
-            int amount = -1;
             IntegerValue optAmount;
             if((optAmount = StackValues.tryExtractField(IntegerValue.class, "amount", filter)) != null){
                 amount = optAmount.value;
             }
             this.amount = amount;
 
-            EnumFacing[] validSides = EnumFacing.values();
             ListValue sides;
             if((sides = StackValues.tryExtractField(ListValue.class, "sides", filter)) != null){
                 if(!sides.value.isEmpty()) {
@@ -61,8 +65,50 @@ public abstract class AbstractLogisticFilter implements LogisticFilter{
                     validSides = optValidSides;
                 }
             }
-            this.validSides = validSides;
+
+            ListValue items;
+            if((items = StackValues.tryExtractField(ListValue.class, "items", filter)) != null){
+                if(!items.value.isEmpty()){
+                    ItemFilter[] optItems = new ItemFilter[items.value.size()];
+                    int offset = 0;
+                    for(StackValue value : items.value){
+                        ObjectValue item;
+                        if((item = StackValues.tryExpectType(ObjectValue.class, value)) != null){
+                            StringValue mod;
+                            StringValue name;
+                            if(
+                                   (mod = StackValues.tryExtractField(StringValue.class, "mod", item)) != null
+                                && (name = StackValues.tryExtractField(StringValue.class, "name", item)) != null
+                            ){
+                                int itemMeta = -1;
+                                IntegerValue optItemMeta;
+                                if ((optItemMeta = StackValues.tryExtractField(IntegerValue.class, "meta", item)) != null) {
+                                    itemMeta = optItemMeta.value;
+                                }
+                                optItems[offset++] = new ItemFilter(mod.value, name.value, itemMeta);
+                            } else{
+                                optItems = itemFilters;
+                                break;
+                            }
+                        }
+                    }
+                    itemFilters = optItems;
+                }
+            }
         }
+        this.amount = amount;
+        this.validSides = validSides;
+        this.itemFilters = itemFilters;
+    }
+
+    @Override
+    public boolean passesItemFilter(ItemStack stack) {
+        for(ItemFilter obj : itemFilters){
+            if(obj.passesFilter(stack)){
+                return true;
+            }
+        }
+        return itemFilters.length == 0;
     }
 
     @Override

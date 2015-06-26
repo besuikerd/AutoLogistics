@@ -3,7 +3,6 @@ package com.besuikerd.autologistics.common.tile.logistic;
 import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.AbstractNativeFunction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
-import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.BaseStackValueVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.CopyStackValueVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.SafeBaseStackValueVisitor;
 
@@ -26,9 +25,14 @@ public class NativeFunctionItemFilter extends AbstractNativeFunction{
                 ObjectValue filter;
                 ListValue itemFilter;
                 ListValue sideFilter;
-                if((filter = expectType(vm, ObjectValue.class, item.mapping.get("filter"))) != null &&(itemFilter = expectType(vm, ListValue.class, filter.mapping.get("filter"))) != null && (sideFilter = expectType(vm, ListValue.class, filter.mapping.get("sides"))) != null){
-                    item.accept(new AddItemFilterStackValueVisitor(vm, filter, itemFilter, sideFilter), null);
+                if((filter = extractField(vm, ObjectValue.class, "filter", item)) != null &&(itemFilter = expectType(vm, ListValue.class, filter.mapping.get("items"))) != null && (sideFilter = expectType(vm, ListValue.class, filter.mapping.get("sides"))) != null){
+
+                    AddItemFilterStackValueVisitor visitor = new AddItemFilterStackValueVisitor(vm, filter, itemFilter, sideFilter);
+                    for(StackValue filterElement : filters.value){
+                        filterElement.accept(visitor, null);
+                    }
                 }
+                return item;
             }
         }
         return NilValue.instance;
@@ -72,7 +76,7 @@ public class NativeFunctionItemFilter extends AbstractNativeFunction{
         @Override
         public Void visitObjectValue(ObjectValue value, Void aVoid) {
             StringValue type;
-            if((type = extractField(vm, StringValue.class, "type", value)) != null && type.equals("item")){
+            if((type = extractField(vm, StringValue.class, "type", value)) != null && type.value.equals("item")){
                 itemFilter.append(value);
             }
             return null;
