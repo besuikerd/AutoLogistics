@@ -1,16 +1,16 @@
 package com.besuikerd.autologistics.common.tile.logistic.itemcounter;
 
 import com.besuikerd.autologistics.common.lib.util.ArrayUtil;
-import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilter;
+import com.besuikerd.autologistics.common.tile.logistic.filter.ILogisticFilter;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 
-public abstract class AbstractInventoryItemCounter implements InventoryItemCounter{
+public abstract class AbstractInventoryItemCounter implements IInventoryItemCounter {
 
     @Override
-    public int count(IInventory inventory, LogisticFilter filter) {
+    public int count(IInventory inventory, ILogisticFilter filter) {
         int count = 0;
         if(inventory instanceof ISidedInventory){
             ISidedInventory sided = (ISidedInventory) inventory;
@@ -34,7 +34,7 @@ public abstract class AbstractInventoryItemCounter implements InventoryItemCount
     }
 
     @Override
-    public boolean canUseSlot(IInventory inventory, int slotIndex, ItemStack stack, LogisticFilter filter) {
+    public boolean canUseSlot(IInventory inventory, int slotIndex, ItemStack stack, ILogisticFilter filter) {
         if(inventory instanceof ISidedInventory){
             ISidedInventory sided = (ISidedInventory) inventory;
             for(EnumFacing side : filter.getValidSides()){

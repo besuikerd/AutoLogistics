@@ -1,6 +1,7 @@
 package com.besuikerd.autologistics.common.tile.logistic.filter;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ObjectValue;
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValues;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StringValue;
 import net.minecraft.block.Block;
@@ -22,18 +23,6 @@ public class LogisticFilterName extends AbstractLogisticFilter{
     public LogisticFilterName(ObjectValue obj, String name) {
         super(obj);
         this.name = name;
-    }
-
-    public static LogisticFilterName fromObjectValue(ObjectValue obj){
-        StringValue type;
-        StringValue name;
-        if(
-               (type = StackValues.tryExtractField(StringValue.class, "type", obj)) != null && type.value.equals("name")
-            && (name = StackValues.tryExtractField(StringValue.class, "name", obj)) != null
-        ){
-            return new LogisticFilterName(obj, name.value);
-        }
-        return null;
     }
 
     @Override
@@ -64,5 +53,24 @@ public class LogisticFilterName extends AbstractLogisticFilter{
             return Blocks.air.getLocalizedName();
         }
 
+    }
+
+    public static class FilterProvider implements IFilterProvider{
+        public static final FilterProvider instance = new FilterProvider();
+
+        @Override
+        public ILogisticFilter provide(StackValue value) {
+            ObjectValue obj;
+            StringValue type;
+            StringValue name;
+            if(
+                (obj = StackValues.tryExpectType(ObjectValue.class, value)) != null
+                && (type = StackValues.tryExtractField(StringValue.class, "type", obj)) != null && type.value.equals("name")
+                && (name = StackValues.tryExtractField(StringValue.class, "name", obj)) != null
+            ){
+                return new LogisticFilterName(obj, name.value);
+            }
+            return null;
+        }
     }
 }

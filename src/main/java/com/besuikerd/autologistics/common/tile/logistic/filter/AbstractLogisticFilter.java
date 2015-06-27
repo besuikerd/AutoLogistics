@@ -5,7 +5,7 @@ import com.besuikerd.autologistics.common.tile.logistic.StringFacing;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 
-public abstract class AbstractLogisticFilter implements LogisticFilter{
+public abstract class AbstractLogisticFilter implements ILogisticFilter {
 
     protected int meta;
     protected int amount;

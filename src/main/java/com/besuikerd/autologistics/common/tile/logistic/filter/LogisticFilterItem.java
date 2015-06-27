@@ -23,20 +23,6 @@ public class LogisticFilterItem extends AbstractLogisticFilter{
         this.name = name;
     }
 
-    public static LogisticFilterItem fromObjectValue(ObjectValue obj){
-        StringValue type;
-        StringValue mod;
-        StringValue name;
-        if(
-            (type = StackValues.tryExtractField(StringValue.class, "type", obj)) != null && type.value.equals("item")
-            && (mod = StackValues.tryExtractField(StringValue.class, "mod", obj)) != null
-            && (name = StackValues.tryExtractField(StringValue.class, "name", obj)) != null
-        ){
-            return new LogisticFilterItem(obj, mod.value, name.value);
-        }
-        return null;
-    }
-
     @Override
     public boolean passesBlockFilter(TileEntity from, TileEntity to) {
         if(meta != 1 && to.getBlockMetadata() == meta){
@@ -47,6 +33,26 @@ public class LogisticFilterItem extends AbstractLogisticFilter{
         } else{
             Block block = GameRegistry.findBlock(mod, name);
             return to.getBlockType().equals(block);
+        }
+    }
+
+    public static class FilterProvider implements IFilterProvider{
+        public static final FilterProvider instance = new FilterProvider();
+        @Override
+        public ILogisticFilter provide(StackValue value) {
+            ObjectValue obj;
+            StringValue type;
+            StringValue mod;
+            StringValue name;
+            if(
+                   (obj = StackValues.tryExpectType(ObjectValue.class, value)) != null
+                && (type = StackValues.tryExtractField(StringValue.class, "type", obj)) != null && type.value.equals("item")
+                && (mod = StackValues.tryExtractField(StringValue.class, "mod", obj)) != null
+                && (name = StackValues.tryExtractField(StringValue.class, "name", obj)) != null
+            ){
+                return new LogisticFilterItem(obj, mod.value, name.value);
+            }
+            return null;
         }
     }
 }

@@ -4,7 +4,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 
-public interface LogisticFilter {
+public interface ILogisticFilter {
     int getAmount();
     int getMeta();
     EnumFacing[] getValidSides();

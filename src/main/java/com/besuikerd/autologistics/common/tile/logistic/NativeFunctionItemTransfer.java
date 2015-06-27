@@ -4,10 +4,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.AbstractNativeFunction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
 import com.besuikerd.autologistics.common.lib.util.MathUtil;
-import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilter;
-import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilterItem;
-import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilterName;
-import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilterPosition;
+import com.besuikerd.autologistics.common.tile.logistic.filter.*;
 import com.besuikerd.autologistics.common.tile.logistic.itemcounter.InventoryItemCounterExtract;
 import com.besuikerd.autologistics.common.tile.logistic.itemcounter.InventoryItemCounterInsert;
 import com.besuikerd.autologistics.common.tile.traits.TileCable;
@@ -24,6 +21,9 @@ public class NativeFunctionItemTransfer extends AbstractNativeFunction {
 
     public NativeFunctionItemTransfer(TileEntity tile) {
         this.tile = tile;
+        LogisticFilterRegistry.instance.register(LogisticFilterItem.FilterProvider.instance);
+        LogisticFilterRegistry.instance.register(LogisticFilterName.FilterProvider.instance);
+        LogisticFilterRegistry.instance.register(LogisticFilterPosition.FilterProvider.instance);
     }
 
     @Override
@@ -46,11 +46,11 @@ public class NativeFunctionItemTransfer extends AbstractNativeFunction {
 
     public StackValue transferTo(ObjectValue from, ObjectValue to){
 
-        LogisticFilter fromFilter;
-        LogisticFilter toFilter;
+        ILogisticFilter fromFilter;
+        ILogisticFilter toFilter;
         if(
-               (fromFilter = getFilter(from)) != null
-            && (toFilter = getFilter(to)) != null
+               (fromFilter = LogisticFilterRegistry.instance.getFilter(from)) != null
+            && (toFilter = LogisticFilterRegistry.instance.getFilter(to)) != null
         ){
             List<IInventory> allInventories = new LazyTileFinder<IInventory>(IInventory.class, TileCable.class, tile).allValues();
             List<IInventory> toInventories = filterInventories(allInventories, toFilter);
@@ -125,7 +125,7 @@ public class NativeFunctionItemTransfer extends AbstractNativeFunction {
         return NilValue.instance;
     }
 
-    private List<IInventory> filterInventories(List<IInventory> inventories, LogisticFilter filter){
+    private List<IInventory> filterInventories(List<IInventory> inventories, ILogisticFilter filter){
         List<IInventory> filtered = new ArrayList<IInventory>();
         for(IInventory inventory : inventories){
             TileEntity tile = (TileEntity) inventory;
@@ -134,15 +134,5 @@ public class NativeFunctionItemTransfer extends AbstractNativeFunction {
             }
         }
         return filtered;
-    }
-
-    private LogisticFilter getFilter(ObjectValue obj){
-        LogisticFilter filter;
-        if(
-               (filter = LogisticFilterItem.fromObjectValue(obj)) != null
-            || (filter = LogisticFilterPosition.fromObjectValue(obj)) != null
-            || (filter = LogisticFilterName.fromObjectValue(obj)) != null
-        ){}
-        return filter;
     }
 }

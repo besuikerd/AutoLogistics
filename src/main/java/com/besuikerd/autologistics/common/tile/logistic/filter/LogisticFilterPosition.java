@@ -26,22 +26,6 @@ public class LogisticFilterPosition extends AbstractLogisticFilter{
         this.z = z;
     }
 
-    public static LogisticFilterPosition fromObjectValue(ObjectValue obj){
-        StringValue type;
-        IntegerValue x;
-        IntegerValue y;
-        IntegerValue z;
-        if(
-            ((type = StackValues.tryExtractField(StringValue.class, "type", obj)) != null && type.value.equals("absolute") || type.value.equals("relative"))
-            && (x = StackValues.tryExtractField(IntegerValue.class, "x", obj)) != null
-            && (y = StackValues.tryExtractField(IntegerValue.class, "y", obj)) != null
-            && (z = StackValues.tryExtractField(IntegerValue.class, "z", obj)) != null
-        ){
-            return new LogisticFilterPosition(obj, type.value, x.value, y.value, z.value);
-        }
-        return null;
-    }
-
     @Override
     public boolean passesBlockFilter(TileEntity from, TileEntity to) {
         if(meta != -1 && to.getBlockMetadata() != meta){
@@ -61,5 +45,28 @@ public class LogisticFilterPosition extends AbstractLogisticFilter{
                 && from.zCoord == z;
         }
         return false;
+    }
+
+    public static class FilterProvider implements IFilterProvider{
+        public static final FilterProvider instance = new FilterProvider();
+
+        @Override
+        public ILogisticFilter provide(StackValue value) {
+            ObjectValue obj;
+            StringValue type;
+            IntegerValue x;
+            IntegerValue y;
+            IntegerValue z;
+            if(
+                   (obj = StackValues.tryExpectType(ObjectValue.class, value)) != null
+                && ((type = StackValues.tryExtractField(StringValue.class, "type", obj)) != null && type.value.equals("absolute") || type.value.equals("relative"))
+                && (x = StackValues.tryExtractField(IntegerValue.class, "x", obj)) != null
+                && (y = StackValues.tryExtractField(IntegerValue.class, "y", obj)) != null
+                && (z = StackValues.tryExtractField(IntegerValue.class, "z", obj)) != null
+            ){
+                return new LogisticFilterPosition(obj, type.value, x.value, y.value, z.value);
+            }
+            return null;
+        }
     }
 }
