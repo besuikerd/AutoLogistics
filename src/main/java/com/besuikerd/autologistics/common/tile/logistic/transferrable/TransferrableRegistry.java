@@ -10,11 +10,7 @@ import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilterReg
 public class TransferrableRegistry extends ListRegistry<ITransferrableProvider<?, ?>> {
     public static final TransferrableRegistry instance = new TransferrableRegistry();
 
-    static{
-        LogisticFilterRegistry.instance.register(LogisticFilterItem.FilterProvider.instance);
-        LogisticFilterRegistry.instance.register(LogisticFilterName.FilterProvider.instance);
-        LogisticFilterRegistry.instance.register(LogisticFilterPosition.FilterProvider.instance);
-
+    public TransferrableRegistry() {
         TransferrableRegistry.instance.register(TransferrableMoveItems.TransferrableProvider.instance);
         TransferrableRegistry.instance.register(TransferrableCraftFrom.TransferrableProvider.instance);
         TransferrableRegistry.instance.register(TransferrableCraftTo.TransferrableProvider.instance);

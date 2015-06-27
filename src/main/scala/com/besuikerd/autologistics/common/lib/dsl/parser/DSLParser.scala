@@ -140,7 +140,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
     case bindings ~ exp => LambdaExpression(bindings, exp)
   }
 
-  lazy val application:Parser[Expression] = applyable ~ ( "(" ~> repsep(expression, ",") <~  ")" ).* ^^ {
+  lazy val application:Parser[Expression] = applyable ~ ( "(" ~> newline.* ~> repsep(expression, newline.* ~ "," ~ newline.*) <~ newline.* <~ ")" ).* ^^ {
     case exp ~ argumentLists => argumentLists.foldLeft(exp)((acc, cur) => Application(acc, cur))
   }
 
@@ -150,7 +150,7 @@ trait DSLOperands extends PluggableParsers { this:DSLParser =>
 
   lazy val objectField:Parser[ObjectFieldExpression] = referrable ~ ("." ~> ident).+ ^^ ObjectFieldExpression
 
-  lazy val listExp:Parser[ListExpression] = "[" ~> newline.* ~> repsep(expression, ",".? ~ newline.*) <~ "]" <~ newline.* ^^ ListExpression
+  lazy val listExp:Parser[ListExpression] = "[" ~> newline.* ~> repsep(expression, newline.* ~ ",".? ~ newline.*) <~ "]" <~ newline.* ^^ ListExpression
 
   lazy val ifElse:Parser[IfElseExpression] = ("if" ~> "(" ~> expression <~ ")") ~ expression ~ ("else" ~> expression).? ^^ IfElseExpression
 

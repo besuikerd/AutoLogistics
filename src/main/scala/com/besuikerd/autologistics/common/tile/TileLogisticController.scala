@@ -76,10 +76,26 @@ class TileLogisticController extends TileEntityMod
        |out2 = ~(2, 1, 0)
        |item = <minecraft:log>
        |recipe = [[item]]
-       |println([in1] >> recipe >> [out1@[<minecraft:planks>] out2@[5]])
+       |
+       |while((in1 >> recipe >> in2).success){}
+       |println("done")
     """.stripMargin
 
-  load(craft)
+
+  val pulzerizer =
+    """
+      |println(count([
+      |   <Chest>@[<minecraft:cobblestone>]
+      |   <Chest>@[<minecraft:cobblestone>]
+      |
+      |   ]
+      |   )
+      |
+      |   )
+      |
+    """.stripMargin
+
+  load(pulzerizer)
 
   override def updateEntity(): Unit = {
     if(AutoLogistics.proxy.getSideOfThread == Side.SERVER) {

@@ -27,8 +27,7 @@ public class LogisticFilterName extends AbstractLogisticFilter{
 
     @Override
     public boolean passesBlockFilter(TileEntity from, TileEntity to) {
-        //TODO wildcards/regexes maybe?
-        return getName(to.getWorldObj(), to.xCoord, to.yCoord, to.zCoord).equals(name);
+        return getName(to.getWorldObj(), to.xCoord, to.yCoord, to.zCoord).matches(name);
     }
 
     public static String getName(World world, int x, int y, int z){

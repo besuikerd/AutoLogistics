@@ -103,7 +103,6 @@ public class TransferrableCraftTo extends AbstractTransferrable<ObjectValue, Sta
                     }
                 }
                 //we haven't found any inventory that contains the item we want, so we cannot craft!
-                System.out.println("could not find all items needed");
                 return false;
 
             }
@@ -260,11 +259,11 @@ public class TransferrableCraftTo extends AbstractTransferrable<ObjectValue, Sta
                 ILogisticFilter[] fromFilters;
                 ILogisticFilter[] toFilters;
                 ILogisticFilter[][] recipe;
-                ILogisticFilter filter;
 
-                if((filter = LogisticFilterRegistry.instance.getFilter(fromFilterObj)) != null){
-                    fromFilters = new ILogisticFilter[]{filter};
-                } else if((fromFilters = LogisticFilterRegistry.instance.tryGetFilterList(fromFilterObj)) == null){
+                if(
+                    (fromFilters = LogisticFilterRegistry.instance.tryGetFilterOrFilterList(from)) == null
+                    || (toFilters = LogisticFilterRegistry.instance.tryGetFilterOrFilterList(to)) == null
+                ){
                     return null;
                 }
 
@@ -288,13 +287,6 @@ public class TransferrableCraftTo extends AbstractTransferrable<ObjectValue, Sta
                         return null;
                     }
                 }
-
-                if((filter = LogisticFilterRegistry.instance.getFilter(to)) != null){
-                    toFilters = new ILogisticFilter[]{filter};
-                } else if((toFilters = LogisticFilterRegistry.instance.tryGetFilterList(to)) == null){
-                    return null;
-                }
-
                 return new TransferrableCraftTo(fromFilters, recipe, toFilters);
             }
 

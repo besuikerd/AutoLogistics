@@ -4,7 +4,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm._
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunction
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
-import com.besuikerd.autologistics.common.tile.logistic.{NativeFunctionItemFilter, NativeFunctionItemTransfer, LazyTileFinder}
+import com.besuikerd.autologistics.common.tile.logistic.{NativeFunctionCountItems, NativeFunctionItemFilter, NativeFunctionItemTransfer, LazyTileFinder}
 import net.minecraft.inventory.{InventoryCrafting, ISidedInventory, IInventory}
 import net.minecraft.item.{ItemStack, ItemBlock, Item}
 import net.minecraft.util.EnumFacing
@@ -31,19 +31,19 @@ trait TileLogistic extends TileEntityMod{
 
   directions.keys.foreach(dir => virtualMachine.addGlobal(dir, new StringValue(dir)))
 
-  virtualMachine.addNative("find", FindInventories)
-  virtualMachine.addNative("_transfer", new NativeFunctionItemTransfer(this))
   virtualMachine.addNative("_filter", NativeFunctionItemFilter.instance)
+  virtualMachine.addNative("_transfer", new NativeFunctionItemTransfer(this))
+  virtualMachine.addNative("count", new NativeFunctionCountItems(this))
 
-  object FindInventories extends NativeFunction{
-    override def call(vm: VirtualMachine, args: JList[StackValue]): StackValue = {
-      val it = new LazyTileFinder(classOf[IInventory], classOf[TileCable], TileLogistic.this)
-      while(it.hasNext){
-        println("found " + it.next())
-      }
-      NilValue.instance
-    }
-  }
+//  object FindInventories extends NativeFunction{
+//    override def call(vm: VirtualMachine, args: JList[StackValue]): StackValue = {
+//      val it = new LazyTileFinder(classOf[IInventory], classOf[TileCable], TileLogistic.this)
+//      while(it.hasNext){
+//        println("found " + it.next())
+//      }
+//      NilValue.instance
+//    }
+//  }
 
 
   /*

@@ -129,16 +129,10 @@ public class TransferrableMoveItems extends AbstractTransferrable<StackValue, St
         public ITransferrable<StackValue, StackValue> provide(StackValue from, StackValue to) {
             ILogisticFilter[] fromFilters;
             ILogisticFilter[] toFilters;
-            ILogisticFilter filter;
-            if((filter = LogisticFilterRegistry.instance.getFilter(from)) != null) {
-                fromFilters = new ILogisticFilter[]{filter};
-            } else if((fromFilters = LogisticFilterRegistry.instance.tryGetFilterList(from)) == null){
-                return null;
-            }
-
-            if((filter = LogisticFilterRegistry.instance.getFilter(to)) != null) {
-                toFilters = new ILogisticFilter[]{filter};
-            } else if((toFilters = LogisticFilterRegistry.instance.tryGetFilterList(to)) == null){
+            if(
+                   (fromFilters = LogisticFilterRegistry.instance.tryGetFilterOrFilterList(from)) == null
+                || (toFilters = LogisticFilterRegistry.instance.tryGetFilterOrFilterList(to)) == null
+            ){
                 return null;
             }
 
