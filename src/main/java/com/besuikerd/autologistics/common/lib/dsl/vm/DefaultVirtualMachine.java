@@ -198,6 +198,7 @@ public class DefaultVirtualMachine implements VirtualMachine{
 
     @Override
     public void deserialize(DataInput input) throws IOException{
+        reset();
         deserializeStack(input);
         deserializeInstructions(input);
         deserializeScopes(input);
@@ -219,9 +220,10 @@ public class DefaultVirtualMachine implements VirtualMachine{
 
 
     protected void serializeScopes(DataOutput output) throws IOException{
-        output.writeInt(scopes.size());
-        for(ClosureValue value : scopes){
-            value.accept(DataOutputStackValueVisitor.instance, output);
+        int size = scopes.size() - 1; //we do not need to serialize the global scope
+        output.writeInt(size);
+        for(int i = 1 ; i < size ; i++){
+            scopes.get(i).accept(DataOutputStackValueVisitor.instance, output);
         }
     }
 

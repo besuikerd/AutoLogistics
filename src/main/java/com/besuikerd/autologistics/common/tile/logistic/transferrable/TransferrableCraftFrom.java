@@ -1,13 +1,14 @@
 package com.besuikerd.autologistics.common.tile.logistic.transferrable;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
+import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilterRegistry;
 import net.minecraft.tileentity.TileEntity;
 
-public class TransferrableCraftFrom implements ITransferrable<ObjectValue, ListValue>{
+public class TransferrableCraftFrom implements ITransferrable<StackValue, ListValue>{
     public static final TransferrableCraftFrom instance = new TransferrableCraftFrom();
 
     @Override
-    public StackValue transferTo(TileEntity source, ObjectValue from, ListValue to) {
+    public StackValue transferTo(TileEntity source, StackValue from, ListValue to) {
         ObjectValue recipe = new ObjectValue();
         recipe.put("type", new StringValue("craftFrom"));
         recipe.put("input", from);
@@ -15,32 +16,32 @@ public class TransferrableCraftFrom implements ITransferrable<ObjectValue, ListV
         return recipe;
     }
 
-    public static class TransferrableProvider implements ITransferrableProvider<ObjectValue, ListValue>{
+    public static class TransferrableProvider implements ITransferrableProvider<StackValue, ListValue>{
         public static final TransferrableProvider instance = new TransferrableProvider();
 
         @Override
-        public ITransferrable<ObjectValue, ListValue> provide(StackValue from, StackValue to) {
-            ObjectValue obj;
+        public ITransferrable<StackValue, ListValue> provide(StackValue from, StackValue to) {
+            if(!LogisticFilterRegistry.instance.filterExists(from) && LogisticFilterRegistry.instance.tryGetFilterList(from) == null){
+                return null;
+            }
+
             ListValue recipe;
-            if(
-                    (obj = StackValues.tryExpectType(ObjectValue.class, from)) != null && TransferrableMoveItems.TransferrableProvider.isItemFilterType(obj)
-                    && (recipe = StackValues.tryExpectType(ListValue.class, to)) != null
-            ){
+            if((recipe = StackValues.tryExpectType(ListValue.class, to)) != null){
                 for(StackValue value : recipe.value){
                     ListValue row;
                     if((row = StackValues.tryExpectType(ListValue.class, value)) == null){
                         return null;
                     } else{
                         for(StackValue elem : row.value){
-                            if(!TransferrableMoveItems.TransferrableProvider.isItemFilterType(elem)){
+                            if(!LogisticFilterRegistry.instance.filterExists(elem)){
                                 return null;
                             }
                         }
                     }
                 }
-                return TransferrableCraftFrom.instance;
+
             }
-            return null;
+            return TransferrableCraftFrom.instance;
         }
     }
 

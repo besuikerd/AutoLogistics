@@ -23,14 +23,19 @@ class TileLogisticController extends TileEntityMod
     |sugar = <minecraft:sugar>
     |egg = <minecraft:egg>
     |milk = <minecraft:milk_bucket>
+    |bucket = <minecraft:bucket>
+    |cake = <minecraft:cake>
     |recipe = [
     | [milk milk milk]
     | [sugar egg sugar]
     | [wheat wheat wheat]
     |]
+    |
+    |
     |in = ~(-2, 0, 0)
-    |out = ~(2, 0, 0)
-    |in >> recipe >> out
+    |out1 = ~(2, 0, 0)
+    |out2 = ~(2, 1, 0)
+    |in >> recipe >> [out1@[bucket] out2@[cake]]
   """.stripMargin
 
 
@@ -65,16 +70,16 @@ class TileLogisticController extends TileEntityMod
 
   val count =
     """
-       |input = <Chest>
-       |output = <Dropper>
-       |item = <minecraft:iron_pickaxe:1>
-       |recipe = [[item item]]
-       |input >> recipe >> input
-       |
-       |
+       |in1 = ~(-2, 0, 0)
+       |in2 = ~(-2, 1, 0)
+       |out1 = ~(2, 0, 0)
+       |out2 = ~(2, 1, 0)
+       |item = <minecraft:log>
+       |recipe = [[item]]
+       |println([in1] >> recipe >> [out1@[<minecraft:planks>] out2@[5]])
     """.stripMargin
 
-  load(count)
+  load(craft)
 
   override def updateEntity(): Unit = {
     if(AutoLogistics.proxy.getSideOfThread == Side.SERVER) {

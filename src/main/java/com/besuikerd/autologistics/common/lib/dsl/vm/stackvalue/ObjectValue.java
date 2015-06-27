@@ -24,7 +24,7 @@ public class ObjectValue implements StackValue{
         }
         Iterator<Map.Entry<String, StackValue>> iterator = mapping.entrySet().iterator();
         Map.Entry<String, StackValue> first = iterator.next();
-        StringBuilder builder = new StringBuilder("{").append(first.getKey() + " = " + first.getValue());
+        StringBuilder builder = new StringBuilder("{").append(first.getKey() + " = " + first.getValue().stringRepresentation());
         while(iterator.hasNext()){
             Map.Entry<String, StackValue> next = iterator.next();
             builder.append(", " + next.getKey() + " = " + next.getValue().stringRepresentation());
