@@ -17,8 +17,8 @@ public class LogisticFilterItem extends AbstractLogisticFilter{
         this.name = name;
     }
 
-    public LogisticFilterItem(ObjectValue obj, String mod, String name) {
-        super(obj);
+    public LogisticFilterItem(StackValue value, String mod, String name) {
+        super(value);
         this.mod = mod;
         this.name = name;
     }

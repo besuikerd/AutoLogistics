@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class TransferrableMoveItems implements ITransferrable<ObjectValue, ObjectValue>{
+public class TransferrableMoveItems extends AbstractTransferrable<ObjectValue, ObjectValue>{
     public static final TransferrableMoveItems instance = new TransferrableMoveItems();
 
     @Override
@@ -101,16 +101,7 @@ public class TransferrableMoveItems implements ITransferrable<ObjectValue, Objec
         return NilValue.instance;
     }
 
-    private List<IInventory> filterInventories(TileEntity tile, List<IInventory> inventories, ILogisticFilter filter){
-        List<IInventory> filtered = new ArrayList<IInventory>();
-        for(IInventory inventory : inventories){
-            TileEntity invTile = (TileEntity) inventory;
-            if(filter.passesBlockFilter(tile, invTile)){
-                filtered.add(inventory);
-            }
-        }
-        return filtered;
-    }
+
 
     public static class TransferrableProvider implements ITransferrableProvider<ObjectValue, ObjectValue>{
         public static final TransferrableProvider instance = new TransferrableProvider();

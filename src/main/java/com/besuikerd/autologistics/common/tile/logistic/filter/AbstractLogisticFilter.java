@@ -19,80 +19,73 @@ public abstract class AbstractLogisticFilter implements ILogisticFilter {
         this.itemFilters = itemFilters;
     }
 
-    public AbstractLogisticFilter(ObjectValue obj){
-        extractAttributes(obj);
+    public AbstractLogisticFilter(StackValue value){
+        extractAttributes(value);
     }
 
-    protected void extractAttributes(ObjectValue obj){
-        int meta = -1;
-        IntegerValue optMeta;
-        if ((optMeta = StackValues.tryExtractField(IntegerValue.class, "meta", obj)) != null) {
-            meta = optMeta.value;
-        }
-        this.meta = meta;
-
+    protected void extractAttributes(StackValue value){
+        ObjectValue obj;
         int amount = -1;
         EnumFacing[] validSides = EnumFacing.values();
         ItemFilter[] itemFilters = new ItemFilter[0];
-        ObjectValue filter;
-        if((filter = StackValues.tryExtractField(ObjectValue.class, "filter", obj)) != null){
-            IntegerValue optAmount;
-            if((optAmount = StackValues.tryExtractField(IntegerValue.class, "amount", filter)) != null){
-                amount = optAmount.value;
-            }
-            this.amount = amount;
 
-            ListValue sides;
-            if((sides = StackValues.tryExtractField(ListValue.class, "sides", filter)) != null){
-                if(!sides.value.isEmpty()) {
-                    EnumFacing[] optValidSides = new EnumFacing[sides.value.size()];
-                    int offset = 0;
-                    for(StackValue value: sides.value){
-                        StringValue side;
-                        if((side = StackValues.tryExpectType(StringValue.class, value)) != null){
-                            StringFacing stringFacing = StringFacing.fromString(side.value);
-                            if(stringFacing != null){
-                                optValidSides[offset++] = stringFacing.facing;
-                            } else{
+        if((obj = StackValues.tryExpectType(ObjectValue.class, value)) != null) {
+            int meta = -1;
+            IntegerValue optMeta;
+            if ((optMeta = StackValues.tryExtractField(IntegerValue.class, "meta", obj)) != null) {
+                meta = optMeta.value;
+            }
+            this.meta = meta;
+
+
+            ObjectValue filter;
+            if ((filter = StackValues.tryExtractField(ObjectValue.class, "filter", obj)) != null) {
+                IntegerValue optAmount;
+                if ((optAmount = StackValues.tryExtractField(IntegerValue.class, "amount", filter)) != null) {
+                    amount = optAmount.value;
+                }
+                this.amount = amount;
+
+                ListValue sides;
+                if ((sides = StackValues.tryExtractField(ListValue.class, "sides", filter)) != null) {
+                    if (!sides.value.isEmpty()) {
+                        EnumFacing[] optValidSides = new EnumFacing[sides.value.size()];
+                        int offset = 0;
+                        for (StackValue sideValue : sides.value) {
+                            StringValue side;
+                            if ((side = StackValues.tryExpectType(StringValue.class, sideValue)) != null) {
+                                StringFacing stringFacing = StringFacing.fromString(side.value);
+                                if (stringFacing != null) {
+                                    optValidSides[offset++] = stringFacing.facing;
+                                } else {
+                                    optValidSides = validSides;
+                                    break;
+                                }
+                            } else {
                                 optValidSides = validSides;
                                 break;
                             }
-                        } else{
-                            optValidSides = validSides;
-                            break;
                         }
+                        validSides = optValidSides;
                     }
-                    validSides = optValidSides;
                 }
-            }
 
-            ListValue items;
-            if((items = StackValues.tryExtractField(ListValue.class, "items", filter)) != null){
-                if(!items.value.isEmpty()){
-                    ItemFilter[] optItems = new ItemFilter[items.value.size()];
-                    int offset = 0;
-                    for(StackValue value : items.value){
-                        ObjectValue item;
-                        if((item = StackValues.tryExpectType(ObjectValue.class, value)) != null){
-                            StringValue mod;
-                            StringValue name;
-                            if(
-                                   (mod = StackValues.tryExtractField(StringValue.class, "mod", item)) != null
-                                && (name = StackValues.tryExtractField(StringValue.class, "name", item)) != null
-                            ){
-                                int itemMeta = -1;
-                                IntegerValue optItemMeta;
-                                if ((optItemMeta = StackValues.tryExtractField(IntegerValue.class, "meta", item)) != null) {
-                                    itemMeta = optItemMeta.value;
-                                }
-                                optItems[offset++] = new ItemFilter(mod.value, name.value, itemMeta);
-                            } else{
+                ListValue items;
+                if ((items = StackValues.tryExtractField(ListValue.class, "items", filter)) != null) {
+                    if (!items.value.isEmpty()) {
+                        ItemFilter[] optItems = new ItemFilter[items.value.size()];
+                        int offset = 0;
+                        for (StackValue itemValue : items.value) {
+                            ItemFilter itemFilter;
+                            if ((itemFilter = ItemFilter.fromStackValue(itemValue)) != null) {
+                                optItems[offset++] = itemFilter;
+                            } else {
                                 optItems = itemFilters;
                                 break;
                             }
                         }
+                        itemFilters = optItems;
                     }
-                    itemFilters = optItems;
                 }
             }
         }

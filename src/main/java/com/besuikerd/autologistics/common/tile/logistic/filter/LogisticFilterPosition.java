@@ -18,8 +18,8 @@ public class LogisticFilterPosition extends AbstractLogisticFilter{
         this.z = z;
     }
 
-    public LogisticFilterPosition(ObjectValue obj ,String type, int x, int y, int z) {
-        super(obj);
+    public LogisticFilterPosition(StackValue value ,String type, int x, int y, int z) {
+        super(value);
         this.type = type;
         this.x = x;
         this.y = y;

@@ -17,7 +17,7 @@ public abstract class AbstractInventoryItemCounter implements IInventoryItemCoun
             for(EnumFacing facing : filter.getValidSides()){
                 for(int slotIndex : sided.getAccessibleSlotsFromSide(facing.ordinal())){
                     ItemStack stack = inventory.getStackInSlot(slotIndex);
-                    if(stack != null && filter.passesItemFilter(stack) && canCountSided(sided, slotIndex, stack, facing)){
+                    if(stack != null && passesItemFilter(filter, stack) && canCountSided(sided, slotIndex, stack, facing)){
                         count += stack.stackSize;
                     }
                 }
@@ -25,7 +25,7 @@ public abstract class AbstractInventoryItemCounter implements IInventoryItemCoun
         } else{
             for(int slotIndex = 0 ; slotIndex < inventory.getSizeInventory() ; slotIndex++){
                 ItemStack stack = inventory.getStackInSlot(slotIndex);
-                if(stack != null && filter.passesItemFilter(stack)){
+                if(stack != null && passesItemFilter(filter, stack)){
                     count += stack.stackSize;
                 }
             }
@@ -46,6 +46,10 @@ public abstract class AbstractInventoryItemCounter implements IInventoryItemCoun
         } else{
             return true;
         }
+    }
+
+    protected boolean passesItemFilter(ILogisticFilter filter, ItemStack stack){
+        return filter.passesItemFilter(stack);
     }
 
     protected abstract boolean canCountSided(ISidedInventory inventory, int slotIndex, ItemStack stack, EnumFacing side);

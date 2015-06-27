@@ -1,5 +1,6 @@
 package com.besuikerd.autologistics.common.tile.logistic.filter;
 
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
 import com.besuikerd.autologistics.common.lib.util.OreDictionaryUtil;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.item.Item;
@@ -27,6 +28,26 @@ public class ItemFilter {
             Item item = GameRegistry.findItem(mod, name);
             return item == stack.getItem();
         }
+    }
+
+    public static ItemFilter fromStackValue(StackValue value){
+        ObjectValue item;
+        if((item = StackValues.tryExpectType(ObjectValue.class, value)) != null){
+            StringValue mod;
+            StringValue name;
+            if(
+                    (mod = StackValues.tryExtractField(StringValue.class, "mod", item)) != null
+                            && (name = StackValues.tryExtractField(StringValue.class, "name", item)) != null
+                    ){
+                int itemMeta = -1;
+                IntegerValue optItemMeta;
+                if ((optItemMeta = StackValues.tryExtractField(IntegerValue.class, "meta", item)) != null) {
+                    itemMeta = optItemMeta.value;
+                }
+                return new ItemFilter(mod.value, name.value, itemMeta);
+            }
+        }
+        return null;
     }
 
     @Override

@@ -20,8 +20,8 @@ public class LogisticFilterName extends AbstractLogisticFilter{
         this.name = name;
     }
 
-    public LogisticFilterName(ObjectValue obj, String name) {
-        super(obj);
+    public LogisticFilterName(StackValue value, String name) {
+        super(value);
         this.name = name;
     }
 

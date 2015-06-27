@@ -20,16 +20,6 @@ public class NativeFunctionItemTransfer extends AbstractNativeFunction {
 
     private TileEntity tile;
 
-    static{
-        LogisticFilterRegistry.instance.register(LogisticFilterItem.FilterProvider.instance);
-        LogisticFilterRegistry.instance.register(LogisticFilterName.FilterProvider.instance);
-        LogisticFilterRegistry.instance.register(LogisticFilterPosition.FilterProvider.instance);
-
-        TransferrableRegistry.instance.register(TransferrableMoveItems.TransferrableProvider.instance);
-        TransferrableRegistry.instance.register(TransferrableCraftFrom.TransferrableProvider.instance);
-        TransferrableRegistry.instance.register(TransferrableCraftTo.TransferrableProvider.instance);
-    }
-
     public NativeFunctionItemTransfer(TileEntity tile) {
         this.tile = tile;
     }

@@ -27,8 +27,15 @@ public class TransferrableCraftFrom implements ITransferrable<ObjectValue, ListV
                     && (recipe = StackValues.tryExpectType(ListValue.class, to)) != null
             ){
                 for(StackValue value : recipe.value){
-                    if(!TransferrableMoveItems.TransferrableProvider.isItemFilterType(value)){
+                    ListValue row;
+                    if((row = StackValues.tryExpectType(ListValue.class, value)) == null){
                         return null;
+                    } else{
+                        for(StackValue elem : row.value){
+                            if(!TransferrableMoveItems.TransferrableProvider.isItemFilterType(elem)){
+                                return null;
+                            }
+                        }
                     }
                 }
                 return TransferrableCraftFrom.instance;

@@ -65,12 +65,13 @@ class TileLogisticController extends TileEntityMod
 
   val count =
     """
-      |from = <Chest>
-      |recipe = [
-      | <minecraft:wood:0>
-      |]
-      |craftFrom = from >> recipe
-      |println(craftFrom)
+       |input = <Chest>
+       |output = <Dropper>
+       |item = <minecraft:iron_pickaxe:1>
+       |recipe = [[item item]]
+       |input >> recipe >> input
+       |
+       |
     """.stripMargin
 
   load(count)
