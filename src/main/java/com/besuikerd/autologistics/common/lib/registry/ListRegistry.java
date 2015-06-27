@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class AbstractListRegistry<A> implements IListRegistry<A> {
+public class ListRegistry<A> implements IListRegistry<A> {
 
     protected List<A> registry;
     public final List<A> readOnlyRegistry;
 
-    protected AbstractListRegistry(){
+    protected ListRegistry(){
         registry = new ArrayList<A>();
         readOnlyRegistry = Collections.unmodifiableList(registry);
     }

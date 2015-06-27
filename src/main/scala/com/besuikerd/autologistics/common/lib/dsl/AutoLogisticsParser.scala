@@ -22,7 +22,7 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
 
   lazy val filtered:Parser[Expression] = referrable ~ ("@" ~> (listExp | referrable)) ^^ {
     case e ~ filter => {
-      Application("_itemFilter", List(e, filter))
+      Application("_filter", List(e, filter))
     }
   }
 
@@ -57,6 +57,6 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
 
   override def operands:Seq[Parser[Expression]] = Seq(relativeCoordinate, absCoordinate, itemRef, filtered, itemName) ++ super.operands
   override def binaryOperators:Map[Int, Seq[(String, (Expression, String, Expression) => Expression)]] = super.binaryOperators ++ Map(
-    10 -> Seq((">>", Application.apply("_transferTo") _))
+    10 -> Seq((">>", Application.apply("_transfer") _))
   )
 }

@@ -32,8 +32,8 @@ trait TileLogistic extends TileEntityMod{
   directions.keys.foreach(dir => virtualMachine.addGlobal(dir, new StringValue(dir)))
 
   virtualMachine.addNative("find", FindInventories)
-  virtualMachine.addNative("_transferTo", new NativeFunctionItemTransfer(this))
-  virtualMachine.addNative("_itemFilter", NativeFunctionItemFilter.instance)
+  virtualMachine.addNative("_transfer", new NativeFunctionItemTransfer(this))
+  virtualMachine.addNative("_filter", NativeFunctionItemFilter.instance)
 
   object FindInventories extends NativeFunction{
     override def call(vm: VirtualMachine, args: JList[StackValue]): StackValue = {

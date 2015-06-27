@@ -65,16 +65,21 @@ class TileLogisticController extends TileEntityMod
 
   val count =
     """
-      |<Chest> >> <Dropper>
+      |from = <Chest>
+      |recipe = [
+      | <minecraft:wood:0>
+      |]
+      |craftFrom = from >> recipe
+      |println(craftFrom)
     """.stripMargin
 
-  load(ore)
+  load(count)
 
   override def updateEntity(): Unit = {
     if(AutoLogistics.proxy.getSideOfThread == Side.SERVER) {
       if (!virtualMachine.isTerminated) {
         try{
-          virtualMachine.run(20)
+          virtualMachine.run(50)
         } catch{
           case e:Exception => {
             e.printStackTrace()

@@ -1,17 +1,13 @@
 package com.besuikerd.autologistics.common.lib.registry;
 
-import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
 import java.util.*;
 
-public abstract class AbstractMapRegistry<K, V> implements IMapRegistry<K, V>{
+public class MapRegistry<K, V> implements IMapRegistry<K, V>{
     protected Map<K, V> registry;
 
     public final Map<K, V> readOnlyRegisty;
 
-    protected AbstractMapRegistry(){
+    protected MapRegistry(){
         this.registry = new HashMap<K, V>();
         this.readOnlyRegisty = Collections.unmodifiableMap(registry);
     }

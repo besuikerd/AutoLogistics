@@ -64,4 +64,14 @@ public enum StackValues {
         StackValue value = obj.mapping.get(field);
         return value != null ? tryExpectType(cls, value) : null;
     }
+
+    public static ObjectValue tryGetObjectOfType(String type, StackValue value){
+        ObjectValue obj;
+        StringValue typeString;
+        return
+               (obj = tryExpectType(ObjectValue.class, value)) != null
+            && (typeString = tryExtractField(StringValue.class, "type", obj)) != null
+            && typeString.value.equals(type)
+        ? obj : null;
+    }
 }
