@@ -2,6 +2,7 @@ package com.besuikerd.autologistics.common.lib.dsl.vm;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.Instruction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunction;
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ClosureValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
 
 import java.io.DataInput;
@@ -25,8 +26,8 @@ public interface VirtualMachine {
     void pushInstructions(Collection<Instruction> instructions);
     Instruction popInstruction();
 
-    void openScope();
-    void closeScope();
+    ClosureValue openScope();
+    ClosureValue closeScope();
 
     void crash(String message);
 

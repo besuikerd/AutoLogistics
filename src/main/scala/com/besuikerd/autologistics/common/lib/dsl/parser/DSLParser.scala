@@ -30,7 +30,9 @@ trait DSLParser extends JavaTokenParsers
     }
   }
 
-  lazy val expression:Parser[Expression] = binExp <~ newline.?
+  lazy val expression:Parser[Expression] = beforeExpressions | binExp
+
+  lazy val beforeExpressions:Parser[Expression] = (if(expressions.isEmpty) failure("") else expressions.reduceLeft(_ | _))
 
   lazy val sortedBinaryOperators:List[Parser[(String, (Expression, String, Expression) => Expression)]] = binaryOperators.mapValues(_.map{case (op, f) => literal(op).map((_, f))}.reduceRight(_ | _)).toList.sortBy(-_._1).map(_._2) //reverse sorted to build up parser from the bottom
 

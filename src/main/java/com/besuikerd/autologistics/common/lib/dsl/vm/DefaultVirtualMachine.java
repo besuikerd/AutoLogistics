@@ -58,8 +58,8 @@ public class DefaultVirtualMachine implements VirtualMachine{
         stack.clear();
         instructions.clear();
         scopes.clear();
-        openScope();
-        ClosureValue globalScope = scopes.peek();
+
+        ClosureValue globalScope = openScope();
         for(Map.Entry<String, StackValue> entry: globals.entrySet()){
             globalScope.free.put(entry.getKey(), entry.getValue());
         }
@@ -103,15 +103,17 @@ public class DefaultVirtualMachine implements VirtualMachine{
     }
 
     @Override
-    public void openScope() {
+    public ClosureValue openScope() {
         List<String> bindings = Collections.emptyList();
         List<Instruction> body = Collections.emptyList();
-        scopes.push(new ClosureValue(bindings, new HashMap<String, StackValue>(), body));
+        ClosureValue scope = new ClosureValue(bindings, new HashMap<String, StackValue>(), body);
+        scopes.push(scope);
+        return scope;
     }
 
     @Override
-    public void closeScope() {
-        scopes.pop();
+    public ClosureValue closeScope() {
+        return scopes.pop();
     }
 
     @Override
@@ -229,7 +231,6 @@ public class DefaultVirtualMachine implements VirtualMachine{
 
     protected void deserializeStack(DataInput input) throws IOException{
         int length = input.readInt();
-        stack.clear();
         for(int i = 0 ; i < length ; i++){
             stack.add(DataInputStackValueParser.parse(input));
         }
@@ -237,7 +238,6 @@ public class DefaultVirtualMachine implements VirtualMachine{
 
     protected void deserializeInstructions(DataInput input) throws IOException{
         int length = input.readInt();
-        instructions.clear();
         for(int i = 0 ; i < length ; i++){
             instructions.add(DataInputInstructionParser.parse(input));
         }
@@ -245,7 +245,6 @@ public class DefaultVirtualMachine implements VirtualMachine{
 
     protected void deserializeScopes(DataInput input) throws IOException{
         int length = input.readInt();
-        scopes.clear();
         for(int i = 0 ; i < length ; i++){
             scopes.add((ClosureValue) DataInputStackValueParser.parse(input));
         }
