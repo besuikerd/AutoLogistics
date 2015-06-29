@@ -80,14 +80,20 @@ apply plugin: LoadPropertiesPlugin
 
 def File buildConfigFile = file('conf/buildConfig.properties')
 def Properties buildConfig = loadProperties buildConfigFile
-
-
 version = buildConfig.version
 group = buildConfig.group
 archivesBaseName = buildConfig.modName
+
 def File configFile = file('conf/config.properties')
 def Properties config = loadProperties configFile
-def Properties privateProperties = loadProperties file('conf/private.properties')
+
+String privatePath = null
+try{
+    privatePath = project.privatePath
+} catch(Exception e){
+    privatePath = 'conf/private.properties'
+}
+def Properties privateProperties = loadProperties file(privatePath)
 
 minecraft {
     version = "$buildConfig.forgeVersion-$buildConfig.minecraftVersion"
@@ -161,6 +167,7 @@ processResources
 
 }
 
+project.ext.windows = System.getProperty('os.name').startsWith('Windows')
 
 def executeCommand(String command){
     def args = command.split(/(?<!\\) /)
@@ -168,9 +175,9 @@ def executeCommand(String command){
     windowsArgs[0] = 'cmd'
     windowsArgs[1] = '/c'
     System.arraycopy(args, 0, windowsArgs, 2, args.length)
-
+    windows
     task execute(type:Exec, overwrite:true){
-        if(System.getProperty('os.name').startsWith('Windows')){
+        if(windows){
             commandLine windowsArgs
         } else{
             commandLine args
@@ -188,7 +195,7 @@ def executeCommand(String command){
 
 def latestHash = new LazyValue({return executeCommand("git rev-parse HEAD").trim()})
 def changeLog = new LazyValue({
-    def cmd = "git log --pretty=\"  *%s\" $config.lastBuildHash...HEAD"
+    def cmd = windows ? "git log --pretty=\"  *%s\" $config.lastBuildHash...HEAD" : "git log --pretty=\\ \\ *%s $config.lastBuildHash...HEAD"
     return executeCommand(cmd)
 })
 
