@@ -170,9 +170,11 @@ def executeCommand(String command){
     System.arraycopy(args, 0, windowsArgs, 2, args.length)
 
     task execute(type:Exec, overwrite:true){
-        commandLine args
-        commandLine windowsArgs
-
+        if(System.getProperty('os.name').startsWith('Windows')){
+            commandLine windowsArgs
+        } else{
+            commandLine args
+        }
         standardOutput = new ByteArrayOutputStream()
 
         ext.output = {
