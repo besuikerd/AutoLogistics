@@ -1,7 +1,6 @@
 package com.besuikerd.autologistics.common.tile.logistic.itemcounter;
 
 import com.besuikerd.autologistics.common.tile.logistic.filter.ILogisticFilter;
-import com.besuikerd.autologistics.common.tile.logistic.filter.ItemFilter;
 import net.minecraft.item.ItemStack;
 
 public abstract class ItemCounterInnerLogisticFilter extends AbstractInventoryItemCounter{

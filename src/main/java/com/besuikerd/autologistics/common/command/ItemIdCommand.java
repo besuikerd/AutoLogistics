@@ -12,20 +12,10 @@ import net.minecraft.item.ItemStack;
 import java.util.Collections;
 import java.util.List;
 
-public class ItemIdCommand implements ICommand{
+public class ItemIdCommand extends ModCommand{
     @Override
     public String getCommandName() {
         return "hand";
-    }
-
-    @Override
-    public String getCommandUsage(ICommandSender sender) {
-        return "besu hand";
-    }
-
-    @Override
-    public List<String> getCommandAliases() {
-        return null;
     }
 
     @Override
@@ -39,7 +29,6 @@ public class ItemIdCommand implements ICommand{
                 if(args.length > 0){
                     useMeta = true;
                 }
-                System.out.println("dfs");
                 GameRegistry.UniqueIdentifier ui = GameRegistry.findUniqueIdentifierFor(heldItem.getItem());
                 String itemId = "<" + ui.modId + ":" + ui.name + (useMeta ? ":" + heldItem.getItemDamage() + ">" : ">");
 
@@ -48,23 +37,4 @@ public class ItemIdCommand implements ICommand{
         }
     }
 
-    @Override
-    public boolean canCommandSenderUseCommand(ICommandSender p_71519_1_) {
-        return true;
-    }
-
-    @Override
-    public List addTabCompletionOptions(ICommandSender p_71516_1_, String[] p_71516_2_) {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public boolean isUsernameIndex(String[] p_82358_1_, int p_82358_2_) {
-        return false;
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        return 0;
-    }
 }

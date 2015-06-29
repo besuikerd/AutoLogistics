@@ -5,6 +5,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.AbstractNati
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.CopyStackValueVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.SafeBaseStackValueVisitor;
+import com.besuikerd.autologistics.common.tile.logistic.filter.item.ItemFilterRegistry;
 
 import java.util.List;
 
@@ -75,8 +76,7 @@ public class NativeFunctionItemFilter extends AbstractNativeFunction{
 
         @Override
         public Void visitObjectValue(ObjectValue value, Void aVoid) {
-            StringValue type;
-            if((type = extractField(vm, StringValue.class, "type", value)) != null && type.value.equals("item")){
+            if(ItemFilterRegistry.instance.filterExists(value)){
                 itemFilter.append(value);
             }
             return null;

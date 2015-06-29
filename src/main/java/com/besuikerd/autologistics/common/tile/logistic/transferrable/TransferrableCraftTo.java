@@ -65,35 +65,34 @@ public class TransferrableCraftTo extends AbstractTransferrable<ObjectValue, Sta
         Arrays.fill(fromInventorySlotIndexes, -1);
 
 
-        for(int craftRowIndex = 0; craftRowIndex < recipe.length ; craftRowIndex++){
+        for(int craftRowIndex = 0; craftRowIndex < recipe.length ; craftRowIndex++) {
             ILogisticFilter[] craftRow = recipe[craftRowIndex];
 
             craftColIndex:
-            for(int craftColIndex = 0 ; craftColIndex < craftRow.length ; craftColIndex++){
+            for (int craftColIndex = 0; craftColIndex < craftRow.length; craftColIndex++) {
                 ILogisticFilter craftSlotFilter = craftRow[craftColIndex];
-                if(craftSlotFilter == null){
+                if (craftSlotFilter == null) {
                     continue;
                 }
 
 
-
                 ItemCounterInnerLogisticFilter fromItemCounter = new ItemCounterInnerLogisticFilterExtract(craftSlotFilter);
-                for(int fromInventoryIndex = 0 ; fromInventoryIndex < fromInventories.size() ; fromInventoryIndex++){
+                for (int fromInventoryIndex = 0; fromInventoryIndex < fromInventories.size(); fromInventoryIndex++) {
                     IInventory fromInventory = fromInventories.get(fromInventoryIndex);
                     int fromItemsCounted = fromItemCounter.count(fromInventory, fromFilter);
 
                     //TODO if craft slots with the same item have a limit, too many items (at most 8) will be extracted
 
                     int fromLimit = craftSlotFilter.getAmount() == -1 ? Integer.MAX_VALUE : fromItemsCounted - craftSlotFilter.getAmount();
-                    if(fromLimit <= 0){
+                    if (fromLimit <= 0) {
                         continue; //nope we cannot extract that item from this inventory :(
                     }
 
-                    for(int fromSlotIndex = 0 ; fromSlotIndex < fromInventory.getSizeInventory() ; fromSlotIndex++){
+                    for (int fromSlotIndex = 0; fromSlotIndex < fromInventory.getSizeInventory(); fromSlotIndex++) {
                         ItemStack fromStack = fromInventory.getStackInSlot(fromSlotIndex);
-                        if(fromStack != null && craftSlotFilter.passesItemFilter(fromStack)){
+                        if (fromStack != null && craftSlotFilter.passesItemFilter(fromStack)) {
                             int previouslyTaken = countPreviouslyTaken(fromInventoryIndexes, fromInventorySlotIndexes, fromInventoryIndex, fromSlotIndex); //maybe earlier slots already took some items from this stack
-                            if(fromStack.stackSize - previouslyTaken > 0){ //yay we found a valid stack!
+                            if (fromStack.stackSize - previouslyTaken > 0) { //yay we found a valid stack!
                                 int craftSlotIndex = craftRowIndex * 3 + craftColIndex;
                                 fromInventoryIndexes[craftSlotIndex] = fromInventoryIndex;
                                 fromInventorySlotIndexes[craftSlotIndex] = fromSlotIndex;
@@ -106,129 +105,129 @@ public class TransferrableCraftTo extends AbstractTransferrable<ObjectValue, Sta
                 return false;
 
             }
+        }
 
-            //if all is well we should now have found valid items for our crafting grid, lets fill it in
-            Container dummyContainer = new DummyContainer();
-            InventoryCrafting inventoryCrafting = new InventoryCrafting(dummyContainer, 3, 3);
+        //if all is well we should now have found valid items for our crafting grid, lets fill it in
+        Container dummyContainer = new DummyContainer();
+        InventoryCrafting inventoryCrafting = new InventoryCrafting(dummyContainer, 3, 3);
 
-            List<ItemStack> remainder = new ArrayList<ItemStack>();
+        List<ItemStack> remainder = new ArrayList<ItemStack>();
 
-            for(int i = 0 ; i < 9 ; i++){
-                int inventoryIndex = fromInventoryIndexes[i];
-                int slotIndex = fromInventorySlotIndexes[i];
-                if(inventoryIndex != -1 && slotIndex != -1){
-                    IInventory inventory = fromInventories.get(inventoryIndex);
-                    ItemStack inventoryStack = inventory.getStackInSlot(slotIndex);
+        for(int i = 0 ; i < 9 ; i++){
+            int inventoryIndex = fromInventoryIndexes[i];
+            int slotIndex = fromInventorySlotIndexes[i];
+            if(inventoryIndex != -1 && slotIndex != -1){
+                IInventory inventory = fromInventories.get(inventoryIndex);
+                ItemStack inventoryStack = inventory.getStackInSlot(slotIndex);
 
-                    Item containerItem = inventoryStack.getItem().getContainerItem();
-                    if(containerItem != null){
-                        remainder.add(new ItemStack(containerItem, 1));
-                    }
-                    inventoryCrafting.setInventorySlotContents(i, inventoryStack.copy().splitStack(1));
+                Item containerItem = inventoryStack.getItem().getContainerItem();
+                if(containerItem != null){
+                    remainder.add(new ItemStack(containerItem, 1));
                 }
+                inventoryCrafting.setInventorySlotContents(i, inventoryStack.copy().splitStack(1));
             }
+        }
 
-            ItemStack craftResult = CraftingManager.getInstance().findMatchingRecipe(inventoryCrafting, source.getWorldObj());
-            if(craftResult != null){ //we have a valid recipe! now we need to store it somewere..
-                remainder.add(craftResult);
+        ItemStack craftResult = CraftingManager.getInstance().findMatchingRecipe(inventoryCrafting, source.getWorldObj());
+        if(craftResult != null){ //we have a valid recipe! now we need to store it somewere..
+            remainder.add(craftResult);
 
-                // (stackIndex, toInventoryIndex, toSlotIndex, amount)
-                List<Vector4> insertions = new ArrayList<Vector4>();
+            // (stackIndex, toInventoryIndex, toSlotIndex, amount)
+            List<Vector4> insertions = new ArrayList<Vector4>();
 
-                //Map<(toSlotIndex, toStackIndex), ItemStack>
-                Map<Vector2, ItemStack> virtualInsertions = new HashMap<Vector2, ItemStack>();
+            //Map<(toSlotIndex, toStackIndex), ItemStack>
+            Map<Vector2, ItemStack> virtualInsertions = new HashMap<Vector2, ItemStack>();
 
-                toInsertLoop:
-                for(int stackIndex = 0; stackIndex < remainder.size() ; stackIndex++) {
-                    ItemStack toInsert = remainder.get(stackIndex).copy();
+            toInsertLoop:
+            for(int stackIndex = 0; stackIndex < remainder.size() ; stackIndex++) {
+                ItemStack toInsert = remainder.get(stackIndex).copy();
 
-                    toFilterLoop:
-                    for(ILogisticFilter toFilter : toFilters){
-                        List<Tuple2<Integer, IInventory>> toInventories = filterInventoriesWithIndex(source, allInventories, toFilter);
-                        toInventoryLoop:
-                        for (Tuple2<Integer, IInventory> toInventoryWithIndex : toInventories) {
-                            int toInventoryIndex = toInventoryWithIndex._1;
-                            IInventory toInventory = toInventoryWithIndex._2;
-                            int toItemsCounted = InventoryItemCounterInsert.instance.count(toInventory, toFilter);
-                            int toLimit = toFilter.getAmount() == -1 ? Integer.MAX_VALUE : toFilter.getAmount() - toItemsCounted;
-                            if(toLimit > 0) { //we are allowed to insert #toLimit items
+                toFilterLoop:
+                for(ILogisticFilter toFilter : toFilters){
+                    List<Tuple2<Integer, IInventory>> toInventories = filterInventoriesWithIndex(source, allInventories, toFilter);
+                    toInventoryLoop:
+                    for (Tuple2<Integer, IInventory> toInventoryWithIndex : toInventories) {
+                        int toInventoryIndex = toInventoryWithIndex._1;
+                        IInventory toInventory = toInventoryWithIndex._2;
+                        int toItemsCounted = InventoryItemCounterInsert.instance.count(toInventory, toFilter);
+                        int toLimit = toFilter.getAmount() == -1 ? Integer.MAX_VALUE : toFilter.getAmount() - toItemsCounted;
+                        if(toLimit > 0) { //we are allowed to insert #toLimit items
 
-                                for (int toSlotIndex = 0; toSlotIndex < toInventory.getSizeInventory(); toSlotIndex++) {
-                                    Vector2 stackPosition = new Vector2(toInventoryIndex, toSlotIndex);
-                                    ItemStack toStack = virtualInsertions.get(stackPosition);
-                                    if(toStack == null){
-                                        ItemStack stackInSlot = toInventory.getStackInSlot(toSlotIndex);
-                                        if(stackInSlot != null){
-                                            toStack = stackInSlot.copy();
+                            for (int toSlotIndex = 0; toSlotIndex < toInventory.getSizeInventory(); toSlotIndex++) {
+                                Vector2 stackPosition = new Vector2(toInventoryIndex, toSlotIndex);
+                                ItemStack toStack = virtualInsertions.get(stackPosition);
+                                if(toStack == null){
+                                    ItemStack stackInSlot = toInventory.getStackInSlot(toSlotIndex);
+                                    if(stackInSlot != null){
+                                        toStack = stackInSlot.copy();
+                                        virtualInsertions.put(stackPosition, toStack);
+                                    }
+                                }
+
+                                if ((toStack == null || toInsert.isItemEqual(toStack) && ItemStack.areItemStackTagsEqual(toInsert, toStack)) && toFilter.passesItemFilter(toInsert) && InventoryItemCounterInsert.instance.canUseSlot(toInventory, toSlotIndex, toInsert, toFilter)) {
+                                    //we found a slot for this stack (:
+                                    int toTransfer = MathUtil.min(toLimit, toInsert.stackSize, toStack != null ? toStack.getMaxStackSize() - toStack.stackSize : Integer.MAX_VALUE);
+
+                                    if(toTransfer > 0){
+                                        insertions.add(new Vector4(stackIndex, toInventoryIndex, toSlotIndex, toTransfer));
+                                        toLimit -= toTransfer;
+
+                                        if(toStack == null){
+                                            toStack = toInsert.copy();
                                             virtualInsertions.put(stackPosition, toStack);
+                                        } else{
+                                            toStack.stackSize += toTransfer;
                                         }
-                                    }
 
-                                    if ((toStack == null || toInsert.isItemEqual(toStack) && ItemStack.areItemStackTagsEqual(toInsert, toStack)) && toFilter.passesItemFilter(toInsert) && InventoryItemCounterInsert.instance.canUseSlot(toInventory, toSlotIndex, toInsert, toFilter)) {
-                                        //we found a slot for this stack (:
-                                        int toTransfer = MathUtil.min(toLimit, toInsert.stackSize, toStack != null ? toStack.getMaxStackSize() - toStack.stackSize : Integer.MAX_VALUE);
+                                        toInsert.stackSize -= toTransfer;
+                                        if(toInsert.stackSize == 0) { // we have inserted the whole stack!
+                                            continue toInsertLoop;
+                                        }
 
-                                        if(toTransfer > 0){
-                                            insertions.add(new Vector4(stackIndex, toInventoryIndex, toSlotIndex, toTransfer));
-                                            toLimit -= toTransfer;
-
-                                            if(toStack == null){
-                                                toStack = toInsert.copy();
-                                                virtualInsertions.put(stackPosition, toStack);
-                                            } else{
-                                                toStack.stackSize += toTransfer;
-                                            }
-
-                                            toInsert.stackSize -= toTransfer;
-                                            if(toInsert.stackSize == 0) { // we have inserted the whole stack!
-                                                continue toInsertLoop;
-                                            }
-
-                                            if(toLimit == 0) { //we are done with this inventory; it has enough items
-                                                continue toInventoryLoop;
-                                            }
-
+                                        if(toLimit == 0) { //we are done with this inventory; it has enough items
+                                            continue toInventoryLoop;
                                         }
 
                                     }
+
                                 }
                             }
                         }
-
                     }
-                    //we have not found inventories to dump this stack in
-                    return false;
 
                 }
+                //we have not found inventories to dump this stack in
+                return false;
 
-                //we now have a spot for all craft result itemstacks, now we need to commit the transaction
-
-                //remove the items from the fromInventories
-                for(int i = 0 ; i < 9 ; i++){
-                    int fromInventoryIndex = fromInventoryIndexes[i];
-                    int fromSlotIndex = fromInventorySlotIndexes[i];
-                    if(fromInventoryIndex != -1 && fromSlotIndex != -1){
-                        IInventory fromInventory = fromInventories.get(fromInventoryIndex);
-                        fromInventory.decrStackSize(fromSlotIndex, 1);
-                    }
-                }
-
-                //insert the result stacks into the toInventories
-                for(Vector4 insertion : insertions){
-                    ItemStack stack = remainder.get(insertion.x).splitStack(insertion.u);
-
-                    IInventory inventory = allInventories.get(insertion.y);
-                    ItemStack existingStack = inventory.getStackInSlot(insertion.z);
-                    if(existingStack == null){
-                        inventory.setInventorySlotContents(insertion.z, stack);
-                    } else{
-                        existingStack.stackSize += insertion.u;
-                        inventory.setInventorySlotContents(insertion.z, existingStack);
-                    }
-                }
-                //all done! lets confirm we succeeded
-                return true;
             }
+
+            //we now have a spot for all craft result itemstacks, now we need to commit the transaction
+
+            //remove the items from the fromInventories
+            for(int i = 0 ; i < 9 ; i++){
+                int fromInventoryIndex = fromInventoryIndexes[i];
+                int fromSlotIndex = fromInventorySlotIndexes[i];
+                if(fromInventoryIndex != -1 && fromSlotIndex != -1){
+                    IInventory fromInventory = fromInventories.get(fromInventoryIndex);
+                    fromInventory.decrStackSize(fromSlotIndex, 1);
+                }
+            }
+
+            //insert the result stacks into the toInventories
+            for(Vector4 insertion : insertions){
+                ItemStack stack = remainder.get(insertion.x).splitStack(insertion.u);
+
+                IInventory inventory = allInventories.get(insertion.y);
+                ItemStack existingStack = inventory.getStackInSlot(insertion.z);
+                if(existingStack == null){
+                    inventory.setInventorySlotContents(insertion.z, stack);
+                } else{
+                    existingStack.stackSize += insertion.u;
+                    inventory.setInventorySlotContents(insertion.z, existingStack);
+                }
+            }
+            //all done! lets confirm we succeeded
+            return true;
         }
         return false;
     }
@@ -261,7 +260,7 @@ public class TransferrableCraftTo extends AbstractTransferrable<ObjectValue, Sta
                 ILogisticFilter[][] recipe;
 
                 if(
-                    (fromFilters = LogisticFilterRegistry.instance.tryGetFilterOrFilterList(from)) == null
+                    (fromFilters = LogisticFilterRegistry.instance.tryGetFilterOrFilterList(fromFilterObj)) == null
                     || (toFilters = LogisticFilterRegistry.instance.tryGetFilterOrFilterList(to)) == null
                 ){
                     return null;

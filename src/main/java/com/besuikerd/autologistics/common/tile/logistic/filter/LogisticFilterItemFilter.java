@@ -1,15 +1,16 @@
 package com.besuikerd.autologistics.common.tile.logistic.filter;
 
-import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ObjectValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
+import com.besuikerd.autologistics.common.tile.logistic.filter.item.IItemFilter;
+import com.besuikerd.autologistics.common.tile.logistic.filter.item.ItemFilterRegistry;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 
 public class LogisticFilterItemFilter extends AbstractLogisticFilter{
 
-    private ItemFilter itemFilter;
+    private IItemFilter itemFilter;
 
-    public LogisticFilterItemFilter(StackValue value, ItemFilter itemFilter) {
+    public LogisticFilterItemFilter(StackValue value, IItemFilter itemFilter) {
         super(value);
         this.itemFilter = itemFilter;
     }
@@ -24,17 +25,12 @@ public class LogisticFilterItemFilter extends AbstractLogisticFilter{
         return itemFilter.passesFilter(stack);
     }
 
-    @Override
-    public int getMeta() {
-        return itemFilter.meta;
-    }
-
     public static class FilterProvider implements IFilterProvider{
         public static final FilterProvider instance = new FilterProvider();
 
         @Override
         public ILogisticFilter provide(StackValue value) {
-            ItemFilter filter = ItemFilter.fromStackValue(value);
+            IItemFilter filter = ItemFilterRegistry.instance.getFilter(value);
             if(filter != null){
                 return new LogisticFilterItemFilter(value, filter);
             }

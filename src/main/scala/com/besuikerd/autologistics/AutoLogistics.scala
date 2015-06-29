@@ -1,6 +1,6 @@
 package com.besuikerd.autologistics
 
-import com.besuikerd.autologistics.common.command.ItemIdCommand
+import com.besuikerd.autologistics.common.command.{OreDictCommand, ItemIdCommand}
 import com.besuikerd.autologistics.common.lib.network.PacketDispatcher
 import com.besuikerd.autologistics.common.{CommonProxy, ModItems, ModBlocks}
 import cpw.mods.fml.common.Mod.EventHandler
@@ -28,5 +28,6 @@ object AutoLogistics {
   @EventHandler
   def serverLoad(event: FMLServerStartingEvent): Unit ={
     event.registerServerCommand(new ItemIdCommand)
+    event.registerServerCommand(new OreDictCommand)
   }
 }

@@ -4,6 +4,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ObjectValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValues;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StringValue;
+import com.besuikerd.autologistics.common.tile.logistic.filter.item.IItemFilter;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
@@ -15,8 +16,8 @@ public class LogisticFilterName extends AbstractLogisticFilter{
 
     private String name;
 
-    public LogisticFilterName(int meta, int amount, EnumFacing[] validSides, ItemFilter[] itemFilters, String name) {
-        super(meta, amount, validSides, itemFilters);
+    public LogisticFilterName(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters, String name) {
+        super(amount, validSides, itemFilters);
         this.name = name;
     }
 

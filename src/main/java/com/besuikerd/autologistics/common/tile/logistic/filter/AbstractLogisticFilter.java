@@ -2,18 +2,18 @@ package com.besuikerd.autologistics.common.tile.logistic.filter;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
 import com.besuikerd.autologistics.common.tile.logistic.StringFacing;
+import com.besuikerd.autologistics.common.tile.logistic.filter.item.IItemFilter;
+import com.besuikerd.autologistics.common.tile.logistic.filter.item.ItemFilterRegistry;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 
 public abstract class AbstractLogisticFilter implements ILogisticFilter {
 
-    protected int meta;
     protected int amount;
     protected EnumFacing[] validSides;
-    protected ItemFilter[] itemFilters;
+    protected IItemFilter[] itemFilters;
 
-    public AbstractLogisticFilter(int meta, int amount, EnumFacing[] validSides, ItemFilter[] itemFilters) {
-        this.meta = meta;
+    public AbstractLogisticFilter(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters) {
         this.amount = amount;
         this.validSides = validSides;
         this.itemFilters = itemFilters;
@@ -27,16 +27,9 @@ public abstract class AbstractLogisticFilter implements ILogisticFilter {
         ObjectValue obj;
         int amount = -1;
         EnumFacing[] validSides = EnumFacing.values();
-        ItemFilter[] itemFilters = new ItemFilter[0];
+        IItemFilter[] itemFilters = new IItemFilter[0];
 
         if((obj = StackValues.tryExpectType(ObjectValue.class, value)) != null) {
-            int meta = -1;
-            IntegerValue optMeta;
-            if ((optMeta = StackValues.tryExtractField(IntegerValue.class, "meta", obj)) != null) {
-                meta = optMeta.value;
-            }
-            this.meta = meta;
-
 
             ObjectValue filter;
             if ((filter = StackValues.tryExtractField(ObjectValue.class, "filter", obj)) != null) {
@@ -73,11 +66,11 @@ public abstract class AbstractLogisticFilter implements ILogisticFilter {
                 ListValue items;
                 if ((items = StackValues.tryExtractField(ListValue.class, "items", filter)) != null) {
                     if (!items.value.isEmpty()) {
-                        ItemFilter[] optItems = new ItemFilter[items.value.size()];
+                        IItemFilter[] optItems = new IItemFilter[items.value.size()];
                         int offset = 0;
                         for (StackValue itemValue : items.value) {
-                            ItemFilter itemFilter;
-                            if ((itemFilter = ItemFilter.fromStackValue(itemValue)) != null) {
+                            IItemFilter itemFilter;
+                            if ((itemFilter = ItemFilterRegistry.instance.getFilter(itemValue)) != null) {
                                 optItems[offset++] = itemFilter;
                             } else {
                                 optItems = itemFilters;
@@ -96,17 +89,12 @@ public abstract class AbstractLogisticFilter implements ILogisticFilter {
 
     @Override
     public boolean passesItemFilter(ItemStack stack) {
-        for(ItemFilter obj : itemFilters){
+        for(IItemFilter obj : itemFilters){
             if(obj.passesFilter(stack)){
                 return true;
             }
         }
         return itemFilters.length == 0;
-    }
-
-    @Override
-    public int getMeta() {
-        return meta;
     }
 
     @Override

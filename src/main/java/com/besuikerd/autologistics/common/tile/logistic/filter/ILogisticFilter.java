@@ -6,7 +6,6 @@ import net.minecraft.util.EnumFacing;
 
 public interface ILogisticFilter {
     int getAmount();
-    int getMeta();
     EnumFacing[] getValidSides();
 
     boolean passesItemFilter(ItemStack stack);

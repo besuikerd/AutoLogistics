@@ -1,7 +1,10 @@
 package dsl
 
 import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser
+import com.besuikerd.autologistics.common.lib.dsl.parser.DSLPrettyPrinter
+import com.besuikerd.autologistics.common.lib.dsl.vm.CodeGenerator
 import org.scalatest.{Inside, FlatSpec, Assertions}
+import scala.collection.JavaConversions._
 
 import scala.util.parsing.combinator.Parsers
 import scala.util.parsing.input.CharSequenceReader
@@ -17,14 +20,15 @@ class ParsingSpec extends FlatSpec with Inside{
 
   it should "parse the following programs" in {
     val p = AutoLogisticsParser
-    assertParses(p)(p.parser,
+    parsing(p)(p.parser,
       """
-        |[
-        |   <Chest>@[<minecraft:cobblestone>]
-        |   <Chest>@[<minecraft:cobblestone>]
-        |]
+        |<Chest> >> [[log]]
         |
-      """.stripMargin)
+      """.stripMargin){ statements =>
+      for(statement <- statements){
+        println(DSLPrettyPrinter.prettify(statement))
+      }
+    }
 
   }
 }

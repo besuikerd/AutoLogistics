@@ -15,7 +15,7 @@ trait DSLParser extends JavaTokenParsers
   override protected val whiteSpace: Regex = """[^\S\n]+""".r
   lazy val newline:Parser[String] = literal("\n")
 
-  lazy val EOF = (".".r.map(Some(_)) | success(None)).flatMap{
+  lazy val EOF = (".{1,10}".r.map(Some(_)) | success(None)).flatMap{
     case Some(s) => failure(s"Expected: EOF, got: $s")
     case None => success(())
   }

@@ -1,6 +1,7 @@
 package com.besuikerd.autologistics.common.tile.logistic.filter;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
+import com.besuikerd.autologistics.common.tile.logistic.filter.item.IItemFilter;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 
@@ -10,8 +11,8 @@ public class LogisticFilterPosition extends AbstractLogisticFilter{
     private int y;
     private int z;
 
-    public LogisticFilterPosition(int meta, int amount, EnumFacing[] validSides, ItemFilter[] itemFilters, String type, int x, int y, int z) {
-        super(meta, amount, validSides, itemFilters);
+    public LogisticFilterPosition(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters, String type, int x, int y, int z) {
+        super(amount, validSides, itemFilters);
         this.type = type;
         this.x = x;
         this.y = y;
@@ -28,9 +29,6 @@ public class LogisticFilterPosition extends AbstractLogisticFilter{
 
     @Override
     public boolean passesBlockFilter(TileEntity from, TileEntity to) {
-        if(meta != -1 && to.getBlockMetadata() != meta){
-            return false;
-        }
 
         if(type.equals("relative")){
             return
@@ -59,7 +57,7 @@ public class LogisticFilterPosition extends AbstractLogisticFilter{
             IntegerValue z;
             if(
                    (obj = StackValues.tryExpectType(ObjectValue.class, value)) != null
-                && ((type = StackValues.tryExtractField(StringValue.class, "type", obj)) != null && type.value.equals("absolute") || type.value.equals("relative"))
+                && (type = StackValues.tryExtractField(StringValue.class, "type", obj)) != null && (type.value.equals("absolute") || type.value.equals("relative"))
                 && (x = StackValues.tryExtractField(IntegerValue.class, "x", obj)) != null
                 && (y = StackValues.tryExtractField(IntegerValue.class, "y", obj)) != null
                 && (z = StackValues.tryExtractField(IntegerValue.class, "z", obj)) != null

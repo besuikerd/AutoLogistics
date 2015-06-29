@@ -74,4 +74,8 @@ public enum StackValues {
             && typeString.value.equals(type)
         ? obj : null;
     }
+
+    public static boolean isOfType(String type, StackValue value){
+        return tryGetObjectOfType(type, value) != null;
+    }
 }

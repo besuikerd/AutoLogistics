@@ -26,22 +26,22 @@ public class TransferrableCraftFrom implements ITransferrable<StackValue, ListVa
             }
 
             ListValue recipe;
-            if((recipe = StackValues.tryExpectType(ListValue.class, to)) != null){
-                for(StackValue value : recipe.value){
-                    ListValue row;
-                    if((row = StackValues.tryExpectType(ListValue.class, value)) == null){
-                        return null;
-                    } else{
-                        for(StackValue elem : row.value){
-                            if(!LogisticFilterRegistry.instance.filterExists(elem)){
-                                return null;
-                            }
-                        }
-                    }
-                }
+            if((recipe = StackValues.tryExpectType(ListValue.class, to)) != null){ //we already check this at craftTo
+                return TransferrableCraftFrom.instance;
+//                for(StackValue value : recipe.value){
+//                    ListValue row;
+//                    if((row = StackValues.tryExpectType(ListValue.class, value)) == null){
+//                        return null;
+//                    } else{
+//                        for(StackValue elem : row.value){
+//                            if(!LogisticFilterRegistry.instance.filterExists(elem)){
+//                                return null;
+//                            }
+//                        }
+//                    }
+//                }
+            } else return null;
 
-            }
-            return TransferrableCraftFrom.instance;
         }
     }
 

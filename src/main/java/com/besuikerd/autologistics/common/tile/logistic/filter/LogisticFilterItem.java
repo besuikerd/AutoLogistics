@@ -2,6 +2,7 @@ package com.besuikerd.autologistics.common.tile.logistic.filter;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
 import com.besuikerd.autologistics.common.lib.util.OreDictionaryUtil;
+import com.besuikerd.autologistics.common.tile.logistic.filter.item.IItemFilter;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.tileentity.TileEntity;
@@ -10,17 +11,20 @@ import net.minecraft.util.EnumFacing;
 public class LogisticFilterItem extends AbstractLogisticFilter{
     private String mod;
     private String name;
+    private int meta;
 
-    public LogisticFilterItem(int meta, int amount, EnumFacing[] validSides, ItemFilter[] itemFilters, String mod, String name) {
-        super(meta, amount, validSides, itemFilters);
+    public LogisticFilterItem(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters, String mod, String name, int meta) {
+        super(amount, validSides, itemFilters);
         this.mod = mod;
         this.name = name;
+        this.meta = meta;
     }
 
-    public LogisticFilterItem(StackValue value, String mod, String name) {
+    public LogisticFilterItem(StackValue value, String mod, String name, int meta) {
         super(value);
         this.mod = mod;
         this.name = name;
+        this.meta = meta;
     }
 
     @Override
@@ -50,7 +54,13 @@ public class LogisticFilterItem extends AbstractLogisticFilter{
                 && (mod = StackValues.tryExtractField(StringValue.class, "mod", obj)) != null
                 && (name = StackValues.tryExtractField(StringValue.class, "name", obj)) != null
             ){
-                return new LogisticFilterItem(obj, mod.value, name.value);
+                int meta = -1;
+                IntegerValue optMeta;
+                if ((optMeta = StackValues.tryExtractField(IntegerValue.class, "meta", obj)) != null) {
+                    meta = optMeta.value;
+                }
+
+                return new LogisticFilterItem(obj, mod.value, name.value, meta);
             }
             return null;
         }

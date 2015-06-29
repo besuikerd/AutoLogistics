@@ -55,15 +55,21 @@ trait AutoLogisticsParserExtensions extends PluggableParsers
     ))
   }
 
-  lazy val itemFilter: Parser[Expression] = ((referrable | itemRef | itemName) <~ "@") ~ (listExp | operand | beforeExpressions) ^^ {
+  lazy val itemType: Parser[Expression] = itemRef | itemName | referrable
+
+  lazy val transferTo: Parser[Expression] = repNsep(2, itemFilter | itemType | listExp, ">>") ^^ {
+    case items => items.tail.foldLeft(items.head){(acc, cur) => Application(acc, "_transfer", cur)
+    }
+  }
+
+  lazy val itemFilter: Parser[Expression] = (itemType <~ "@") ~ (listExp | operand | beforeExpressions) ^^ {
     case item ~ (filter@ListExpression(_)) => Application(item, "_filter", filter)
     case item ~ filter => Application(item, "_filter", ListExpression(List(filter)))
   }
 
-  override def expressions: Seq[Parser[Expression]] = Seq(itemFilter, itemRef, itemName) ++ super.expressions
+  override def expressions: Seq[Parser[Expression]] = Seq(transferTo | itemFilter | itemRef | itemName) ++ super.expressions
 
   override def operands:Seq[Parser[Expression]] = Seq(relativeCoordinate, absCoordinate) ++ super.operands
-  override def binaryOperators:Map[Int, Seq[(String, (Expression, String, Expression) => Expression)]] = super.binaryOperators ++ Map(
-    10 -> Seq((">>", Application.apply("_transfer") _))
-  )
+//  override def binaryOperators:Map[Int, Seq[(String, (Expression, String, Expression) => Expression)]] = super.binaryOperators ++ Map(
+//  )
 }
