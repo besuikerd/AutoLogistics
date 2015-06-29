@@ -170,7 +170,7 @@ processResources
 project.ext.windows = System.getProperty('os.name').startsWith('Windows')
 
 def executeCommand(String command){
-    def args = command.split(/(?<!\\) /)
+    def args = command.split(/(?<!\\) /).collect({it.replaceAll('\\ ', ' ')}).toArray()
     def windowsArgs = new String[args.length + 2];
     windowsArgs[0] = 'cmd'
     windowsArgs[1] = '/c'
@@ -205,7 +205,7 @@ task writeHash << {
 }
 
 def changeLog = new LazyValue({
-    def cmd = windows ? "git log --pretty=\"  *%s\" ${lastHash()}...${latestHash()}" : "git log --pretty=\\ \\ *%s ${lastHash()}...${latestHash()}"
+    def cmd = windows ? "git log --pretty=\"  *%s\" ${lastHash()}...HEAD" : "git log --pretty=\\ \\ *\\ %s ${lastHash()}...HEAD"
     return executeCommand(cmd)
 })
 
@@ -277,6 +277,11 @@ task simulateBuild << {
 simulateBuild.dependsOn(updateLatestHash)
 updateLatestHash.shouldRunAfter simulateBuild
 
+task simulateCurse << {
+    println("uploading to curse...")
+}
+simulateCurse.dependsOn(updateLatestHash)
+simulateCurse.mustRunAfter(updateLatestHash)
 
 curse {
     projectId = config.curseForgeProjectId
