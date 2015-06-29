@@ -1,13 +1,21 @@
+#Gradle stuff
 .gradle/
-.idea/
-build/
-minecraft/
 gradle/
+gradlew
+gradlew.bat
+
+#IntelliJ stuff
+.idea/
 *.iml
 *.ipr
 *.iws
-gradlew
-gradlew.bat
+
+#Build stuff
+build/
+
+#Minecraft stuff
+minecraft/
 logs/
-scripts/
-target/
+
+#lets keep our secrets safe
+conf/private.properties

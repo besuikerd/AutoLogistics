@@ -11,6 +11,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.DefaultVirtualMachine;
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.Instruction;
+import com.google.common.collect.Iterables;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import org.junit.*;
@@ -35,10 +36,9 @@ public class VirtualMachineTest {
     }
 
     @Parameters
-    public static Iterable<VirtualMachine> data(){
-        return Arrays.<VirtualMachine>asList(
-                new DefaultVirtualMachine()
-//                , new OptimizedVirtualMachine() //TODO fix
+    public static Iterable<Object[]> data(){
+        return Arrays.<Object[]>asList(
+            new Object[]{new DefaultVirtualMachine()}
         );
     }
 

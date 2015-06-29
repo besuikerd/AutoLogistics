@@ -1,0 +1,17 @@
+version 0.0.3-alpha:
+  *Fixed lots of small bugs in transfer/crafting. Split off ItemFilter to an interface (IItemFilter). Added command to display all oredict values for an item
+  *Fixed some parser errors. Added expressions to parser that are parsed before binary expressions
+  *Added CountItems function
+
+
+version 0.0.2:
+  *Fixed lots of small bugs in transfer/crafting. Split off ItemFilter to an interface (IItemFilter). Added command to display all oredict values for an item
+  *Fixed some parser errors. Added expressions to parser that are parsed before binary expressions
+  *Added CountItems function
+
+
+version 0.0.1:
+  *Fixed lots of small bugs in transfer/crafting. Split off ItemFilter to an interface (IItemFilter). Added command to display all oredict values for an item
+  *Fixed some parser errors. Added expressions to parser that are parsed before binary expressions
+  *Added CountItems function
+

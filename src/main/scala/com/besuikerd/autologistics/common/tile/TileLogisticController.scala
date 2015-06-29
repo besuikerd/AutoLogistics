@@ -100,13 +100,13 @@ class TileLogisticController extends TileEntityMod
       |buffer = ~(1, 1, 0)
       |output = ~(2, 1, 0)
       |
+      |from = <.*>
       |
-      |
-      |mkPlanks = \ -> <Chest> >> [[log]] >> buffer
+      |mkPlanks = \ -> from >> [[log]] >> buffer
       |
       |mkPiston = \ -> {
       |  need(3, planks, buffer, mkPlanks)
-      |  <Chest> >> [
+      |  from >> [
       |    [planks planks planks]
       |    [cobble iron cobble]
       |    [cobble redstone cobble]
@@ -118,14 +118,14 @@ class TileLogisticController extends TileEntityMod
       |tin = <ore:ingotTin>
       |tinGear = <ore:gearTin>
       |
-      |mkGear = \material -> \ -> <Chest> >> [
+      |mkGear = \material -> \ -> from >> [
       |  [null material null]
       |  [material iron material]
       |  [null material null]
       |] >> buffer
       |
       |coil = <ThermalExpansion:material:1>
-      |mkCoil = \ -> <Chest> >> [
+      |mkCoil = \ -> from >> [
       |  [null null redstone]
       |  [null gold null]
       |  [redstone null null]
@@ -133,30 +133,30 @@ class TileLogisticController extends TileEntityMod
       |
       |frame = <ThermalExpansion:Frame>
       |mkFrame = \ -> {
-      |  println("das")
       |  need(1, tinGear, buffer, mkGear(tin))
-      |  <Chest> >> [
+      |  from >> [
       |    [iron glass iron]
       |    [glass tinGear glass]
       |    [iron glass iron]
       |  ] >> buffer
       |}
       |
-      |pulverizer = <thermalexpansion.Pulverizer>
+      |pulverizer = <ThermalExpansion:Machine:1>
       |mkPulverizer = \ -> {
       | need(1, piston, buffer, mkPiston)
       | need(2, copperGear, buffer, mkGear(copper))
       | need(1, coil, buffer, mkCoil)
       | need(1, frame, buffer, mkFrame)
-      | <Chest> >> [
+      | from >> [
       |   [null piston null]
       |   [flint frame flint]
       |   [copperGear coil copperGear]
       | ] >> output
       |}
       |
-      |mkPulverizer()
-      |
+      |while(true){
+      |  need(500, pulverizer, output, mkPulverizer)
+      |}
     """.stripMargin
 
 

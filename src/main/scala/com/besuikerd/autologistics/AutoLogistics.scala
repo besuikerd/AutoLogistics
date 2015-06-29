@@ -10,10 +10,17 @@ import cpw.mods.fml.common.{SidedProxy, Mod}
 
 @Mod(name = AutoLogistics.MOD_NAME, modid = AutoLogistics.MOD_ID, version = AutoLogistics.MOD_VERSION, modLanguage = "scala")
 object AutoLogistics {
-  final val MOD_NAME = "AutoLogistics"
-  final val MOD_ID = "autologistics"
-  final val MOD_VERSION = "0.01"
 
+  final val majorVersion = "@majorVersion@"
+  final val minorVersion = "@minorVersion@"
+  final val buildNumber = "@buildNumber@"
+
+  final val MOD_NAME = "@modName@"
+  final val MOD_ID = "@modId@"
+  final val MOD_VERSION = "@modVersion"
+
+
+  println(minorVersion)
 
   @SidedProxy(serverSide = "com.besuikerd.autologistics.common.CommonProxy", clientSide = "com.besuikerd.autologistics.client.ClientProxy")
   var proxy:CommonProxy = null
