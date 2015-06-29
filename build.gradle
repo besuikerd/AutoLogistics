@@ -192,26 +192,34 @@ def executeCommand(String command){
     return execute.ext.output()
 }
 
+def hashFile = file('conf/hash')
+def getHash(String revision){
+    return executeCommand("git rev-parse $revision").trim()
+}
 
-def latestHash = new LazyValue({return executeCommand("git rev-parse HEAD").trim()})
+def lastHash = new LazyValue({return hashFile.text})
+def latestHash = new LazyValue({return getHash("HEAD")})
+
+task writeHash << {
+    hashFile.write(latestHash())
+}
+
 def changeLog = new LazyValue({
-    def cmd = windows ? "git log --pretty=\"  *%s\" $config.lastBuildHash...HEAD" : "git log --pretty=\\ \\ *%s $config.lastBuildHash...HEAD"
+    def cmd = windows ? "git log --pretty=\"  *%s\" ${lastHash()}...${latestHash()}" : "git log --pretty=\\ \\ *%s ${lastHash()}...${latestHash()}"
     return executeCommand(cmd)
 })
 
 task incrementBuildNumber << {
-    if(!config.lastBuildHash.equals(latestHash())){
-        if(config.lastBuildHash != latestHash()){
-            buildConfig.buildNumber++
-            buildConfig.version = "$buildConfig.majorVersion.$buildConfig.majorVersion.$buildConfig.buildNumber".toString()
-            if(!buildConfig.releaseType.equals("release")){
-                buildConfig.version = "$buildConfig.version-$buildConfig.releaseType".toString()
-            }
+    if(!lastHash().equals(latestHash())){
+        buildConfig.buildNumber = (buildConfig.buildNumber.toString().toInteger() + 1).toString()
+        buildConfig.version = "$buildConfig.majorVersion.$buildConfig.minorVersion.$buildConfig.buildNumber".toString()
+        if(!buildConfig.releaseType.equals("release")){
+            buildConfig.version = "$buildConfig.version-$buildConfig.releaseType".toString()
+        }
 
-            ant.propertyfile(file:buildConfigFile){
-                entry(key: 'buildNumber', value: buildConfig.buildNumber)
-                entry(key: 'version', value: buildConfig.version)
-            }
+        ant.propertyfile(file:buildConfigFile){
+            entry(key: 'buildNumber', value: buildConfig.buildNumber)
+            entry(key: 'version', value: buildConfig.version)
         }
     }
 }
@@ -242,10 +250,8 @@ task updateChangelog(dependsOn: incrementBuildNumber) {
 }
 
 task updateLatestHash(dependsOn: updateChangelog) {
-    if(!config.lastBuildHash.equals(latestHash())){
-        ant.propertyfile(file:configFile){
-            entry(key: 'lastBuildHash', value: latestHash())
-        }
+    if(!latestHash().equals(lastHash())) {
+        hashFile.write(latestHash())
     }
 }
 
@@ -265,6 +271,13 @@ artifacts{
     archives sourceJar, devJar
 }
 
+task simulateBuild << {
+    hashFile.write(getHash("HEAD~1"))
+}
+simulateBuild.dependsOn(updateLatestHash)
+updateLatestHash.shouldRunAfter simulateBuild
+
+
 curse {
     projectId = config.curseForgeProjectId
     apiKey = privateProperties.curseForgeApiKey
@@ -274,6 +287,5 @@ curse {
     additionalArtifact sourceJar
     changelog = changeLog()
 }
-
 curse.dependsOn(updateChangelog)
 updateLatestHash.mustRunAfter(curse)
