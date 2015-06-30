@@ -18,3 +18,4 @@ while(true){
   furnace@[bottom] >> chest
 }
 ```
+check the [wiki](https://github.com/besuikerd/AutoLogistics/wiki) for more information
