@@ -250,10 +250,14 @@ task updateChangelog(dependsOn: incrementBuildNumber) {
 }
 
 task updateLatestHash(dependsOn: updateChangelog) {
-    if(!latestHash().equals(lastHash())) {
-        hashFile.write(latestHash())
+    doLast {
+        println(":updateLatestHash")
+        if (!latestHash().equals(lastHash())) {
+            hashFile.write(latestHash())
+        }
     }
 }
+updateLatestHash.mustRunAfter(updateChangelog)
 
 
 task sourceJar(type: Jar) {
@@ -274,8 +278,9 @@ artifacts{
 task simulateBuild << {
     hashFile.write(getHash("HEAD~1"))
 }
-simulateBuild.dependsOn(updateLatestHash)
-updateLatestHash.shouldRunAfter simulateBuild
+simulateBuild.dependsOn updateLatestHash
+simulateBuild.dependsOn updateChangelog
+
 
 task simulateCurse << {
     if(lastHash() == latestHash()){
@@ -283,9 +288,11 @@ task simulateCurse << {
     } else{
         println("HASH_NOT_UP_TO_DATE")
     }
+    updateLatestHash.execute()
 }
-simulateCurse.dependsOn(updateLatestHash)
-updateLatestHash.mustRunAfter(simulateCurse)
+
+simulateCurse.dependsOn updateChangelog
+simulateCurse.mustRunAfter updateChangelog
 
 curse {
     projectId = config.curseForgeProjectId
