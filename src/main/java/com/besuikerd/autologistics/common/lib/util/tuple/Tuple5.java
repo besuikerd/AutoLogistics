@@ -26,6 +26,10 @@ public class Tuple5<A, B, C, D, E> {
 		return false;
 	}
 
+	public static <A,B,C,D,E> Tuple5 create(A _1, B _2, C _3, D _4, E _5){
+		return new Tuple5<A,B,C,D,E>(_1, _2, _3, _4, _5);
+	}
+
 	@Override
 	public int hashCode() {
 		return _1.hashCode() * PRIME_1 ^ _2.hashCode() * PRIME_2 ^ _3.hashCode() * PRIME_3 ^ _4.hashCode() * PRIME_4 * _5.hashCode() * PRIME_5;

@@ -22,6 +22,10 @@ public class Tuple3<A, B, C> {
 		return false;
 	}
 
+	public static <A,B,C> Tuple3 create(A _1, B _2, C _3){
+		return new Tuple3<A,B,C>(_1, _2, _3);
+	}
+
 	@Override
 	public int hashCode() {
 		return _1.hashCode() * PRIME_1 ^ _2.hashCode() * PRIME_2 ^ _3.hashCode() * PRIME_3;

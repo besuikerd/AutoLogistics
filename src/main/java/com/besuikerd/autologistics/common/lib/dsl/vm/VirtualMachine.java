@@ -1,5 +1,7 @@
 package com.besuikerd.autologistics.common.lib.dsl.vm;
 
+import com.besuikerd.autologistics.common.lib.data.IStreamDeserializable;
+import com.besuikerd.autologistics.common.lib.data.IStreamSerializable;
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.Instruction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ClosureValue;
@@ -11,7 +13,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-public interface VirtualMachine {
+public interface VirtualMachine extends IStreamSerializable, IStreamDeserializable {
 
     void push(StackValue value);
     StackValue pop();
@@ -41,7 +43,4 @@ public interface VirtualMachine {
     boolean isTerminated();
     boolean isErrorState();
     String getErrorMessage();
-
-    void serialize(DataOutput output) throws IOException;
-    void deserialize(DataInput input) throws IOException;
 }

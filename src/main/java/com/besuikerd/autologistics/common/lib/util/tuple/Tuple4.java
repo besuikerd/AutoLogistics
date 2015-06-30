@@ -24,6 +24,10 @@ public class Tuple4<A, B, C, D> {
 		return false;
 	}
 
+	public static <A,B,C,D> Tuple4 create(A _1, B _2, C _3, D _4){
+		return new Tuple4<A,B,C,D>(_1, _2, _3, _4);
+	}
+
 	@Override
 	public int hashCode() {
 		return _1.hashCode() * PRIME_1 ^ _2.hashCode() * PRIME_2 ^ _3.hashCode() * PRIME_3 ^ _4.hashCode() * PRIME_4;

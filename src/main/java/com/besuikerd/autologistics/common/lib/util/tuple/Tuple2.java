@@ -25,6 +25,10 @@ public class Tuple2<A,B> {
 		return false;
 	}
 
+	public static <A,B> Tuple2 create(A _1, B _2){
+		return new Tuple2<A,B>(_1, _2);
+	}
+
 	@Override
 	public int hashCode() {
 		return _1.hashCode() * PRIME_1 ^ _2.hashCode() * PRIME_2;
