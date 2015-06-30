@@ -4,6 +4,10 @@ import com.besuikerd.autologistics.client.lib.gui.element.Element;
 import com.besuikerd.autologistics.common.lib.util.ArrayUtil;
 import com.besuikerd.autologistics.common.lib.util.ReflectUtils;
 import com.besuikerd.autologistics.common.lib.util.functional.Predicate;
+import com.google.common.collect.Sets;
+
+import java.lang.reflect.Method;
+import java.util.HashSet;
 
 public class EventHandler implements IEventHandler{
 	
@@ -19,12 +23,7 @@ public class EventHandler implements IEventHandler{
 	@Override
 	public void post(final String name, Element e, Object... args) {
 		args = ArrayUtil.prepend(e, args); //add e to the arguments
-		ReflectUtils.Invokable i = ReflectUtils.getPartialMatchingInvokable(handlerObject, ReflectUtils.getAnnotatedMethods(handlerObject, EventHandle.class, new Predicate<EventHandle>() {
-			@Override
-			public boolean eval(EventHandle input) {
-				return input.value() != null && input.value().equals(name);
-			}
-		}), args);
+		ReflectUtils.Invokable i = ReflectUtils.getPartialMatchingInvokable(handlerObject, ReflectUtils.getMatchingMethods(handlerObject, name), args);
 		if(i != null){
 			i.invoke();
 		} else{

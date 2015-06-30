@@ -1,11 +1,12 @@
 package com.besuikerd.autologistics.client.lib.gui;
+import com.besuikerd.autologistics.client.lib.gui.event.CompositeEventHandler;
+import com.besuikerd.autologistics.client.lib.gui.event.EventHandle;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 
 import com.besuikerd.autologistics.client.lib.gui.element.Element;
-import com.besuikerd.autologistics.client.lib.gui.element.ElementContainer;
 import com.besuikerd.autologistics.client.lib.gui.element.ElementRootContainer;
 import com.besuikerd.autologistics.client.lib.gui.event.EventHandler;
 import com.besuikerd.autologistics.client.lib.gui.event.IEventHandler;
@@ -14,14 +15,14 @@ import com.besuikerd.autologistics.client.lib.gui.layout.VerticalLayout;
 public class GuiBase implements IEventHandler{
 	
 	protected ElementRootContainer root;
-	protected IEventHandler eventHandler;
+	protected CompositeEventHandler eventHandler;
 
 	public GuiBase() {
 		this.root = new ElementRootContainer();
 		root.setEventHandler(this);
-		this.eventHandler = new EventHandler(this);
-		root.layout(new VerticalLayout())
-		.padding(5);
+		this.eventHandler = new CompositeEventHandler();
+		bindEventHandler(new EventHandler(this));
+		root.layout(new VerticalLayout()).padding(5);
 	}
 
 	private static final ResourceLocation bg = new ResourceLocation("textures/gui/demo_background.png");
@@ -35,7 +36,7 @@ public class GuiBase implements IEventHandler{
 		root.handleMouseInput(mouseX, mouseY);
 	}
 	
-	public ElementContainer getRoot() {
+	public ElementRootContainer getRoot() {
 		return root;
 	}
 	
@@ -73,17 +74,7 @@ public class GuiBase implements IEventHandler{
 		
 	}
 
-	public void bindEventHandler(Object o){
-		if(eventHandler instanceof EventHandler){
-			((EventHandler) eventHandler).setHandlerObject(o);
-		} else {
-			EventHandler handler = new EventHandler(o);
-			handler.setHandlerObject(o);
-			this.eventHandler = handler;
-		}
-	}
-
-	public void setEventHandler(IEventHandler eventHandler) {
-		this.eventHandler = eventHandler;
+	public void bindEventHandler(IEventHandler handler){
+		eventHandler.register(handler);
 	}
 }

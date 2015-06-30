@@ -170,7 +170,7 @@ public class ElementContainer extends Element{
 		
 		for(int i = 0 ; i < elements.size() && !consumeMouseInput ; i++){
 			Element e = elements.get(i);
-			consumeMouseInput = e.handleMouseInput(mouseX - e.x - getPaddingLeft(), mouseY - e.y - getPaddingTop()) || consumeMouseInput;
+			consumeMouseInput = e.handleMouseInput(mouseX - e.x - getPaddingLeft(), mouseY - e.y - getPaddingTop());
 		}
 		return consumeMouseInput;
 	}

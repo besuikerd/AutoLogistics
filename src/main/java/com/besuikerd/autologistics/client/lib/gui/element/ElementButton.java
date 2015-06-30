@@ -39,6 +39,12 @@ public class ElementButton extends ElementStatefulBackground{
         public ElementButton(int width, int height, String text) {
                 this(0, 0, width, height, text);
         }
+
+
+        public ElementButton(int width, String text){
+                this(text);
+                this.width = width;
+        }
         
         public ElementButton(String text){
                 this(0, 0, 0, 0, text);
@@ -49,7 +55,6 @@ public class ElementButton extends ElementStatefulBackground{
         @Override
         protected boolean onPressed(int x, int y, int which) {
                 super.onPressed(x, y, which);
-                BLogger.debug("onPressed (%d, %d, %d)", x, y, which);
                 getRoot().requestFocus(this);
                 return true;
         }

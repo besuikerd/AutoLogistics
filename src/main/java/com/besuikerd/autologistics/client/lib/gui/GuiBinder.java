@@ -2,7 +2,9 @@ package com.besuikerd.autologistics.client.lib.gui;
 
 import java.util.Set;
 
+import com.besuikerd.autologistics.client.lib.gui.event.EventHandler;
 import com.besuikerd.autologistics.client.lib.gui.event.IEventHandler;
+import com.besuikerd.autologistics.common.tile.traits.TileEventHandler;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.entity.player.EntityPlayer;
@@ -34,10 +36,11 @@ public enum GuiBinder implements IGuiBinder{
 		public GuiScreen bind(GuiBase g, Container c, EntityPlayer player, World world, int x, int y, int z) {
 			TileEntity tile;
 			if(g != null && (tile =  world.getTileEntity(x, y, z)) != null){
-				if(tile instanceof IEventHandler){
-					g.setEventHandler((IEventHandler) tile);
+				if(tile instanceof TileEventHandler){
+					TileEventHandler tileEventHandler = (TileEventHandler) tile;
+					g.bindEventHandler(tileEventHandler);
 				} else{
-					g.bindEventHandler(tile);
+					g.bindEventHandler(new EventHandler(tile));
 				}
 				if(c instanceof ContainerBesu && tile instanceof TileEntityInventory){
 					((ContainerBesu) c).bindInventory(((TileEntityInventory) tile).getInventory(), player);

@@ -39,7 +39,7 @@ import com.besuikerd.autologistics.client.lib.gui.texture.scalable.IScalableText
 
 public abstract class Element extends Gui implements IStreamSerializable, IStreamDeserializable {
 
-	protected ResourceLocation textures = new ResourceLocation(ModConstants.modId(), "textures/gui/elements.png");
+	protected ResourceLocation textures = new ResourceLocation("autologistics", "textures/gui/elements.png");
 
 	public static final int ENABLED = 1;
 	public static final int HOVERING = 2;
@@ -221,6 +221,7 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 	 * elements before actually drawing them
 	 */
 	public void dimension() {
+		int x = 2;
 	}
 
 	/**
@@ -378,7 +379,19 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 				onReleased(mouseX, mouseY, buttonFlag);
 			}
 		}
-		if (MathUtil.inRange2D(absX() + mouseX, getRoot().absX(), getRoot().absX() + getRoot().width, absY() + mouseY, getRoot().absY(), getRoot().absY() + getRoot().height) && MathUtil.inRange2D(mouseX, 0, width, mouseY, 0, height)) { //check if mouse touches the element
+		Element root = getRoot();
+		int x0 = root.absX();
+		int x1 = root.absX() + root.width;
+		int absMouseX = absX() + mouseX - root.getPaddingLeft();
+
+		int y0 = root.absY();
+		int y1 = root.absY() + root.height;
+		int absMouseY = absY() + mouseY - root.getPaddingTop();
+
+//		boolean inRootRange = MathUtil.inRange2D(absX() + mouseX, getRoot().absX(), getRoot().absX() + getRoot().width, absY() + mouseY, getRoot().absY(), getRoot().absY() + getRoot().height);
+		boolean inRootRange = MathUtil.inRange2D(absMouseX, x0, x1, absMouseY, y0, y1);
+		boolean inRange = MathUtil.inRange2D(mouseX, 0, width, mouseY, 0, height);
+		if (inRange && inRootRange) { //check if mouse touches the element
 
 			boolean aButtonIsDown = false; //is a button pressed?
 			for (int buttonFlag : BUTTONS) {

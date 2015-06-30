@@ -1,6 +1,4 @@
-import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.*;
-import org.gradle.language.jvm.tasks.ProcessResources
 
 class LoadPropertiesPlugin implements Plugin<Project>{
     @Override

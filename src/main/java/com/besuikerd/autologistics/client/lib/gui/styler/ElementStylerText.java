@@ -13,7 +13,7 @@ import net.minecraft.client.gui.FontRenderer;
  */
 public class ElementStylerText implements IElementStyler{
 
-	public static final int COLOR_ENABLED = 0xffffa0;
+	public static final int COLOR_ENABLED = 0xffffff;
 	public static final int COLOR_DISABLED = 0xa0a0a0;
 	
 	protected String text;

@@ -62,7 +62,7 @@ public class ElementRootContainer extends ElementStyledContainer{
 		}
 		
 		if(!consumeMouseInput){
-			super.handleMouseInput(mouseX - absX(), mouseY - absY());
+			super.handleMouseInput(mouseX - absX() , mouseY - absY());
 		}
 		return true; //root element always consumes mouse input
 	}

@@ -22,6 +22,7 @@ public class ReflectUtils {
 			
 			@Override
 			public E invoke() {
+				m.setAccessible(true);
 				if(m.getParameterTypes().length <= args.length && returnType == null || m.getReturnType().equals(returnType)){
 					try {
 						return (E) m.invoke(o, Arrays.copyOfRange(args, 0, m.getParameterTypes().length));
@@ -105,8 +106,9 @@ public class ReflectUtils {
 	
 	public static Set<Method> getMatchingMethods(Object o, String functionName){
 		Set<Method> result = new HashSet<Method>();
-		for(Method m : o.getClass().getMethods()){
-			if(m.getName().equals(functionName)){
+		for(Method m : o.getClass().getDeclaredMethods()){
+			String methodName = m.getName();
+			if(methodName.equals(functionName)){
 				result.add(m);
 			}
 		}

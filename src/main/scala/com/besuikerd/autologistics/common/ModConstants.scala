@@ -7,5 +7,5 @@ object ModConstants {
 
   final val modName = "@modName@"
   final val modId = "@modId@"
-  final val modVersion = "@modVersion"
+  final val modVersion = "@modVersion@"
 }

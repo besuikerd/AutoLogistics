@@ -2,9 +2,9 @@ package com.besuikerd.autologistics.common;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -14,20 +14,20 @@ import org.apache.log4j.Logger;
  */
 public class ServerLogger {
 
-	public static final Logger logger = LogManager.getLogger("Besuikerd");
+	public static final Logger logger = LogManager.getLogger(ModConstants.modName());
 	public static final Side side = Side.SERVER;
 
-	public static void log(Level level, Object msg, Object... params){
+	public static void log(org.apache.logging.log4j.Level level, Object msg, Object... params){
 		Side effectiveSide = FMLCommonHandler.instance().getEffectiveSide();
 		if(effectiveSide == side){
-			logger.log(level, String.format("%s|%s", effectiveSide, String.format(msg.toString(), params)));
+			logger.log(level, String.format(msg.toString(), params));
 		}
 	}
 
-	public static void log(Level level, Object msg){
+	public static void log(org.apache.logging.log4j.Level level, Object msg){
 		Side effectiveSide = FMLCommonHandler.instance().getEffectiveSide();
 		if(effectiveSide == side){
-			logger.log(level, String.format("%s|%s", effectiveSide, msg));
+			logger.log(level, msg);
 		}
 	}
 
