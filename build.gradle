@@ -278,7 +278,11 @@ simulateBuild.dependsOn(updateLatestHash)
 updateLatestHash.shouldRunAfter simulateBuild
 
 task simulateCurse << {
-    println("uploading to curse...")
+    if(lastHash() == latestHash()){
+        println("HASH_UP_TO_DATE")
+    } else{
+        println("HASH_NOT_UP_TO_DATE")
+    }
 }
 simulateCurse.dependsOn(updateLatestHash)
 simulateCurse.mustRunAfter(updateLatestHash)
