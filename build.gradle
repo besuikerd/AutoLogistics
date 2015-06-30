@@ -170,7 +170,7 @@ processResources
 project.ext.windows = System.getProperty('os.name').startsWith('Windows')
 
 def executeCommand(String command){
-    def args = command.split(/(?<!\\) /).collect({it.replaceAll('\\ ', ' ')}).toArray()
+    def args = command.split(/(?<!\\) /).collect({it.replaceAll('\\\\ ', ' ')}).toArray()
     def windowsArgs = new String[args.length + 2];
     windowsArgs[0] = 'cmd'
     windowsArgs[1] = '/c'
@@ -285,7 +285,7 @@ task simulateCurse << {
     }
 }
 simulateCurse.dependsOn(updateLatestHash)
-simulateCurse.mustRunAfter(updateLatestHash)
+updateLatestHash.mustRunAfter(simulateCurse)
 
 curse {
     projectId = config.curseForgeProjectId
