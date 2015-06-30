@@ -1,6 +1,5 @@
 package com.besuikerd.autologistics.common.lib.collection
 
-import scala.collection.MapLike
 import scala.reflect.ClassTag
 import scala.reflect._
 

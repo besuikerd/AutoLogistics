@@ -1,7 +1,8 @@
 package com.besuikerd.autologistics.common.tile.traits
 
 
-import java.io.{DataInput, DataOutput}
+import java.io.{IOException, EOFException, DataInput, DataOutput}
+import com.besuikerd.autologistics.common.BLogger
 import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser
 import com.besuikerd.autologistics.common.lib.dsl.vm._
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction._
@@ -58,7 +59,15 @@ trait TileVirtualMachine extends TileEntityMod
 
   def readVMFromNBT(compound: NBTTagCompound): Unit = {
     val input = ByteStreams.newDataInput(compound.getByteArray("vm"))
-    virtualMachine.deserialize(input);
+
+    try {
+      virtualMachine.deserialize(input);
+    } catch{
+      case e:IOException => {
+        BLogger.error(s"could not deserialize VM at ($xCoord, $yCoord, $zCoord), resetting vm...")
+        virtualMachine.reset()
+      }
+    }
   }
 
 

@@ -1,6 +1,7 @@
 package com.besuikerd.autologistics.common.lib.network;
 
 import com.besuikerd.autologistics.AutoLogistics;
+import com.besuikerd.autologistics.common.ModConstants;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -18,7 +19,7 @@ public class PacketDispatcher {
         discriminator = 0;
     }
 
-    public static final SimpleNetworkWrapper CHANNEL = NetworkRegistry.INSTANCE.newSimpleChannel(AutoLogistics.MOD_ID());
+    public static final SimpleNetworkWrapper CHANNEL = NetworkRegistry.INSTANCE.newSimpleChannel(ModConstants.modId());
 
     public Packet getPacketFrom(IMessage message) {
         return CHANNEL.getPacketFrom(message);

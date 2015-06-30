@@ -1,13 +1,14 @@
 package com.besuikerd.autologistics.common.tile
 
 import com.besuikerd.autologistics.AutoLogistics
-import com.besuikerd.autologistics.common.tile.traits.{TileLogistic, TileVirtualMachine, TileCable}
+import com.besuikerd.autologistics.common.tile.traits.{TileEventHandler, TileLogistic, TileVirtualMachine, TileCable}
 import cpw.mods.fml.relauncher.Side
 
 class TileLogisticController extends TileEntityMod
   with TileVirtualMachine
   with TileLogistic
   with TileCable
+  with TileEventHandler
 {
   val craft = """
     |wheat = <minecraft:wheat>
@@ -181,6 +182,12 @@ class TileLogisticController extends TileEntityMod
       } else if (virtualMachine.isErrorState) {
         println(virtualMachine.getErrorMessage)
       }
+    }
+  }
+
+  override def handlerObject: Any = new {
+    def hello(): Unit ={
+      println("hello world!")
     }
   }
 }

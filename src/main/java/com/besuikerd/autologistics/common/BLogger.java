@@ -34,7 +34,7 @@ public class BLogger {
 		log(Level.ERROR, msg, params);
 	}
 	
-	public static void error(Object msg){
+	public static void error(String msg){
 		log(Level.ERROR, msg);
 	}
 	
@@ -42,7 +42,7 @@ public class BLogger {
 		log(Level.INFO, msg, params);
 	}
 	
-	public static void info(Object msg){
+	public static void info(String msg){
 		log(Level.INFO, msg);
 	}
 
