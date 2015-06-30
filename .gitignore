@@ -20,4 +20,4 @@ logs/
 #lets keep our secrets safe
 conf/private.properties
 conf/hash
-changelog
+changelog.txt
