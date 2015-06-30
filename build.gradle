@@ -216,6 +216,8 @@ task incrementBuildNumber << {
         if(!buildConfig.releaseType.equals("release")){
             buildConfig.version = "$buildConfig.version-$buildConfig.releaseType".toString()
         }
+        version = buildConfig.version
+
 
         ant.propertyfile(file:buildConfigFile){
             entry(key: 'buildNumber', value: buildConfig.buildNumber)
