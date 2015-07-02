@@ -30,6 +30,8 @@ object AutoLogistics {
     for(entry <- GuiEntries.values()){
       GuiRegistry.instance.register(entry);
     }
+
+    proxy.init()
   }
 
   @EventHandler

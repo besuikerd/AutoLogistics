@@ -42,7 +42,6 @@ public class GuiBase implements IEventHandler{
 	
 	public boolean handleKeyboardInput(){
 		return root.handleKeyboardInput() && Keyboard.getEventKey() != Keyboard.KEY_ESCAPE; //if the root element consumes input, do not let others handle keyboard input
-		
 	}
 	
 	public void dimension(GuiScreen gui){

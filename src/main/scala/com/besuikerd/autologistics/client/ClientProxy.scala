@@ -1,5 +1,6 @@
 package com.besuikerd.autologistics.client
 
+import com.besuikerd.autologistics.client.render.Fonts
 import com.besuikerd.autologistics.common.CommonProxy
 import cpw.mods.fml.common.network.simpleimpl.MessageContext
 import cpw.mods.fml.relauncher.Side
@@ -12,6 +13,11 @@ class ClientProxy extends CommonProxy{
   override def getPlayer(ctx: MessageContext): EntityPlayer = (ctx.side : @switch) match{
     case Side.CLIENT => Minecraft.getMinecraft.thePlayer
     case Side.SERVER => super.getPlayer(ctx)
+  }
+
+
+  override def init(): Unit = {
+    super.init()
   }
 
   override def getSide = Side.CLIENT

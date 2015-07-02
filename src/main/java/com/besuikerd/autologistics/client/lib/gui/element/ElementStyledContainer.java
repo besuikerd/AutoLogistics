@@ -52,8 +52,14 @@ public class ElementStyledContainer extends ElementContainer{
 	@Override
 	public void draw() {
 		bindTexture();
-		drawBackgroundFromTextures(background);
+		if(background != null){
+			drawBackgroundFromTextures(background);
+		}
 		super.draw();
 	}
-	
+
+	public ElementStyledContainer background(IScalableTexture background) {
+		this.background = background;
+		return this;
+	}
 }

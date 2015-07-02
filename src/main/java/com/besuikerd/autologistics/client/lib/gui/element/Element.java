@@ -185,7 +185,7 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 
 	public void draw() {
 		bindTexture();
-	};
+	}
 	
 	public void bindTexture(){
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -757,6 +757,20 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 
 	protected void drawTextureCentered(ITexture texture) {
 		drawTexture(texture, (width - xDiff(texture.getTexture())) / 2, (height - yDiff(texture.getTexture())) / 2);
+	}
+
+	protected void drawStringWithShadow(String s, int x, int y, int color){
+		if((color & 0xff) == 0){
+			color |= 255;
+		}
+		fontRenderer.drawStringWithShadow(s, absX() + x, absY() + y, color);
+	}
+
+	protected void drawString(String s, int x, int y, int color){
+		if((color & 0xff) == 0){
+			color |= 255;
+		}
+		fontRenderer.drawString(s, absX() + x, absY() + y, color);
 	}
 
 	@Override
