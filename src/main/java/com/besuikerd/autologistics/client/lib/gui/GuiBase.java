@@ -1,6 +1,7 @@
 package com.besuikerd.autologistics.client.lib.gui;
 import com.besuikerd.autologistics.client.lib.gui.event.CompositeEventHandler;
 import com.besuikerd.autologistics.client.lib.gui.event.EventHandle;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.ResourceLocation;
 
@@ -41,7 +42,13 @@ public class GuiBase implements IEventHandler{
 	}
 	
 	public boolean handleKeyboardInput(){
-		return root.handleKeyboardInput() && Keyboard.getEventKey() != Keyboard.KEY_ESCAPE; //if the root element consumes input, do not let others handle keyboard input
+		try { //TODO remove this
+			return root.handleKeyboardInput() && Keyboard.getEventKey() != Keyboard.KEY_ESCAPE; //if the root element consumes input, do not let others handle keyboard input
+		} catch(Exception e){
+			e.printStackTrace();
+			Minecraft.getMinecraft().thePlayer.closeScreen();
+			return false;
+		}
 	}
 	
 	public void dimension(GuiScreen gui){
@@ -59,7 +66,12 @@ public class GuiBase implements IEventHandler{
 	}
 	
 	public void draw(){
-		root.draw();
+		try { //TODO remove this
+			root.draw();
+		} catch(Exception e){
+			Minecraft.getMinecraft().thePlayer.closeScreen();
+			e.printStackTrace();
+		}
 	}
 
 	@Override

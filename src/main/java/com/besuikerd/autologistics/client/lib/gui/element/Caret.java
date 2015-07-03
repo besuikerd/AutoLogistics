@@ -34,11 +34,14 @@ public class Caret extends Element{
     }
 
     public void moveCaretHorizontally(int amount){
+        ensureCaretInBounds();
         String line = lines.get(caretPosition.y);
         if(caretPosition.x + amount > line.length()){ //possibly go down a line
             if(caretPosition.y < lines.size() - 1){
                 caretPosition = new Vector2(0, caretPosition.y + 1);
             }
+            //to account for word wrap
+
         } else if(caretPosition.x + amount < 0){ // possibly go up a line
             if(caretPosition.y > 0){
                 String previousLine = lines.get(caretPosition.y - 1);
@@ -50,6 +53,7 @@ public class Caret extends Element{
     }
 
     public void moveCaretVertically(int amount){
+        ensureCaretInBounds();
         if(amount > 0){
             if(caretPosition.y < lines.size() - 1){
                 String nextLine = lines.get(caretPosition.y + 1);
@@ -63,10 +67,19 @@ public class Caret extends Element{
         }
     }
 
+    private void ensureCaretInBounds(){
+        if(caretPosition.y >= lines.size()){
+            int y = lines.size() - 1;
+            int x = lines.get(y).length();
+            this.caretPosition = new Vector2(x, y);
+        }
+    }
+
     public int getCharacterOffset(){
         int offset = 0;
         for(int i = 0 ; i < caretPosition.y ; i++){
             offset += lines.get(i).length();
+            offset++; //add newlines to the offset
         }
         return offset + caretPosition.x;
     }
@@ -85,6 +98,14 @@ public class Caret extends Element{
             int xOffset = fontRenderer.getStringWidth(line.substring(0, caretPosition.x)) - characterOffset;//fontRenderer.getCharWidth(caretPosition) / 2;
             parent.drawString("_", xOffset + parent.paddingLeft, caretPosition.y * lineHeight + parent.paddingTop, 0xffffffff);
         }
+    }
+
+    public void setCaretPosition(Vector2 position){
+        this.caretPosition = position;
+    }
+
+    public Vector2 getCaretPosition() {
+        return caretPosition;
     }
 
     public boolean isCaretVisible() {

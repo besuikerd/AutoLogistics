@@ -1,6 +1,7 @@
 package com.besuikerd.autologistics.client.lib.gui.element;
 
 import com.besuikerd.autologistics.client.render.Colors;
+import com.besuikerd.autologistics.common.lib.util.StringUtils;
 import com.besuikerd.autologistics.common.lib.util.tuple.Vector2;
 import org.lwjgl.input.Keyboard;
 
@@ -9,14 +10,12 @@ import java.util.List;
 
 public class ElementTextArea extends Element{
 
-    private StringBuilder text;
-    private List<String> textToRender;
+    protected StringBuilder text;
+    protected List<String> textToRender;
 
-    private Caret caret;
+    protected Caret caret;
 
     private int heightGap;
-    boolean invalidated;
-
     private int caretStart;
     private int caretEnd;
 
@@ -24,14 +23,14 @@ public class ElementTextArea extends Element{
         super(x, y, width, 0);
         this.text = new StringBuilder(text);
         textToRender = new ArrayList<String>();
-        invalidated = true;
+
         this.heightGap = 1;
         padding(4);
         caret = new Caret(this, textToRender, '_', fontRenderer.FONT_HEIGHT + heightGap);
 
         this.text.setLength(0);
 
-        int n = 5;
+        int n = 0;
         for(int i = 0 ; i < n ; i++) {
             this.text.append(
                     "item = <minecraft:log>\n" +
@@ -42,6 +41,7 @@ public class ElementTextArea extends Element{
                 this.text.append('\n');
             }
         }
+        invalidate();
     }
 
     public ElementTextArea(String initialText, int columns){
@@ -58,45 +58,6 @@ public class ElementTextArea extends Element{
     @Override
     public void update() {
         caret.update();
-    }
-
-    @Override
-    public void dimension() {
-        super.dimension();
-
-
-        if(invalidated){
-            textToRender.clear();
-            String[] lines = text.toString().split("\n|\r\n");
-            for(String line : lines){
-                String[] rows = line.split("(?<=\\\\G.{4})");
-                for(String row : rows){
-                    int stringWidth = fontRenderer.getStringWidth(row);
-                    if(stringWidth > width){ // we need to chop up the string;
-                        int numberOfCharacters = 0;
-                        while(numberOfCharacters < row.length()){
-                            int start = numberOfCharacters;
-                            int length = 0;
-                            while(numberOfCharacters < row.length()){
-                                char c = row.charAt(numberOfCharacters);
-                                length += fontRenderer.getCharWidth(c);
-                                if(length < width) {
-                                    numberOfCharacters++;
-                                } else{
-                                    break;
-                                }
-                            }
-                            textToRender.add(row.substring(start, numberOfCharacters));
-                        }
-                    } else{
-                        textToRender.add(row);
-                    }
-                }
-            }
-            invalidated = false;
-        }
-
-        this.height = textToRender.size() * (fontRenderer.FONT_HEIGHT + heightGap);
     }
 
     @Override
@@ -134,15 +95,87 @@ public class ElementTextArea extends Element{
 
         switch(code){
             case Keyboard.KEY_BACK:
-                
-                text.deleteCharAt(caret.getCharacterOffset());
-                invalidated = true;
-                caret.moveCaretHorizontally(-1);
+
+                int characterOffset = caret.getCharacterOffset();
+                if(characterOffset != 0){
+                    boolean removeNewline = caret.getCaretPosition().x == 0;
+                    if(removeNewline){
+                        caret.moveCaretHorizontally(-1);
+                    }
+
+                    text.deleteCharAt(characterOffset - 1);
+                    invalidate();
+
+                    if(!removeNewline) {
+                        caret.moveCaretHorizontally(-1);
+                    }
+
+
+//                    caret.moveCaretHorizontally(-1);
+                }
+                break;
+            case Keyboard.KEY_DELETE:
+                characterOffset = caret.getCharacterOffset();
+                if(characterOffset != text.length()){
+                    text.deleteCharAt(characterOffset);
+                    invalidate();
+                }
+                break;
+            case Keyboard.KEY_RETURN:
+                characterOffset = caret.getCharacterOffset();
+                text.insert(characterOffset, '\n');
+                invalidate();
+                caret.moveCaretHorizontally(1);
 
                 break;
         }
 
         return true;
+    }
+
+    @Override
+    protected boolean keyTyped(char key, int code) {
+        super.keyTyped(key, code);
+        if(StringUtils.isASCII(key)){
+            int characterOffset = caret.getCharacterOffset();
+            text.insert(characterOffset, key);
+            invalidate();
+            caret.moveCaretHorizontally(1);
+        }
+
+        return true;
+    }
+
+    public void invalidate(){
+        textToRender.clear();
+        String[] lines = text.toString().split("\n|\r\n", -1);
+        for(int i = 0 ; i < lines.length ; i++){
+            String line = lines[i];
+            if(i != lines.length - 1){
+                line += '\n';
+            }
+            int stringWidth = fontRenderer.getStringWidth(line);
+            if(stringWidth > width){ // we need to chop up the string;
+                int numberOfCharacters = 0;
+                while(numberOfCharacters < line.length()){
+                    int start = numberOfCharacters;
+                    int length = 0;
+                    while(numberOfCharacters < line.length()){
+                        char c = line.charAt(numberOfCharacters);
+                        length += fontRenderer.getCharWidth(c);
+                        if(length < width) {
+                            numberOfCharacters++;
+                        } else{
+                            break;
+                        }
+                    }
+                    textToRender.add(line.substring(start, numberOfCharacters));
+                }
+            } else{
+                textToRender.add(line);
+            }
+        }
+        this.height = textToRender.size() * (fontRenderer.FONT_HEIGHT + heightGap);
     }
 
 
