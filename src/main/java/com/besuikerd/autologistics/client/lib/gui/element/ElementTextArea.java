@@ -57,6 +57,7 @@ public class ElementTextArea extends Element{
 
     @Override
     public void update() {
+        super.update();
         caret.update();
     }
 
@@ -67,11 +68,17 @@ public class ElementTextArea extends Element{
 
         int yOffset = 0;
         for(String row : textToRender) {
+            if(row.endsWith("\n")){
+                row = row.substring(0, row.length() - 1);
+            }
+
             drawString(row, paddingLeft, paddingTop + yOffset, Colors.white);
             yOffset += fontRenderer.FONT_HEIGHT + heightGap;
         }
 
-        caret.draw();
+        if(isFocused()) {
+            caret.draw();
+        }
 
         super.draw();
     }
@@ -89,13 +96,11 @@ public class ElementTextArea extends Element{
     }
 
     @Override
-    protected boolean keyPressed(char key, int code) {
-        super.keyPressed(key, code);
-        caret.keyPressed(key, code);
-
+    protected boolean keyTyped(char key, int code) {
+        super.keyTyped(key, code);
+        caret.keyTyped(key, code);
         switch(code){
             case Keyboard.KEY_BACK:
-
                 int characterOffset = caret.getCharacterOffset();
                 if(characterOffset != 0){
                     boolean removeNewline = caret.getCaretPosition().x == 0;
@@ -109,9 +114,6 @@ public class ElementTextArea extends Element{
                     if(!removeNewline) {
                         caret.moveCaretHorizontally(-1);
                     }
-
-
-//                    caret.moveCaretHorizontally(-1);
                 }
                 break;
             case Keyboard.KEY_DELETE:
@@ -128,19 +130,19 @@ public class ElementTextArea extends Element{
                 caret.moveCaretHorizontally(1);
 
                 break;
-        }
-
-        return true;
-    }
-
-    @Override
-    protected boolean keyTyped(char key, int code) {
-        super.keyTyped(key, code);
-        if(StringUtils.isASCII(key)){
-            int characterOffset = caret.getCharacterOffset();
-            text.insert(characterOffset, key);
-            invalidate();
-            caret.moveCaretHorizontally(1);
+            case Keyboard.KEY_TAB:
+                characterOffset = caret.getCharacterOffset();
+                text.insert(characterOffset, "  ");
+                invalidate();
+                caret.moveCaretHorizontally(2);
+                break;
+            default:
+                if(StringUtils.isASCII(key)){
+                    characterOffset = caret.getCharacterOffset();
+                    text.insert(characterOffset, key);
+                    invalidate();
+                    caret.moveCaretHorizontally(1);
+                }
         }
 
         return true;
@@ -181,8 +183,26 @@ public class ElementTextArea extends Element{
 
     @Override
     protected boolean onPressed(int x, int y, int which) {
-        return super.onPressed(x, y, which);
-//        getRoot().requestFocus(this);
-//        return true;
+        super.onPressed(x, y, which);
+        System.out.println("pressed");
+        getRoot().requestFocus(this);
+        return true;
+    }
+
+    @Override
+    public boolean handleKeyboardInput() {
+        super.handleKeyboardInput();
+        return true;
+    }
+
+    public String getText(){
+        return text.toString();
+    }
+
+    public ElementTextArea text(String text){
+        this.text.setLength(0);
+        this.text.append(text);
+        invalidate();
+        return this;
     }
 }

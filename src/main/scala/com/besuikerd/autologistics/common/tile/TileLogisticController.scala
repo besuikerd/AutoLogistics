@@ -1,6 +1,11 @@
 package com.besuikerd.autologistics.common.tile
 
 import com.besuikerd.autologistics.AutoLogistics
+import com.besuikerd.autologistics.client.lib.gui.element.{ElementScrollableTextArea, Element}
+import com.besuikerd.autologistics.common.BLogger
+import com.besuikerd.autologistics.common.lib.network.LoadProgramMessageHandler.LoadProgramMessage
+import com.besuikerd.autologistics.common.lib.network.PacketDispatcher
+import com.besuikerd.autologistics.common.lib.network.RunProgramMessageHandler.RunProgramMessage
 import com.besuikerd.autologistics.common.tile.traits.{TileEventHandler, TileLogistic, TileVirtualMachine, TileCable}
 import cpw.mods.fml.relauncher.Side
 
@@ -186,8 +191,20 @@ class TileLogisticController extends TileEntityMod
   }
 
   override def handlerObject: Any = new {
-    def hello(): Unit ={
-      println("hello world!")
+    def compile(e: Element): Unit ={
+      e.lookup("program", classOf[ElementScrollableTextArea]) match{
+        case e:ElementScrollableTextArea => {
+          program = e.getText
+          PacketDispatcher.instance.sendToServer(new LoadProgramMessage(xCoord, yCoord, zCoord, program))
+        }
+      }
+    }
+
+    def run(): Unit ={
+      println("running: ")
+      println(program)
+      load(program)
+      PacketDispatcher.instance.sendToServer(new RunProgramMessage(xCoord, yCoord, zCoord))
     }
   }
 }

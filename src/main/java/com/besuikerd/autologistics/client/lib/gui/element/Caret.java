@@ -36,20 +36,23 @@ public class Caret extends Element{
     public void moveCaretHorizontally(int amount){
         ensureCaretInBounds();
         String line = lines.get(caretPosition.y);
-        if(caretPosition.x + amount > line.length()){ //possibly go down a line
+        int newLineOffset = line.endsWith("\n") ? 1 : 0;
+        if(caretPosition.x + amount > line.length() - newLineOffset){ //possibly go down a line
             if(caretPosition.y < lines.size() - 1){
-                caretPosition = new Vector2(0, caretPosition.y + 1);
+                caretPosition = new Vector2(line.endsWith("\n") ? 0 : amount, caretPosition.y + 1);
             }
             //to account for word wrap
 
         } else if(caretPosition.x + amount < 0){ // possibly go up a line
             if(caretPosition.y > 0){
                 String previousLine = lines.get(caretPosition.y - 1);
-                caretPosition = new Vector2(previousLine.length(), caretPosition.y - 1);
+                caretPosition = new Vector2(previousLine.length() - 1, caretPosition.y - 1);
             }
         } else{
             caretPosition = new Vector2(caretPosition.x + amount, caretPosition.y);
         }
+
+        int x = 2;
     }
 
     public void moveCaretVertically(int amount){
@@ -57,7 +60,7 @@ public class Caret extends Element{
         if(amount > 0){
             if(caretPosition.y < lines.size() - 1){
                 String nextLine = lines.get(caretPosition.y + 1);
-                caretPosition = new Vector2(Math.min(nextLine.length(), caretPosition.x), caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
+                caretPosition = new Vector2(Math.min(nextLine.length() - 1, caretPosition.x), caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
             }
         } else if(amount < 0){
             if(caretPosition.y > 0){
@@ -79,7 +82,6 @@ public class Caret extends Element{
         int offset = 0;
         for(int i = 0 ; i < caretPosition.y ; i++){
             offset += lines.get(i).length();
-            offset++; //add newlines to the offset
         }
         return offset + caretPosition.x;
     }
@@ -117,7 +119,7 @@ public class Caret extends Element{
     }
 
     @Override
-    protected boolean keyPressed(char key, int code) {
+    protected boolean keyTyped(char key, int code) {
         super.keyPressed(key, code);
         switch(code){
             case Keyboard.KEY_LEFT:
@@ -137,7 +139,11 @@ public class Caret extends Element{
                 break;
             case Keyboard.KEY_END:
                 String currentLine = lines.get(caretPosition.y);
-                moveCaretHorizontally(currentLine.length() - caretPosition.x);
+                if(currentLine.length() > 0){
+                    int newLineFix = currentLine.endsWith("\n") ? 1 : 0;
+                    moveCaretHorizontally(currentLine.length() - caretPosition.x - newLineFix);
+                }
+
                 break;
             case Keyboard.KEY_PRIOR: //page up
                 moveCaretVertically(-caretPosition.y);

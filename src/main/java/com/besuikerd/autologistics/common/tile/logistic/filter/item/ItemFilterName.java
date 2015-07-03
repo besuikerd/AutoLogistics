@@ -16,7 +16,7 @@ public class ItemFilterName implements IItemFilter{
 
     @Override
     public boolean passesFilter(ItemStack stack) {
-        if(!stack.getDisplayName().matches(name)){
+        if(!stack.getDisplayName().toLowerCase().matches(name)){
             GameRegistry.UniqueIdentifier itemId = GameRegistry.findUniqueIdentifierFor(stack.getItem());
             return (itemId.modId + ":" + itemId.name).matches(name);
         }

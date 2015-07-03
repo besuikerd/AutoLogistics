@@ -94,6 +94,8 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 	protected int paddingBottom;
 	protected int paddingLeft;
 
+	private String id;
+
 	/**
 	 * parent container
 	 */
@@ -212,6 +214,7 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 		if (lastCode != -1 && nextChar < System.currentTimeMillis()) {
 			keyTyped(lastChar, lastCode);
 			nextChar = System.currentTimeMillis() + THRESHOLD_NEXT_KEY_TYPED;
+			System.out.println("TYPED: " + getClass().getSimpleName());
 		}
 		doTrigger(Trigger.UPDATE);
 	}
@@ -341,8 +344,11 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 	}
 	
 	protected void onAdded(){
+		if(id != null){
+			getRoot().register(id, this);
+		}
 	}
-	
+
 	protected void onRemoved(){
 	}
 	
@@ -620,6 +626,14 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 		return this;
 	}
 
+	public Element paddingHorizontal(int padding){
+		return paddingLeft(padding).paddingRight(padding);
+	}
+
+	public Element paddingVertical(int padding){
+		return paddingTop(padding).paddingBottom(padding);
+	}
+
 	public Element align(Alignment alignment) {
 		this.alignment = alignment;
 		return this;
@@ -759,6 +773,22 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 		drawTexture(texture, (width - xDiff(texture.getTexture())) / 2, (height - yDiff(texture.getTexture())) / 2);
 	}
 
+	public void drawColoredBorder(int x, int y, int width, int height, int borderSize, int color){
+
+		int drawWidthHorizontal = width;
+		int drawHeightHorizontal = borderSize;
+
+		int drawWidthVertical = borderSize;
+		int drawHeightVertcial = height - 2 * borderSize;
+
+
+		drawRectangle(x, y, drawWidthHorizontal, drawHeightHorizontal, color);
+		drawRectangle(x, y + height - borderSize, drawWidthHorizontal, drawHeightHorizontal, color);
+
+		drawRectangle(x + width - borderSize, y + borderSize, drawWidthVertical, drawHeightVertcial, color);
+		drawRectangle(x, y + borderSize, drawWidthVertical, drawHeightVertcial, color);
+	}
+
 	protected void drawStringWithShadow(String s, int x, int y, int color){
 		if((color & 0xff) == 0){
 			color |= 255;
@@ -841,5 +871,18 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 			}
 		}
 	}
-	
+
+	public Element id(String id){
+		this.id = id;
+		return this;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public <E extends Element> E lookup(String id, Class<E> cls){
+		Element found = getRoot().lookup(id);
+		return found != null && cls.isInstance(found) ? cls.cast(found) : null;
+	}
 }

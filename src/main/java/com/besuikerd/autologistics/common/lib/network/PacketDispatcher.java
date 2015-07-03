@@ -64,5 +64,7 @@ public class PacketDispatcher {
 
     public void init(){
         registerMessage(new ClipboardMessageHandler(), ClipboardMessageHandler.ClipboardMessage.class);
+        registerMessage(new RunProgramMessageHandler(), RunProgramMessageHandler.RunProgramMessage.class);
+        registerMessage(new LoadProgramMessageHandler(), LoadProgramMessageHandler.LoadProgramMessage.class);
     }
 }

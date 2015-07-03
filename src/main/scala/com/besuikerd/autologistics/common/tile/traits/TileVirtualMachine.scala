@@ -20,6 +20,7 @@ import java.util.{List => JList}
 trait TileVirtualMachine extends TileEntityMod
 {
   val virtualMachine = new DefaultVirtualMachine
+  var program:String = ""
 
   virtualMachine.addNative("length", NativeFunctionLength.instance)
   virtualMachine.addNative("keys", NativeFunctionKeys.instance)
@@ -42,12 +43,14 @@ trait TileVirtualMachine extends TileEntityMod
 
   abstract override def readFromNBT(compound: NBTTagCompound): Unit = {
     super.readFromNBT(compound)
+    this.program = compound.getString("program")
     readVMFromNBT(compound)
     println("read from nbt" + compound)
   }
 
   override def writeToNBT(compound: NBTTagCompound): Unit = {
     super.writeToNBT(compound)
+    compound.setString("program", program)
     writeVMToNBT(compound)
   }
 

@@ -1,13 +1,21 @@
 package com.besuikerd.autologistics.client.lib.gui.element;
 
+import com.besuikerd.autologistics.common.BLogger;
+import com.besuikerd.autologistics.common.lib.util.MathUtil;
 import org.lwjgl.input.Mouse;
 
 import com.besuikerd.autologistics.client.lib.gui.event.IEventHandler;
 import com.besuikerd.autologistics.client.lib.gui.layout.LayoutDimension;
 import com.besuikerd.autologistics.client.lib.gui.texture.scalable.ScalableTexture;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ElementRootContainer extends ElementStyledContainer{
 	protected Element focusedElement;
+
+	private Map<String, Element> elementIds;
+
 	protected int scrollMovement;
 	protected IEventHandler eventHandler;
 	
@@ -17,8 +25,13 @@ public class ElementRootContainer extends ElementStyledContainer{
 	
 	public ElementRootContainer(int x, int y, int width, int height) {
 		super(x, y, width, height);
+
 	}
-	
+
+	{
+		this.elementIds = new HashMap<String, Element>();
+	}
+
 	public ElementRootContainer(int width, int height) {
 		this(0, 0, width, height);
 	}
@@ -77,7 +90,6 @@ public class ElementRootContainer extends ElementStyledContainer{
 		if(!consumeKeyboardInput){
 			consumeKeyboardInput = super.handleKeyboardInput();
 		}
-		
 		return consumeKeyboardInput;
 	}
 	
@@ -92,5 +104,13 @@ public class ElementRootContainer extends ElementStyledContainer{
 	@Override
 	public ElementRootContainer getRoot() {
 		return this;
+	}
+
+	public Element lookup(String id){
+		return elementIds.get(id);
+	}
+
+	public void register(String id, Element e){
+		elementIds.put(id, e);
 	}
 }

@@ -45,8 +45,12 @@ public class ElementStyledContainer extends ElementContainer{
 		this(width, height, ScalableTexture.STYLED_CONTAINER);
 	}
 	
+	public ElementStyledContainer(IScalableTexture background){
+		this(LayoutDimension.WRAP_CONTENT, LayoutDimension.WRAP_CONTENT, background);
+	}
+
 	public ElementStyledContainer() {
-		this(LayoutDimension.WRAP_CONTENT, LayoutDimension.WRAP_CONTENT);
+		this(ScalableTexture.STYLED_CONTAINER);
 	}
 
 	@Override

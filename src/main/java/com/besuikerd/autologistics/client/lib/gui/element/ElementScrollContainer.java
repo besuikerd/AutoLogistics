@@ -4,6 +4,7 @@ import com.besuikerd.autologistics.client.lib.gui.layout.HorizontalLayout;
 import com.besuikerd.autologistics.client.lib.gui.layout.LayoutDimension;
 import com.besuikerd.autologistics.client.lib.gui.layout.Orientation;
 import com.besuikerd.autologistics.client.lib.gui.layout.VerticalLayout;
+import com.besuikerd.autologistics.client.lib.gui.styler.IElementStyler;
 
 public class ElementScrollContainer extends ElementContainer{
 	protected ElementViewport viewport;
@@ -102,7 +103,7 @@ public class ElementScrollContainer extends ElementContainer{
 		container.remove(index);
 		return this;
 	}
-	
+
 	@Override
 	public int getElementCount() {
 		return container.getElementCount();

@@ -16,6 +16,7 @@ import com.besuikerd.autologistics.common.inventory.ContainerBesu;
 import com.besuikerd.autologistics.common.inventory.TileEntityInventory;
 import com.google.common.collect.Sets;
 
+@SuppressWarnings("unchecked")
 public enum GuiBinder implements IGuiBinder{
 	
 	DEFAULT{
@@ -41,6 +42,12 @@ public enum GuiBinder implements IGuiBinder{
 					g.bindEventHandler(tileEventHandler);
 				} else{
 					g.bindEventHandler(new EventHandler(tile));
+				}
+				if(g instanceof GuiTileEntity){
+					GuiTileEntity guiTileEntity = (GuiTileEntity) g;
+					if(guiTileEntity.getTileClass().isInstance(tile)){
+						guiTileEntity.bindTileEntity(tile, player, world);
+					}
 				}
 				if(c instanceof ContainerBesu && tile instanceof TileEntityInventory){
 					((ContainerBesu) c).bindInventory(((TileEntityInventory) tile).getInventory(), player);
