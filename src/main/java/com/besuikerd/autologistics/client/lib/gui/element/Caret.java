@@ -59,13 +59,14 @@ public class Caret extends Element{
         ensureCaretInBounds();
         if(amount > 0){
             if(caretPosition.y < lines.size() - 1){
+                String currentLine = lines.get(caretPosition.y);
                 String nextLine = lines.get(caretPosition.y + 1);
-                caretPosition = new Vector2(Math.min(nextLine.length() - 1, caretPosition.x), caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
+                caretPosition = new Vector2(Math.min(nextLine.length() - (1 - newLineFix(currentLine)), caretPosition.x), caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
             }
         } else if(amount < 0){
             if(caretPosition.y > 0){
                 String previousLine = lines.get(caretPosition.y - 1);
-                caretPosition = new Vector2(Math.min(previousLine.length(), caretPosition.x), Math.max(0, caretPosition.y + amount));
+                caretPosition = new Vector2(Math.min(previousLine.length() - 1, caretPosition.x), Math.max(0, caretPosition.y + amount));
             }
         }
     }
@@ -140,8 +141,7 @@ public class Caret extends Element{
             case Keyboard.KEY_END:
                 String currentLine = lines.get(caretPosition.y);
                 if(currentLine.length() > 0){
-                    int newLineFix = currentLine.endsWith("\n") ? 1 : 0;
-                    moveCaretHorizontally(currentLine.length() - caretPosition.x - newLineFix);
+                    moveCaretHorizontally(currentLine.length() - caretPosition.x - newLineFix(currentLine));
                 }
 
                 break;
@@ -153,5 +153,13 @@ public class Caret extends Element{
                 break;
         }
         return false;
+    }
+
+    /**
+     * 1 if line ends with a newline, 0 otherwise
+     * @return
+     */
+    private int newLineFix(String s){
+        return s.endsWith("\n") ? 1 : 0;
     }
 }
