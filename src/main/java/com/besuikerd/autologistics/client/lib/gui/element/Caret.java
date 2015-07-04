@@ -61,17 +61,16 @@ public class Caret extends Element{
 
     public void moveCaretVertically(int amount){
         ensureCaretInBounds();
+        String currentLine = lines.get(caretPosition.y);
         if(amount > 0){
             if(caretPosition.y < lines.size() - 1){
-                String currentLine = lines.get(caretPosition.y);
                 String nextLine = lines.get(caretPosition.y + amount);
-
-                int xPos = (Math.min(nextLine.length() - newLineFix(nextLine), caretPosition.x));
-                setCaretPosition(xPos, caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
+//                int xPos = (Math.min(nextLine.length() - newLineFix(nextLine), caretPosition.x));
+                setCaretPosition(Math.min(nextLine.length() - newLineFix(nextLine), caretPosition.x), caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
             }
         } else if(amount < 0){
-            int newCaretPosition = Math.min(0, caretPosition.y - amount);
-            if(caretPosition.y > 0){
+            int newCaretPosition = Math.max(0, caretPosition.y + amount);
+            if(caretPosition.y != newCaretPosition){
                 String previousLine = lines.get(newCaretPosition);
                 setCaretPosition(Math.min(previousLine.length() - 1, caretPosition.x), Math.max(0, caretPosition.y + amount));
             }
@@ -94,6 +93,23 @@ public class Caret extends Element{
         return offset + caretPosition.x;
     }
 
+    public int nearestCharacter(String currentLine, int currentPosition, String nextLine){
+        int currentWidth = fontRenderer.getStringWidth(currentLine.substring(0, Math.min(currentLine.length(), currentPosition)));
+        return nearestCharacter(currentWidth, nextLine);
+    }
+
+    public int nearestCharacter(int xOffset, String nextLine){
+        int totalWidth = fontRenderer.getCharWidth(nextLine.charAt(0)) / 2;
+        int currentCharacter = 0;
+        for(int i = currentCharacter + 1; i < nextLine.length() &&  totalWidth < xOffset; i++){
+            totalWidth += fontRenderer.getCharWidth(nextLine.charAt(currentCharacter));
+            if(totalWidth < xOffset) {
+                currentCharacter++;
+            }
+        }
+        return currentCharacter + (1 - newLineFix(nextLine));
+    }
+
     @Override
     public void draw() {
         if(caretVisible) {
@@ -105,7 +121,13 @@ public class Caret extends Element{
                 characterOffset = (fontRenderer.getCharWidth(caretCharacter) - fontRenderer.getCharWidth(c)) / 2;
             }
 
-            int xOffset = fontRenderer.getStringWidth(line.substring(0, caretPosition.x)) - characterOffset;//fontRenderer.getCharWidth(caretPosition) / 2;
+            int caretPositionX = caretPosition.x;
+            if(caretPositionX > line.length()){ // fix rendering on a line without a newline (last line)
+                caretPositionX = line.length();
+            }
+            String preCaretString = line.substring(0, caretPositionX);
+
+            int xOffset = fontRenderer.getStringWidth(preCaretString) - characterOffset;//fontRenderer.getCharWidth(caretPosition) / 2;
             parent.drawString("_", xOffset + parent.paddingLeft, caretPosition.y * lineHeight + parent.paddingTop, 0xffffffff);
         }
     }
@@ -174,7 +196,7 @@ public class Caret extends Element{
      * 1 if line ends with a newline, 0 otherwise
      * @return
      */
-    private int newLineFix(String s){
+    public int newLineFix(String s){
         return s.endsWith("\n") ? 1 : 0;
     }
 

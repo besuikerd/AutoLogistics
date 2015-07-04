@@ -59,6 +59,7 @@ public class ElementTextArea extends Element{
                 row = row.substring(0, row.length() - 1);
             }
 
+            drawRectangle(paddingLeft, paddingTop + yOffset, fontRenderer.getStringWidth(row), fontRenderer.FONT_HEIGHT, 0xffff0000);
             drawString(row, paddingLeft, paddingTop + yOffset, Colors.white);
             yOffset += getLineHeight();
         }
@@ -171,7 +172,23 @@ public class ElementTextArea extends Element{
     @Override
     protected boolean onPressed(int x, int y, int which) {
         super.onPressed(x, y, which);
-        System.out.println("pressed");
+
+        int lineNumber = Math.min((y - paddingTop) / getLineHeight(), textToRender.size() - 1);
+
+        String lineText = textToRender.get(lineNumber);
+        int lineWidth = fontRenderer.getStringWidth(lineText);
+        if(lineWidth <= x){
+            caret.setCaretPosition(lineText.length() - caret.newLineFix(lineText), lineNumber);
+        } else {
+
+//            int currentPos = lineWidth;
+//            int currentChar = lineText.length() - 1;
+//            for (; currentChar > 0 && currentPos > x; currentChar--) {
+//                currentPos -= fontRenderer.getCharWidth(lineText.charAt(currentChar));
+//            }
+            caret.setCaretPosition(caret.nearestCharacter(x, lineText), lineNumber);
+        }
+        System.out.println(String.format("pressed at (%d,%d), linenumber: %d", x, y, lineNumber));
         getRoot().requestFocus(this);
         return true;
     }

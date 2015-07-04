@@ -24,12 +24,6 @@ public class ElementScrollableTextArea extends ElementScrollContainer implements
         drawColoredBorder(0, 0, width - scrollBar.width, height, 1, Colors.gray);
     }
 
-    @Override
-    protected boolean onPressed(int x, int y, int which) {
-        super.onPressed(x, y, which);
-        return textArea.onPressed(x, y, which); //TODO fix coordinates
-    }
-
     public String getText(){
         return textArea.getText();
     }
@@ -37,6 +31,16 @@ public class ElementScrollableTextArea extends ElementScrollContainer implements
     public ElementScrollContainer text(String text){
         textArea.text(text);
         return this;
+    }
+
+    @Override
+    protected boolean onPressed(int x, int y, int which) {
+        int textAreaHeight = textArea.height + textArea.getPaddingTop() + container.getPaddingTop();
+        if(textAreaHeight < viewport.height && y > textAreaHeight){ //we clicked outside the bounds of the textarea
+            return textArea.onPressed(x, textAreaHeight - textArea.getLineHeight(), which); //TODO fix coordinates
+        } else{
+            return super.onPressed(x, y, which);
+        }
     }
 
     @Override

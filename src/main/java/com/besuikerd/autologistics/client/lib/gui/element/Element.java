@@ -214,7 +214,6 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 		if (lastCode != -1 && nextChar < System.currentTimeMillis()) {
 			keyTyped(lastChar, lastCode);
 			nextChar = System.currentTimeMillis() + THRESHOLD_NEXT_KEY_TYPED;
-			System.out.println("TYPED: " + getClass().getSimpleName());
 		}
 		doTrigger(Trigger.UPDATE);
 	}
