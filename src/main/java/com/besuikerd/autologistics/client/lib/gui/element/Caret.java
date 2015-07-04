@@ -4,12 +4,15 @@ import com.besuikerd.autologistics.common.lib.util.tuple.Vector2;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.input.Keyboard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Caret extends Element{
     private int caretAnimationState;
     private boolean caretVisible = false;
     private int lineHeight;
+
+    private List<CaretPositionUpdatedListener> caretPositionUpdatedListeners;
 
     private Vector2 caretPosition;
 
@@ -24,7 +27,8 @@ public class Caret extends Element{
         this.parent = parent;
         this.caretCharacter = caretCharacter;
         this.lineHeight = lineHeight;
-        caretPosition = new Vector2(0,0);
+        this.caretPositionUpdatedListeners = new ArrayList<CaretPositionUpdatedListener>();
+        setCaretPosition(0, 0);
     }
 
     @Override
@@ -39,17 +43,17 @@ public class Caret extends Element{
         int newLineOffset = line.endsWith("\n") ? 1 : 0;
         if(caretPosition.x + amount > line.length() - newLineOffset){ //possibly go down a line
             if(caretPosition.y < lines.size() - 1){
-                caretPosition = new Vector2(line.endsWith("\n") ? 0 : amount, caretPosition.y + 1);
+                setCaretPosition(line.endsWith("\n") ? 0 : amount, caretPosition.y + 1);
             }
             //to account for word wrap
 
         } else if(caretPosition.x + amount < 0){ // possibly go up a line
             if(caretPosition.y > 0){
                 String previousLine = lines.get(caretPosition.y - 1);
-                caretPosition = new Vector2(previousLine.length() - 1, caretPosition.y - 1);
+                setCaretPosition(previousLine.length() - 1, caretPosition.y - 1);
             }
         } else{
-            caretPosition = new Vector2(caretPosition.x + amount, caretPosition.y);
+            setCaretPosition(caretPosition.x + amount, caretPosition.y);
         }
 
         int x = 2;
@@ -63,13 +67,13 @@ public class Caret extends Element{
                 String nextLine = lines.get(caretPosition.y + amount);
 
                 int xPos = (Math.min(nextLine.length() - newLineFix(nextLine), caretPosition.x));
-                caretPosition = new Vector2(xPos, caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
+                setCaretPosition(xPos, caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
             }
         } else if(amount < 0){
             int newCaretPosition = Math.min(0, caretPosition.y - amount);
             if(caretPosition.y > 0){
                 String previousLine = lines.get(newCaretPosition);
-                caretPosition = new Vector2(Math.min(previousLine.length() - 1, caretPosition.x), Math.max(0, caretPosition.y + amount));
+                setCaretPosition(Math.min(previousLine.length() - 1, caretPosition.x), Math.max(0, caretPosition.y + amount));
             }
         }
     }
@@ -78,7 +82,7 @@ public class Caret extends Element{
         if(caretPosition.y >= lines.size()){
             int y = lines.size() - 1;
             int x = lines.get(y).length();
-            this.caretPosition = new Vector2(x, y);
+            setCaretPosition(x, y);
         }
     }
 
@@ -106,8 +110,16 @@ public class Caret extends Element{
         }
     }
 
+    public void setCaretPosition(int x, int y){
+        setCaretPosition(new Vector2(x,y));
+    }
+
     public void setCaretPosition(Vector2 position){
+        Vector2 oldPos = caretPosition;
         this.caretPosition = position;
+        for(CaretPositionUpdatedListener listener: caretPositionUpdatedListeners){
+            listener.onPositionUpdated(oldPos, position);
+        }
     }
 
     public Vector2 getCaretPosition() {
@@ -164,5 +176,9 @@ public class Caret extends Element{
      */
     private int newLineFix(String s){
         return s.endsWith("\n") ? 1 : 0;
+    }
+
+    public void addCaretPositionUpdatedListener(CaretPositionUpdatedListener listener){
+        caretPositionUpdatedListeners.add(listener);
     }
 }

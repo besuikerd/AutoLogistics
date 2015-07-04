@@ -26,7 +26,7 @@ public class ElementTextArea extends Element{
 
         this.heightGap = 1;
         padding(4);
-        caret = new Caret(this, textToRender, '_', fontRenderer.FONT_HEIGHT + heightGap);
+        caret = new Caret(this, textToRender, '_', getLineHeight());
 
         invalidate();
     }
@@ -60,7 +60,7 @@ public class ElementTextArea extends Element{
             }
 
             drawString(row, paddingLeft, paddingTop + yOffset, Colors.white);
-            yOffset += fontRenderer.FONT_HEIGHT + heightGap;
+            yOffset += getLineHeight();
         }
 
         if(isFocused()) {
@@ -191,5 +191,9 @@ public class ElementTextArea extends Element{
         this.text.append(text);
         invalidate();
         return this;
+    }
+
+    public int getLineHeight(){
+        return fontRenderer.FONT_HEIGHT + heightGap;
     }
 }

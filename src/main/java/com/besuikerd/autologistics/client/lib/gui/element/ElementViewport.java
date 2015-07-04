@@ -129,4 +129,20 @@ public class ElementViewport extends Element {
         element.draw();
         glDisable(GL_STENCIL_TEST);
     }
+
+    public void setxOffset(int xOffset) {
+        this.xOffset = xOffset;
+    }
+
+    public void setyOffset(int yOffset) {
+        this.yOffset = yOffset;
+    }
+
+    public int getxOffset() {
+        return xOffset;
+    }
+
+    public int getyOffset() {
+        return yOffset;
+    }
 }
