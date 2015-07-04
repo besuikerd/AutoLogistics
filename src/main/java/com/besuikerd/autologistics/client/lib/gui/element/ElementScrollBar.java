@@ -121,7 +121,7 @@ public class ElementScrollBar extends ElementContainer {
         }
 
         @Override
-        protected boolean onMove(int x, int y, int which) {
+        protected boolean onMoveRelative(int x, int y, int which) {
             if (self.isEnabled()) {
                 if (orientation == Orientation.VERTICAL) {
                     setProgress((double) y / (parent.height - scroller.height));

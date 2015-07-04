@@ -53,11 +53,27 @@ public class ElementTextArea extends Element{
         drawRectangle(0, 0, width + paddingLeft + paddingRight, height + paddingTop + paddingBottom, 0xff000000);
 
         if(!selectStart.equals(caret.getCaretPosition())){
+            int selectionColor = Colors.lightGray;
             Vector2 cPos = caret.getCaretPosition();
-            Vector2 first = cPos.y > selectStart.y ? cPos : selectStart.y > cPos.y ? selectStart : cPos.x > selectStart.x ? cPos : selectStart;
-            Vector2 last = first.equals(cPos.y) ? cPos : selectStart;
+            Vector2 first = cPos.y < selectStart.y ? cPos : selectStart.y < cPos.y ? selectStart : cPos.x > selectStart.x ? cPos : selectStart;
+            Vector2 last = first.equals(cPos) ? selectStart : cPos;
 
-            x = 2;
+
+            for(int row = first.y ; row < last.y ; row++){
+                String currentLine = textToRender.get(row);
+                if(row == first.y){
+//                    int offset = getCharacterOffset(currentLine, first.x);
+//                    String sub = currentLine.substring(offset, Math.min(first.x, currentLine.length()));
+//                    drawRectangle(paddingLeft + offset, paddingTop + row * getLineHeight(), fontRenderer.getStringWidth(sub), getLineHeight(), selectionColor);
+                }
+                if(row == last.y){
+
+                }
+                if(row != first.y && row != last.y){
+                    drawRectangle(paddingLeft, paddingTop + row * getLineHeight(), fontRenderer.getStringWidth(currentLine), getLineHeight(), selectionColor);
+                }
+
+            }
         }
 
         int yOffset = 0;
@@ -66,7 +82,7 @@ public class ElementTextArea extends Element{
                 row = row.substring(0, row.length() - 1);
             }
 
-            drawRectangle(paddingLeft, paddingTop + yOffset, fontRenderer.getStringWidth(row), fontRenderer.FONT_HEIGHT, 0xffff0000);
+//            drawRectangle(paddingLeft, paddingTop + yOffset, fontRenderer.getStringWidth(row), fontRenderer.FONT_HEIGHT, 0xffff0000);
             drawString(row, paddingLeft, paddingTop + yOffset, Colors.white);
             yOffset += getLineHeight();
         }
@@ -179,8 +195,21 @@ public class ElementTextArea extends Element{
     @Override
     protected boolean onPressed(int x, int y, int which) {
         super.onPressed(x, y, which);
+        selectStart = caret.getCaretPosition();
+        moveCaretPosition(x, y);
+        getRoot().requestFocus(this);
+        return true;
+    }
 
-        int lineNumber = Math.min((y - paddingTop) / getLineHeight(), textToRender.size() - 1);
+    @Override
+    protected boolean onMove(int x, int y, int which) {
+//        System.out.println(String.format("moved to (%d,%d)", x, y));
+        moveCaretPosition(x, y);
+        return true;
+    }
+
+    private void moveCaretPosition(int x, int y){
+        int lineNumber = Math.max(0, Math.min((y - paddingTop) / getLineHeight(), textToRender.size() - 1));
 
         String lineText = textToRender.get(lineNumber);
         int lineWidth = fontRenderer.getStringWidth(lineText);
@@ -190,22 +219,20 @@ public class ElementTextArea extends Element{
             caret.setCaretPosition(caret.nearestCharacter(x, lineText), lineNumber);
         }
         System.out.println(String.format("pressed at (%d,%d), linenumber: %d", x, y, lineNumber));
-        getRoot().requestFocus(this);
-
-        selectStart = caret.getCaretPosition();
-
-        return true;
     }
 
-    @Override
-    protected boolean onMove(int x, int y, int which) {
-        System.out.println(String.format("moved to (%d,%d)", x, y));
-        return true;
+    private int getCharacterOffset(String text, int characterInLine){
+        int offset = 0;
+        for(int i = 0 ; i < text.length() - 1 && i < characterInLine ; i++){
+            offset += fontRenderer.getCharWidth(text.charAt(i));
+        }
+        return offset;
     }
 
     @Override
     protected void onReleased(int x, int y, int which) {
         super.onReleased(x, y, which);
+        this.selectStart = caret.getCaretPosition();
     }
 
     @Override
