@@ -16,8 +16,7 @@ public class ElementTextArea extends Element{
     protected Caret caret;
 
     private int heightGap;
-    private int caretStart;
-    private int caretEnd;
+    private Vector2 selectStart;
 
     public ElementTextArea(String text, int x, int y, int width) {
         super(x, y, width, 0);
@@ -27,7 +26,7 @@ public class ElementTextArea extends Element{
         this.heightGap = 1;
         padding(4);
         caret = new Caret(this, textToRender, '_', getLineHeight());
-
+        selectStart = caret.getCaretPosition();
         invalidate();
     }
 
@@ -52,6 +51,14 @@ public class ElementTextArea extends Element{
     public void draw() {
 
         drawRectangle(0, 0, width + paddingLeft + paddingRight, height + paddingTop + paddingBottom, 0xff000000);
+
+        if(!selectStart.equals(caret.getCaretPosition())){
+            Vector2 cPos = caret.getCaretPosition();
+            Vector2 first = cPos.y > selectStart.y ? cPos : selectStart.y > cPos.y ? selectStart : cPos.x > selectStart.x ? cPos : selectStart;
+            Vector2 last = first.equals(cPos.y) ? cPos : selectStart;
+
+            x = 2;
+        }
 
         int yOffset = 0;
         for(String row : textToRender) {
@@ -180,17 +187,25 @@ public class ElementTextArea extends Element{
         if(lineWidth <= x){
             caret.setCaretPosition(lineText.length() - caret.newLineFix(lineText), lineNumber);
         } else {
-
-//            int currentPos = lineWidth;
-//            int currentChar = lineText.length() - 1;
-//            for (; currentChar > 0 && currentPos > x; currentChar--) {
-//                currentPos -= fontRenderer.getCharWidth(lineText.charAt(currentChar));
-//            }
             caret.setCaretPosition(caret.nearestCharacter(x, lineText), lineNumber);
         }
         System.out.println(String.format("pressed at (%d,%d), linenumber: %d", x, y, lineNumber));
         getRoot().requestFocus(this);
+
+        selectStart = caret.getCaretPosition();
+
         return true;
+    }
+
+    @Override
+    protected boolean onMove(int x, int y, int which) {
+        System.out.println(String.format("moved to (%d,%d)", x, y));
+        return true;
+    }
+
+    @Override
+    protected void onReleased(int x, int y, int which) {
+        super.onReleased(x, y, which);
     }
 
     @Override

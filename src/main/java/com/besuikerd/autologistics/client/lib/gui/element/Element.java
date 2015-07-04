@@ -63,8 +63,8 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
 	 */
 	public static final long THRESHOLD_DOUBLE_PRESS = 200l;
 
-	public static final long THRESHOLD_INITIAL_KEY_TYPED = 600l;
-	public static final long THRESHOLD_NEXT_KEY_TYPED = 70l;
+	public static final long THRESHOLD_INITIAL_KEY_TYPED = 400l;
+	public static final long THRESHOLD_NEXT_KEY_TYPED = 50l;
 
 	public static final Map<Integer, Integer> mouseMap = Collections.unmodifiableMap(new HashMap<Integer, Integer>() {
 		{

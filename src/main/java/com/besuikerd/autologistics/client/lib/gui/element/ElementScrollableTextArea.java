@@ -9,7 +9,17 @@ public class ElementScrollableTextArea extends ElementScrollContainer implements
 
     public ElementScrollableTextArea(int width, int height) {
         super(height);
-        this.textArea = new ElementTextArea(width);
+        this.textArea = new ElementTextArea(width){
+            @Override
+            protected boolean handleMouseInput(int mouseX, int mouseY) {
+                int textAreaHeight = height + getPaddingTop() + container.getPaddingTop();
+                if(textAreaHeight < viewport.height && mouseY > textAreaHeight){ //we clicked outside the bounds of the textarea
+                    return super.handleMouseInput(mouseX, textAreaHeight - textArea.getLineHeight());
+                } else{
+                    return super.handleMouseInput(mouseX, mouseY);
+                }
+            }
+        };
         container
             .padding(1);
         add(textArea);
@@ -31,16 +41,6 @@ public class ElementScrollableTextArea extends ElementScrollContainer implements
     public ElementScrollContainer text(String text){
         textArea.text(text);
         return this;
-    }
-
-    @Override
-    protected boolean onPressed(int x, int y, int which) {
-        int textAreaHeight = textArea.height + textArea.getPaddingTop() + container.getPaddingTop();
-        if(textAreaHeight < viewport.height && y > textAreaHeight){ //we clicked outside the bounds of the textarea
-            return textArea.onPressed(x, textAreaHeight - textArea.getLineHeight(), which); //TODO fix coordinates
-        } else{
-            return super.onPressed(x, y, which);
-        }
     }
 
     @Override
