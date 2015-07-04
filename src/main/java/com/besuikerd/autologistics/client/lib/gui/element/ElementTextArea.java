@@ -28,19 +28,6 @@ public class ElementTextArea extends Element{
         padding(4);
         caret = new Caret(this, textToRender, '_', fontRenderer.FONT_HEIGHT + heightGap);
 
-        this.text.setLength(0);
-
-        int n = 0;
-        for(int i = 0 ; i < n ; i++) {
-            this.text.append(
-                    "item = <minecraft:log>\n" +
-                            "bla = <minecraft:charcoal:1>\n" +
-                            "item >> bla"
-            );
-            if(i != n - 1){
-                this.text.append('\n');
-            }
-        }
         invalidate();
     }
 

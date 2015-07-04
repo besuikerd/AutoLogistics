@@ -60,12 +60,15 @@ public class Caret extends Element{
         if(amount > 0){
             if(caretPosition.y < lines.size() - 1){
                 String currentLine = lines.get(caretPosition.y);
-                String nextLine = lines.get(caretPosition.y + 1);
-                caretPosition = new Vector2(Math.min(nextLine.length() - (1 - newLineFix(currentLine)), caretPosition.x), caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
+                String nextLine = lines.get(caretPosition.y + amount);
+
+                int xPos = (Math.min(nextLine.length() - newLineFix(nextLine), caretPosition.x));
+                caretPosition = new Vector2(xPos, caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
             }
         } else if(amount < 0){
+            int newCaretPosition = Math.min(0, caretPosition.y - amount);
             if(caretPosition.y > 0){
-                String previousLine = lines.get(caretPosition.y - 1);
+                String previousLine = lines.get(newCaretPosition);
                 caretPosition = new Vector2(Math.min(previousLine.length() - 1, caretPosition.x), Math.max(0, caretPosition.y + amount));
             }
         }
