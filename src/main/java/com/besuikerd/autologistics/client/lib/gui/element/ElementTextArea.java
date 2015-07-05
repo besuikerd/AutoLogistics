@@ -1,6 +1,7 @@
 package com.besuikerd.autologistics.client.lib.gui.element;
 
 import com.besuikerd.autologistics.client.render.Colors;
+import com.besuikerd.autologistics.common.BLogger;
 import com.besuikerd.autologistics.common.lib.util.StringUtils;
 import com.besuikerd.autologistics.common.lib.util.tuple.Vector2;
 import org.lwjgl.input.Keyboard;
@@ -8,7 +9,7 @@ import org.lwjgl.input.Keyboard;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ElementTextArea extends Element{
+public class ElementTextArea extends Element implements CaretPositionUpdatedListener{
 
     protected StringBuilder text;
     protected List<String> textToRender;
@@ -16,6 +17,8 @@ public class ElementTextArea extends Element{
     protected Caret caret;
 
     private int heightGap;
+
+    private boolean inSelection;
     private Vector2 selectStart;
 
     public ElementTextArea(String text, int x, int y, int width) {
@@ -26,6 +29,7 @@ public class ElementTextArea extends Element{
         this.heightGap = 1;
         padding(4);
         caret = new Caret(this, textToRender, '_', getLineHeight());
+        caret.addCaretPositionUpdatedListener(this);
         selectStart = caret.getCaretPosition();
         invalidate();
     }
@@ -55,19 +59,20 @@ public class ElementTextArea extends Element{
         if(!selectStart.equals(caret.getCaretPosition())){
             int selectionColor = Colors.lightGray;
             Vector2 cPos = caret.getCaretPosition();
-            Vector2 first = cPos.y < selectStart.y ? cPos : selectStart.y < cPos.y ? selectStart : cPos.x > selectStart.x ? cPos : selectStart;
+            Vector2 first = cPos.min(selectStart);
             Vector2 last = first.equals(cPos) ? selectStart : cPos;
 
 
-            for(int row = first.y ; row < last.y ; row++){
+            for(int row = first.y ; row <= last.y ; row++){
                 String currentLine = textToRender.get(row);
                 if(row == first.y){
-//                    int offset = getCharacterOffset(currentLine, first.x);
-//                    String sub = currentLine.substring(offset, Math.min(first.x, currentLine.length()));
-//                    drawRectangle(paddingLeft + offset, paddingTop + row * getLineHeight(), fontRenderer.getStringWidth(sub), getLineHeight(), selectionColor);
+                    int offset = getCharacterOffset(currentLine, first.x) + paddingLeft;
+                    drawRectangle(offset, paddingTop + row * getLineHeight(), fontRenderer.getStringWidth(currentLine) - offset, getLineHeight(), selectionColor);
                 }
                 if(row == last.y){
-
+                    int offset = getCharacterOffset(currentLine, last.x) + paddingLeft;
+                    BLogger.info(offset);
+                    drawRectangle(paddingLeft, paddingTop + row * getLineHeight(), offset, getLineHeight(), selectionColor);
                 }
                 if(row != first.y && row != last.y){
                     drawRectangle(paddingLeft, paddingTop + row * getLineHeight(), fontRenderer.getStringWidth(currentLine), getLineHeight(), selectionColor);
@@ -159,6 +164,50 @@ public class ElementTextArea extends Element{
         return true;
     }
 
+    public void addText(String text){
+        removeSelection(false);
+        int characterOffset = caret.getCharacterOffset();
+        this.text.insert(characterOffset, text);
+        caret.moveCaretHorizontally(text.length());
+        invalidate();
+    }
+
+
+    public void removeSelection(){
+        removeSelection(true);
+    }
+
+    public void removeSelection(boolean invalidate){
+        if(caret.getCaretPosition() != selectStart){
+            Vector2 first = caret.getCaretPosition().min(selectStart);
+            Vector2 last = first == selectStart ? caret.getCaretPosition() : selectStart;
+
+            int toRemove = 0;
+            if(first.y == last.y) {
+                toRemove = last.x - first.x;
+            } else{
+                for(int row = first.y ; row <= last.y ; row++){
+                    String currentLine = textToRender.get(row);
+                    if(row != first.y && row != last.y) { //we remove the whole line
+                        toRemove += currentLine.length();
+                    }
+                    if(row == first.y) { // we remove first.x until end of line
+                        toRemove += currentLine.length() - first.x;
+                    }
+                    if(row == last.y) { // we remove start of line until last.x
+                        toRemove += last.x;
+                    }
+                }
+            }
+            int characterOffset = caret.getCharacterOffset(first);
+            text.delete(characterOffset, characterOffset + toRemove);
+            caret.setCaretPosition(first);
+            if(invalidate) {
+                invalidate();
+            }
+        }
+    }
+
     public void invalidate(){
         textToRender.clear();
         String[] lines = text.toString().split("\n|\r\n", -1);
@@ -195,9 +244,10 @@ public class ElementTextArea extends Element{
     @Override
     protected boolean onPressed(int x, int y, int which) {
         super.onPressed(x, y, which);
-        selectStart = caret.getCaretPosition();
         moveCaretPosition(x, y);
         getRoot().requestFocus(this);
+        inSelection = true;
+        selectStart = caret.getCaretPosition();
         return true;
     }
 
@@ -205,6 +255,12 @@ public class ElementTextArea extends Element{
     protected boolean onMove(int x, int y, int which) {
 //        System.out.println(String.format("moved to (%d,%d)", x, y));
         moveCaretPosition(x, y);
+
+        if(!inSelection){
+            inSelection = true;
+            selectStart = caret.getCaretPosition();
+        }
+
         return true;
     }
 
@@ -232,7 +288,7 @@ public class ElementTextArea extends Element{
     @Override
     protected void onReleased(int x, int y, int which) {
         super.onReleased(x, y, which);
-        this.selectStart = caret.getCaretPosition();
+        inSelection = false;
     }
 
     @Override
@@ -254,5 +310,12 @@ public class ElementTextArea extends Element{
 
     public int getLineHeight(){
         return fontRenderer.FONT_HEIGHT + heightGap;
+    }
+
+    @Override
+    public void onPositionUpdated(Vector2 oldPosition, Vector2 newPosition) {
+        if(!inSelection && !Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+            this.selectStart = newPosition;
+        }
     }
 }

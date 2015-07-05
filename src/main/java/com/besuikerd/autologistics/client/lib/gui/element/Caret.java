@@ -86,8 +86,12 @@ public class Caret extends Element{
     }
 
     public int getCharacterOffset(){
+        return getCharacterOffset(caretPosition);
+    }
+
+    public int getCharacterOffset(Vector2 pos){
         int offset = 0;
-        for(int i = 0 ; i < caretPosition.y ; i++){
+        for(int i = 0 ; i < pos.y ; i++){
             offset += lines.get(i).length();
         }
         return offset + caretPosition.x;
