@@ -1,8 +1,9 @@
 package com.besuikerd.autologistics.common.tile
 
 import com.besuikerd.autologistics.AutoLogistics
-import com.besuikerd.autologistics.client.lib.gui.element.{ElementScrollableTextArea, Element}
+import com.besuikerd.autologistics.client.lib.gui.element.{ElementRootContainer, ElementScrollableTextArea, Element}
 import com.besuikerd.autologistics.common.BLogger
+import com.besuikerd.autologistics.common.lib.network.KillProgramMessageHandler.KillProgramMessage
 import com.besuikerd.autologistics.common.lib.network.LoadProgramMessageHandler.LoadProgramMessage
 import com.besuikerd.autologistics.common.lib.network.PacketDispatcher
 import com.besuikerd.autologistics.common.lib.network.RunProgramMessageHandler.RunProgramMessage
@@ -205,6 +206,19 @@ class TileLogisticController extends TileEntityMod
       println(program)
       load(program)
       PacketDispatcher.instance.sendToServer(new RunProgramMessage(xCoord, yCoord, zCoord))
+    }
+
+    def kill(): Unit = {
+      PacketDispatcher.instance.sendToServer(new KillProgramMessage(xCoord, yCoord, zCoord))
+    }
+
+    def saveProgram(e: ElementRootContainer): Unit = {
+      BLogger.info("saving...")
+      e.lookup("program", classOf[ElementScrollableTextArea]) match{
+        case e:ElementScrollableTextArea => {
+          program = e.getText
+        }
+      }
     }
   }
 }

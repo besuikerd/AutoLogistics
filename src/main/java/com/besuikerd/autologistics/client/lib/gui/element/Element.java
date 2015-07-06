@@ -357,7 +357,7 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
     protected void onRemoved() {
     }
 
-    protected boolean doTrigger(ITrigger trigger, Object... args) {
+    public boolean doTrigger(ITrigger trigger, Object... args) {
         String triggerName = triggers.get(trigger);
         if (triggerName != null) {
             trigger.trigger(triggerName, getRoot(), this, args);
@@ -887,5 +887,9 @@ public abstract class Element extends Gui implements IStreamSerializable, IStrea
     public <E extends Element> E lookup(String id, Class<E> cls) {
         Element found = getRoot().lookup(id);
         return found != null && cls.isInstance(found) ? cls.cast(found) : null;
+    }
+
+    public boolean requestFocus(){
+        return getRoot().requestFocus(this);
     }
 }

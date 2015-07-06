@@ -17,10 +17,14 @@ public class GuiLogisticController extends GuiVirtualMachine{
                     new ElementScrollableTextArea(250, 200).text(tile.program()).id("program"),
                     new ElementContainer().layout(new VerticalLayout(0, 2)).add(
                             new ElementButton(60, "Compile").trigger(Trigger.PRESSED, "compile"),
-                            new ElementButton(60, "Run").trigger(Trigger.PRESSED, "run")
+                            new ElementButton(60, "Run").trigger(Trigger.PRESSED, "run"),
+                            new ElementButton(60, "Kill").trigger(Trigger.PRESSED, "kill")
                     ).padding(2)
             )
-        );
+        ).trigger(Trigger.GUI_CLOSED, "saveProgram");
+        root.update();
+
+        root.lookup("program").requestFocus();
     }
 
     public void addButton(ElementButton e){

@@ -70,6 +70,10 @@ public class GuiContainerBesu extends GuiContainer{
 			super.handleKeyboardInput();
 		}
 	}
+
+	public void onGuiClosed(){
+
+	}
 	
 	@Override
 	public boolean doesGuiPauseGame() {

@@ -4,7 +4,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm._
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunction
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
-import com.besuikerd.autologistics.common.tile.logistic.{NativeFunctionCountItems, NativeFunctionItemFilter, NativeFunctionItemTransfer, LazyTileFinder}
+import com.besuikerd.autologistics.common.tile.logistic._
 import net.minecraft.inventory.{InventoryCrafting, ISidedInventory, IInventory}
 import net.minecraft.item.{ItemStack, ItemBlock, Item}
 import net.minecraft.util.EnumFacing
@@ -19,17 +19,17 @@ trait TileLogistic extends TileEntityMod{
 //  virtualMachine.addNative("_transferTo", nativeTransferTo)
 
   val directions = Map(
-    "north" -> EnumFacing.NORTH,
-    "east" -> EnumFacing.EAST,
-    "south" -> EnumFacing.SOUTH,
-    "west" -> EnumFacing.WEST,
-    "up" -> EnumFacing.UP,
-    "top" -> EnumFacing.UP,
-    "down" -> EnumFacing.DOWN,
-    "bottom" -> EnumFacing.DOWN
+    "north" -> StringFacing.NORTH,
+    "east" -> StringFacing.EAST,
+    "south" -> StringFacing.SOUTH,
+    "west" -> StringFacing.WEST,
+    "up" -> StringFacing.UP,
+    "top" -> StringFacing.UP,
+    "down" -> StringFacing.DOWN,
+    "bottom" -> StringFacing.DOWN
   )
 
-  directions.keys.foreach(dir => virtualMachine.addGlobal(dir, new StringValue(dir)))
+  directions.values.foreach(dir => virtualMachine.addGlobal(dir.name, new StringValue(dir.name)))
 
   virtualMachine.addNative("_filter", NativeFunctionItemFilter.instance)
   virtualMachine.addNative("_transfer", new NativeFunctionItemTransfer(this))

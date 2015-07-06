@@ -87,7 +87,14 @@ public enum Trigger implements ITrigger {
      * progress change
      * arguments: (Element e, int oldProgress, int oldMax, int newProgress, int newMax)
      */
-    PROGRESS_CHANGED;
+    PROGRESS_CHANGED,
+
+
+    /**
+     * arguments: (ElementRootContainer)
+     */
+    GUI_CLOSED
+    ;
 
 
     @Override

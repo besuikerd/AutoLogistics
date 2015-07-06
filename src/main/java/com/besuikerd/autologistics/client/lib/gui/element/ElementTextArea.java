@@ -10,9 +10,14 @@ import org.lwjgl.input.Keyboard;
 import scala.Option;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ElementTextArea extends Element implements CaretPositionUpdatedListener{
+
+    public static final Pattern SMART_INDENT_PATTERN = Pattern.compile("^( +)");
 
     protected StringBuilder text;
     protected List<String> textToRender;
@@ -172,7 +177,7 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
                     }
                     break;
                 case Keyboard.KEY_DELETE:
-                    if(removeSelection() != 0) {
+                    if(removeSelection() == 0) {
                         characterOffset = caret.getCharacterOffset();
                         if (characterOffset != text.length()) {
                             text.deleteCharAt(characterOffset);
@@ -182,11 +187,19 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
                     break;
                 case Keyboard.KEY_RETURN:
                     removeSelection(false);
+                    String toInsert = "\n";
+                    String currentLine = textToRender.get(caret.getCaretPosition().y);
+                    Matcher m = SMART_INDENT_PATTERN.matcher(currentLine);
+                    if(m.find()){
+                        char[] ws = new char[m.group().length()];
+                        Arrays.fill(ws, ' ');
+                        toInsert += new String(ws);
+                    }
                     characterOffset = caret.getCharacterOffset();
-                    text.insert(characterOffset, '\n');
+                    text.insert(characterOffset, toInsert);
                     invalidate();
-                    caret.moveCaretHorizontally(1);
-
+                    caret.moveCaretHorizontally(1); //newline
+                    caret.moveCaretHorizontally(toInsert.length() - 1); //smart indent
                     break;
                 case Keyboard.KEY_TAB:
                     removeSelection(false);
@@ -312,13 +325,15 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
 
     private void moveCaretPosition(int x, int y){
         int lineNumber = Math.max(0, Math.min((y - paddingTop) / getLineHeight(), textToRender.size() - 1));
-
         String lineText = textToRender.get(lineNumber);
-        int lineWidth = fontRenderer.getStringWidth(lineText);
-        if(lineWidth <= x){
-            caret.setCaretPosition(lineText.length() - caret.newLineFix(lineText), lineNumber);
-        } else {
-            caret.setCaretPosition(caret.nearestCharacter(x, lineText), lineNumber);
+        int xPos = 0;
+        if(!lineText.isEmpty()){
+            int lineWidth = fontRenderer.getStringWidth(lineText);
+            if(lineWidth <= x){
+                caret.setCaretPosition(lineText.length() - caret.newLineFix(lineText), lineNumber);
+            } else {
+                caret.setCaretPosition(caret.nearestCharacter(x, lineText), lineNumber);
+            }
         }
     }
 

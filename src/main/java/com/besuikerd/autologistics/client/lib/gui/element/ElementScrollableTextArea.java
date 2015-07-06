@@ -56,4 +56,9 @@ public class ElementScrollableTextArea extends ElementScrollContainer implements
             scrollBar.setProgress(progress);
         }
     }
+
+    @Override
+    public boolean requestFocus() {
+        return textArea.requestFocus();
+    }
 }

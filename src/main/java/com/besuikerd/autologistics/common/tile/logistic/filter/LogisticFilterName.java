@@ -12,6 +12,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 
+import java.util.regex.PatternSyntaxException;
+
 public class LogisticFilterName extends AbstractLogisticFilter{
 
     private String name;
@@ -28,7 +30,11 @@ public class LogisticFilterName extends AbstractLogisticFilter{
 
     @Override
     public boolean passesBlockFilter(TileEntity from, TileEntity to) {
-        return getName(to.getWorldObj(), to.xCoord, to.yCoord, to.zCoord).matches(name);
+        try {
+            return getName(to.getWorldObj(), to.xCoord, to.yCoord, to.zCoord).matches(name);
+        } catch(PatternSyntaxException e){
+            return false;
+        }
     }
 
     public static String getName(World world, int x, int y, int z){

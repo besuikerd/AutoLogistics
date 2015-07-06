@@ -1,5 +1,6 @@
 package com.besuikerd.autologistics.client.lib.gui;
 
+import com.besuikerd.autologistics.client.lib.gui.event.Trigger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
@@ -57,7 +58,13 @@ public class GuiScreenBesu extends GuiScreen{
 			}
 		}
 	}
-	
+
+	@Override
+	public void onGuiClosed() {
+		super.onGuiClosed();
+		gui.getRoot().doTrigger(Trigger.GUI_CLOSED);
+	}
+
 	@Override
 	public boolean doesGuiPauseGame() {
 		return false;
