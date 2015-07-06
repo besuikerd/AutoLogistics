@@ -67,6 +67,9 @@ public class Caret extends Element{
                 String nextLine = lines.get(caretPosition.y + amount);
 //                int xPos = (Math.min(nextLine.length() - newLineFix(nextLine), caretPosition.x));
                 setCaretPosition(Math.min(nextLine.length() - newLineFix(nextLine), caretPosition.x), caretPosition.y + Math.min(amount, lines.size() - caretPosition.y - 1));
+            } else if(caretPosition.y == lines.size() - 1){
+                String lastLine = lines.get(caretPosition.y);
+                setCaretPosition(lastLine.length() - newLineFix(lastLine), caretPosition.y);
             }
         } else if(amount < 0){
             int newCaretPosition = Math.max(0, caretPosition.y + amount);
@@ -94,7 +97,7 @@ public class Caret extends Element{
         for(int i = 0 ; i < pos.y ; i++){
             offset += lines.get(i).length();
         }
-        return offset + caretPosition.x;
+        return offset + pos.x;
     }
 
     public int nearestCharacter(String currentLine, int currentPosition, String nextLine){
@@ -194,6 +197,23 @@ public class Caret extends Element{
                 break;
         }
         return false;
+    }
+
+
+    public boolean isCaretMovementKey(int keycode){
+        switch(keycode){
+            case Keyboard.KEY_LEFT:
+            case Keyboard.KEY_RIGHT:
+            case Keyboard.KEY_UP:
+            case Keyboard.KEY_DOWN:
+            case Keyboard.KEY_HOME:
+            case Keyboard.KEY_END:
+            case Keyboard.KEY_PRIOR:
+            case Keyboard.KEY_NEXT:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**

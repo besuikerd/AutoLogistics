@@ -1,10 +1,13 @@
 package com.besuikerd.autologistics.client.lib.gui.element;
 
 import com.besuikerd.autologistics.client.render.Colors;
+import com.besuikerd.autologistics.client.util.KeyboardUtils;
 import com.besuikerd.autologistics.common.BLogger;
+import com.besuikerd.autologistics.common.lib.util.ClipBoard;
 import com.besuikerd.autologistics.common.lib.util.StringUtils;
 import com.besuikerd.autologistics.common.lib.util.tuple.Vector2;
 import org.lwjgl.input.Keyboard;
+import scala.Option;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,30 +65,35 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
             Vector2 first = cPos.min(selectStart);
             Vector2 last = first.equals(cPos) ? selectStart : cPos;
 
-
-            for(int row = first.y ; row <= last.y ; row++){
-                String currentLine = textToRender.get(row);
-                if(row == first.y){
-                    int offset = getCharacterOffset(currentLine, first.x) + paddingLeft;
-                    drawRectangle(offset, paddingTop + row * getLineHeight(), fontRenderer.getStringWidth(currentLine) - offset, getLineHeight(), selectionColor);
+            if(first.y == last.y){
+                String line = textToRender.get(first.y);
+                int offset = getCharacterOffset(line, first.x);
+                int width = getCharacterOffset(line, first.x, last.x);
+                drawRectangle(paddingLeft + offset, paddingTop + first.y * getLineHeight(), width, getLineHeight(), selectionColor);
+            } else{
+                for(int row = first.y ; row <= last.y ; row++){
+                    String currentLine = textToRender.get(row);
+                    if(row == first.y){
+                        int offset = getCharacterOffset(currentLine, first.x);
+                        drawRectangle(offset + paddingLeft, paddingTop + row * getLineHeight(), fontRenderer.getStringWidth(currentLine) - offset, getLineHeight(), selectionColor);
+                    }
+                    if(row == last.y){
+                        int offset = getCharacterOffset(currentLine, last.x);
+                        drawRectangle(paddingLeft, paddingTop + row * getLineHeight(), offset, getLineHeight(), selectionColor);
+                    }
+                    if(row != first.y && row != last.y){
+                        drawRectangle(paddingLeft, paddingTop + row * getLineHeight(), fontRenderer.getStringWidth(currentLine), getLineHeight(), selectionColor);
+                    }
                 }
-                if(row == last.y){
-                    int offset = getCharacterOffset(currentLine, last.x) + paddingLeft;
-                    BLogger.info(offset);
-                    drawRectangle(paddingLeft, paddingTop + row * getLineHeight(), offset, getLineHeight(), selectionColor);
-                }
-                if(row != first.y && row != last.y){
-                    drawRectangle(paddingLeft, paddingTop + row * getLineHeight(), fontRenderer.getStringWidth(currentLine), getLineHeight(), selectionColor);
-                }
-
             }
+
         }
 
         int yOffset = 0;
         for(String row : textToRender) {
-            if(row.endsWith("\n")){
-                row = row.substring(0, row.length() - 1);
-            }
+//            if(row.endsWith("\n")){
+//                row = row.substring(0, row.length() - 1);
+//            }
 
 //            drawRectangle(paddingLeft, paddingTop + yOffset, fontRenderer.getStringWidth(row), fontRenderer.FONT_HEIGHT, 0xffff0000);
             drawString(row, paddingLeft, paddingTop + yOffset, Colors.white);
@@ -114,52 +122,91 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
     @Override
     protected boolean keyTyped(char key, int code) {
         super.keyTyped(key, code);
-        caret.keyTyped(key, code);
-        switch(code){
-            case Keyboard.KEY_BACK:
-                int characterOffset = caret.getCharacterOffset();
-                if(characterOffset != 0){
-                    boolean removeNewline = caret.getCaretPosition().x == 0;
-                    if(removeNewline){
-                        caret.moveCaretHorizontally(-1);
+
+        int characterOffset;
+
+        if(KeyboardUtils.isCtrlKeyDown()){
+            switch(code){
+                case Keyboard.KEY_X:
+                    ClipBoard.set(getSelectedText());
+                    removeSelection(true);
+                    break;
+                case Keyboard.KEY_C:
+                    ClipBoard.set(getSelectedText());
+                    break;
+                case Keyboard.KEY_V:
+                    Option<String> optPaste = ClipBoard.get();
+                    if(optPaste.nonEmpty()){
+                        String paste = optPaste.get();
+                        addText(paste);
                     }
-
-                    text.deleteCharAt(characterOffset - 1);
                     invalidate();
+                    break;
+                case Keyboard.KEY_A:
+                    int lastLine = textToRender.size() - 1;
+                    String lineText = textToRender.get(lastLine);
+                    caret.setCaretPosition(lineText.length() - caret.newLineFix(lineText), lastLine);
+                    selectStart = new Vector2(0,0);
+                    break;
+                default:
+            }
+        } else{
+            caret.keyTyped(key, code);
+            switch(code){
+                case Keyboard.KEY_BACK:
+                    if(removeSelection() == 0){
+                        characterOffset = caret.getCharacterOffset();
+                        if(characterOffset != 0){
+                            boolean removeNewline = caret.getCaretPosition().x == 0;
+                            if(removeNewline){
+                                caret.moveCaretHorizontally(-1);
+                            }
 
-                    if(!removeNewline) {
-                        caret.moveCaretHorizontally(-1);
+                            text.deleteCharAt(characterOffset - 1);
+                            invalidate();
+
+                            if(!removeNewline) {
+                                caret.moveCaretHorizontally(-1);
+                            }
+                        }
                     }
-                }
-                break;
-            case Keyboard.KEY_DELETE:
-                characterOffset = caret.getCharacterOffset();
-                if(characterOffset != text.length()){
-                    text.deleteCharAt(characterOffset);
-                    invalidate();
-                }
-                break;
-            case Keyboard.KEY_RETURN:
-                characterOffset = caret.getCharacterOffset();
-                text.insert(characterOffset, '\n');
-                invalidate();
-                caret.moveCaretHorizontally(1);
-
-                break;
-            case Keyboard.KEY_TAB:
-                characterOffset = caret.getCharacterOffset();
-                text.insert(characterOffset, "  ");
-                invalidate();
-                caret.moveCaretHorizontally(2);
-                break;
-            default:
-                if(StringUtils.isASCII(key)){
+                    break;
+                case Keyboard.KEY_DELETE:
+                    if(removeSelection() != 0) {
+                        characterOffset = caret.getCharacterOffset();
+                        if (characterOffset != text.length()) {
+                            text.deleteCharAt(characterOffset);
+                            invalidate();
+                        }
+                    }
+                    break;
+                case Keyboard.KEY_RETURN:
+                    removeSelection(false);
                     characterOffset = caret.getCharacterOffset();
-                    text.insert(characterOffset, key);
+                    text.insert(characterOffset, '\n');
                     invalidate();
                     caret.moveCaretHorizontally(1);
-                }
+
+                    break;
+                case Keyboard.KEY_TAB:
+                    removeSelection(false);
+                    characterOffset = caret.getCharacterOffset();
+                    text.insert(characterOffset, "  ");
+                    invalidate();
+                    caret.moveCaretHorizontally(2);
+                    break;
+                default:
+                    if(StringUtils.isASCII(key)){
+                        removeSelection(false);
+                        characterOffset = caret.getCharacterOffset();
+                        text.insert(characterOffset, key);
+                        invalidate();
+                        caret.moveCaretHorizontally(1);
+                    }
+            }
         }
+
+
 
         return true;
     }
@@ -173,39 +220,39 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
     }
 
 
-    public void removeSelection(){
-        removeSelection(true);
+    public int removeSelection(){
+        return removeSelection(true);
     }
 
-    public void removeSelection(boolean invalidate){
+    public int removeSelection(boolean invalidate){
+        int removed = 0;
         if(caret.getCaretPosition() != selectStart){
             Vector2 first = caret.getCaretPosition().min(selectStart);
             Vector2 last = first == selectStart ? caret.getCaretPosition() : selectStart;
-
-            int toRemove = 0;
             if(first.y == last.y) {
-                toRemove = last.x - first.x;
+                removed = last.x - first.x;
             } else{
                 for(int row = first.y ; row <= last.y ; row++){
                     String currentLine = textToRender.get(row);
                     if(row != first.y && row != last.y) { //we remove the whole line
-                        toRemove += currentLine.length();
+                        removed += currentLine.length();
                     }
                     if(row == first.y) { // we remove first.x until end of line
-                        toRemove += currentLine.length() - first.x;
+                        removed += currentLine.length() - first.x;
                     }
                     if(row == last.y) { // we remove start of line until last.x
-                        toRemove += last.x;
+                        removed += last.x;
                     }
                 }
             }
             int characterOffset = caret.getCharacterOffset(first);
-            text.delete(characterOffset, characterOffset + toRemove);
+            text.delete(characterOffset, characterOffset + removed);
             caret.setCaretPosition(first);
             if(invalidate) {
                 invalidate();
             }
         }
+        return removed;
     }
 
     public void invalidate(){
@@ -253,7 +300,6 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
 
     @Override
     protected boolean onMove(int x, int y, int which) {
-//        System.out.println(String.format("moved to (%d,%d)", x, y));
         moveCaretPosition(x, y);
 
         if(!inSelection){
@@ -274,15 +320,26 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
         } else {
             caret.setCaretPosition(caret.nearestCharacter(x, lineText), lineNumber);
         }
-        System.out.println(String.format("pressed at (%d,%d), linenumber: %d", x, y, lineNumber));
     }
 
-    private int getCharacterOffset(String text, int characterInLine){
+    private int getCharacterOffset(String text, int start, int end){
         int offset = 0;
-        for(int i = 0 ; i < text.length() - 1 && i < characterInLine ; i++){
+        for(int i = start ; i < text.length() && i < end ; i++){
             offset += fontRenderer.getCharWidth(text.charAt(i));
         }
         return offset;
+    }
+
+    private int getCharacterOffset(String text, int characterInLine){
+        return getCharacterOffset(text, 0, characterInLine);
+    }
+
+    public String getSelectedText(){
+        Vector2 first = selectStart.min(caret.getCaretPosition());
+        Vector2 last = first == selectStart ? caret.getCaretPosition() : selectStart;
+        int firstIndex = caret.getCharacterOffset(first);
+        int lastIndex = caret.getCharacterOffset(last);
+        return text.substring(firstIndex, lastIndex);
     }
 
     @Override
@@ -314,7 +371,8 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
 
     @Override
     public void onPositionUpdated(Vector2 oldPosition, Vector2 newPosition) {
-        if(!inSelection && !Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+        BLogger.debug(Keyboard.getEventKey());
+        if(!inSelection && (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || !caret.isCaretMovementKey(Keyboard.getEventKey()))) {
             this.selectStart = newPosition;
         }
     }

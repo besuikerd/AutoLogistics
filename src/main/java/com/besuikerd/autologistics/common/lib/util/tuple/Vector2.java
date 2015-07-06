@@ -27,7 +27,7 @@ public class Vector2 extends Tuple2<Integer, Integer>{
 	}
 
 	public Vector2 min(Vector2 other){
-		return y < other.y ? this : other.y < this.y ? other : this.x > other.x ? this: other;
+		return y < other.y ? this : y > other.y ? other : x < other.x ? this: other;
 	}
 
 	public Vector2 max(Vector2 other){
