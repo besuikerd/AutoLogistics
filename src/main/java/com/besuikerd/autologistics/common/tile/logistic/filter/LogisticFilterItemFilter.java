@@ -16,12 +16,12 @@ public class LogisticFilterItemFilter extends AbstractLogisticFilter{
     }
 
     @Override
-    public boolean passesBlockFilter(TileEntity from, TileEntity to) {
+    public boolean passesBlockFilterImpl(TileEntity from, TileEntity to) {
         return false;
     }
 
     @Override
-    public boolean passesItemFilter(ItemStack stack) {
+    public boolean passesItemFilterImpl(ItemStack stack) {
         return itemFilter.passesFilter(stack);
     }
 

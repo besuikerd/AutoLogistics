@@ -29,11 +29,12 @@ trait TileLogistic extends TileEntityMod{
     "bottom" -> StringFacing.DOWN
   )
 
-  directions.values.foreach(dir => virtualMachine.addGlobal(dir.name, new StringValue(dir.name)))
+  directions.foreach{case (name, dir) => virtualMachine.addGlobal(name, new StringValue(dir.name))}
 
   virtualMachine.addNative("_filter", NativeFunctionItemFilter.instance)
   virtualMachine.addNative("_transfer", new NativeFunctionItemTransfer(this))
   virtualMachine.addNative("count", new NativeFunctionCountItems(this))
+  virtualMachine.addNative("not", NativeFunctionInvertFilter.instance);
 
 //  object FindInventories extends NativeFunction{
 //    override def call(vm: VirtualMachine, args: JList[StackValue]): StackValue = {

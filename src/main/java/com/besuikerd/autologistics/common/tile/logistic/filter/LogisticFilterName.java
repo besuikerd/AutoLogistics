@@ -18,8 +18,8 @@ public class LogisticFilterName extends AbstractLogisticFilter{
 
     private String name;
 
-    public LogisticFilterName(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters, String name) {
-        super(amount, validSides, itemFilters);
+    public LogisticFilterName(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters, boolean inverted, String name) {
+        super(amount, validSides, itemFilters, inverted);
         this.name = name;
     }
 
@@ -29,7 +29,7 @@ public class LogisticFilterName extends AbstractLogisticFilter{
     }
 
     @Override
-    public boolean passesBlockFilter(TileEntity from, TileEntity to) {
+    public boolean passesBlockFilterImpl(TileEntity from, TileEntity to) {
         try {
             return getName(to.getWorldObj(), to.xCoord, to.yCoord, to.zCoord).matches(name);
         } catch(PatternSyntaxException e){

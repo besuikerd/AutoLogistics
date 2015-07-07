@@ -7,15 +7,16 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StringValue;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.item.ItemStack;
 
-public class ItemFilterName implements IItemFilter{
+public class ItemFilterName extends AbstractItemFilter{
     private String name;
 
-    public ItemFilterName(String name) {
+    public ItemFilterName(StackValue value, String name) {
+        super(value);
         this.name = name;
     }
 
     @Override
-    public boolean passesFilter(ItemStack stack) {
+    public boolean passesFilterImpl(ItemStack stack) {
         if(!stack.getDisplayName().toLowerCase().matches(name)){
             GameRegistry.UniqueIdentifier itemId = GameRegistry.findUniqueIdentifierFor(stack.getItem());
             return (itemId.modId + ":" + itemId.name).matches(name);
@@ -34,7 +35,7 @@ public class ItemFilterName implements IItemFilter{
                    (obj = StackValues.tryGetObjectOfType("name", value)) != null
                 && (name = StackValues.tryExtractField(StringValue.class, "name", obj)) != null
             ){
-                return new ItemFilterName(name.value);
+                return new ItemFilterName(value, name.value);
             }
             return null;
         }

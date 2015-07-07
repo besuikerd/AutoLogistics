@@ -44,11 +44,22 @@ public class CallInstruction implements Instruction{
         @Override
         public Void visitNativeFunctionValue(NativeFunctionValue value, Tuple2<VirtualMachine, List<StackValue>> arg) {
             VirtualMachine machine = arg._1();
-            NativeFunction f = machine.getNative(value.name);
-            if(f == null){
-                machine.crash("could not find " + value.stringRepresentation());
+            List<StackValue> args = arg._2();
+            List<NativeFunction> natives = machine.getNatives(value.name);
+            if(natives == null || natives.isEmpty()){
+                machine.crash("Could not find " + value.stringRepresentation());
             } else{
-                machine.push(f.call(machine, arg._2()));
+                boolean found = false;
+                for(int i = 0 ; i < natives.size() && !found ; i++){
+                    NativeFunction f = natives.get(i);
+                    if(f.matchesSignature(args)){
+                        machine.push(f.call(machine, args));
+                        found = true;
+                    }
+                }
+                if(!found){
+                    machine.crash("Could not find native function with matching signature for " + value.stringRepresentation());
+                }
             }
             return null;
         }

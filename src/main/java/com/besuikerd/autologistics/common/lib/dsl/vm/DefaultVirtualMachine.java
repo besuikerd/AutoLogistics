@@ -23,14 +23,14 @@ public class DefaultVirtualMachine implements VirtualMachine{
     protected Stack<ClosureValue> scopes;
 
     protected Map<String, StackValue> globals;
-    protected Map<String, NativeFunction> natives;
+    protected Map<String, List<NativeFunction>> natives;
 
     public DefaultVirtualMachine(){
         this.stack = new Stack<StackValue>();
         this.instructions = new Stack<Instruction>();
         this.scopes = new Stack<ClosureValue>();
         this.globals = new HashMap<String, StackValue>();
-        this.natives = new HashMap<String, NativeFunction>();
+        this.natives = new HashMap<String, List<NativeFunction>>();
     }
 
     @Override
@@ -156,12 +156,17 @@ public class DefaultVirtualMachine implements VirtualMachine{
 
     @Override
     public void addNative(String name, NativeFunction f) {
-        natives.put(name, f);
+        List<NativeFunction> natives;
+        if((natives = this.natives.get(name)) == null){
+            natives = new ArrayList<NativeFunction>();
+            this.natives.put(name, natives);
+        }
+        natives.add(f);
         addGlobal(name, new NativeFunctionValue(name));
     }
 
     @Override
-    public NativeFunction getNative(String name) {
+    public List<NativeFunction> getNatives(String name) {
         return natives.get(name);
     }
 

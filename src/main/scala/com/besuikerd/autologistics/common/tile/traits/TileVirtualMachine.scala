@@ -22,13 +22,14 @@ trait TileVirtualMachine extends TileEntityMod
   val virtualMachine = new DefaultVirtualMachine
   var program:String = ""
 
+  virtualMachine.addNative("not", NativeFunctionNegateBoolean.instance)
   virtualMachine.addNative("length", NativeFunctionLength.instance)
   virtualMachine.addNative("keys", NativeFunctionKeys.instance)
   virtualMachine.addNative("print", NativeFunctionPrint.instance)
   virtualMachine.addNative("println", NativeFunctionPrintln.instance)
   virtualMachine.addNative("say", nativeSay)
 
-  object nativeSay extends NativeFunction {
+  object nativeSay extends AbstractNativeFunction {
     override def call(vm: VirtualMachine, args: JList[StackValue]): StackValue = {
       val players = TileVirtualMachine.this.getEntitiesWithinRange[EntityPlayer](10)
       for{

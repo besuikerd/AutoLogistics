@@ -22,7 +22,7 @@ class ParsingSpec extends FlatSpec with Inside{
     val p = AutoLogisticsParser
     parsing(p)(p.parser,
       """
-        |<Chest> >> [[log]]
+        |~(1,2,3)@[1,2,3]
         |
       """.stripMargin){ statements =>
       for(statement <- statements){

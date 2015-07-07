@@ -116,6 +116,12 @@ configurations.mod {
     transitive = true
 }
 
+configurations.create('include')
+configurations.include{
+    description = "dependecy that is included in the build"
+    transitive = true
+}
+
 dependencies {
 
     compile "codechicken:CodeChickenCore:1.7.10-1.0.4.29:src"
@@ -128,6 +134,10 @@ dependencies {
     compile group: 'cofh', name: 'ThermalExpansion', version: '[1.7.10]4.0.0-176-dev', ext: 'jar'
     compile group: 'cofh', name: 'ThermalFoundation', version: '[1.7.10]1.0.0-88-dev', ext: 'jar'
     compile group: 'cofh', name: 'ThermalDynamics', version: '[1.7.10]1.0.0-137-dev', ext: 'jar'
+
+    compile configurations.include
+    include 'org.antlr:antlr4-runtime:4.5'
+
 
     testCompile 'org.scalatest:scalatest_2.11:2.2.5'
     testCompile 'junit:junit:4.12'
@@ -263,6 +273,9 @@ task updateLatestHash(dependsOn: updateChangelog) {
 }
 updateLatestHash.mustRunAfter(updateChangelog)
 
+jar{
+    from configurations.include.collect { it.isDirectory() ? it : zipTree(it) }
+}
 
 task sourceJar(type: Jar) {
     from sourceSets.main.java
@@ -272,6 +285,7 @@ task sourceJar(type: Jar) {
 
 task devJar(type: Jar) {
     from sourceSets.main.output
+    from configurations.include
     classifier = 'dev'
 }
 

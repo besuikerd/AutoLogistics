@@ -11,8 +11,8 @@ public class LogisticFilterPosition extends AbstractLogisticFilter{
     private int y;
     private int z;
 
-    public LogisticFilterPosition(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters, String type, int x, int y, int z) {
-        super(amount, validSides, itemFilters);
+    public LogisticFilterPosition(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters, boolean inverted, String type, int x, int y, int z) {
+        super(amount, validSides, itemFilters, inverted);
         this.type = type;
         this.x = x;
         this.y = y;
@@ -28,7 +28,7 @@ public class LogisticFilterPosition extends AbstractLogisticFilter{
     }
 
     @Override
-    public boolean passesBlockFilter(TileEntity from, TileEntity to) {
+    public boolean passesBlockFilterImpl(TileEntity from, TileEntity to) {
 
         if(type.equals("relative")){
             return

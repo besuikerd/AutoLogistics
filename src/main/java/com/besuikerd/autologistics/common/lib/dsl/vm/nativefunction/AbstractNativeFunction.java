@@ -24,4 +24,9 @@ public abstract class AbstractNativeFunction implements NativeFunction{
     protected <A extends StackValue> A extractField(VirtualMachine vm, Class<A> cls, String field, ObjectValue obj){
         return StackValues.extractField(vm, cls, field, obj);
     }
+
+    @Override
+    public boolean matchesSignature(List<StackValue> args) {
+        return true;
+    }
 }

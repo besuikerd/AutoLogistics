@@ -5,6 +5,7 @@ import com.besuikerd.autologistics.common.tile.logistic.StringFacing;
 import com.besuikerd.autologistics.common.tile.logistic.filter.item.IItemFilter;
 import com.besuikerd.autologistics.common.tile.logistic.filter.item.ItemFilterRegistry;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 
 public abstract class AbstractLogisticFilter implements ILogisticFilter {
@@ -12,11 +13,13 @@ public abstract class AbstractLogisticFilter implements ILogisticFilter {
     protected int amount;
     protected EnumFacing[] validSides;
     protected IItemFilter[] itemFilters;
+    protected boolean inverted;
 
-    public AbstractLogisticFilter(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters) {
+    public AbstractLogisticFilter(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters, boolean inverted) {
         this.amount = amount;
         this.validSides = validSides;
         this.itemFilters = itemFilters;
+        this.inverted = inverted;
     }
 
     public AbstractLogisticFilter(StackValue value){
@@ -28,8 +31,13 @@ public abstract class AbstractLogisticFilter implements ILogisticFilter {
         int amount = -1;
         EnumFacing[] validSides = EnumFacing.values();
         IItemFilter[] itemFilters = new IItemFilter[0];
+        boolean inverted = false;
 
         if((obj = StackValues.tryExpectType(ObjectValue.class, value)) != null) {
+            BooleanValue optInverted;
+            if((optInverted = StackValues.tryExtractField(BooleanValue.class, "inverted", obj)) != null){
+                inverted = optInverted.value;
+            }
 
             ObjectValue filter;
             if ((filter = StackValues.tryExtractField(ObjectValue.class, "filter", obj)) != null) {
@@ -85,10 +93,15 @@ public abstract class AbstractLogisticFilter implements ILogisticFilter {
         this.amount = amount;
         this.validSides = validSides;
         this.itemFilters = itemFilters;
+        this.inverted = inverted;
     }
 
     @Override
-    public boolean passesItemFilter(ItemStack stack) {
+    public final boolean passesItemFilter(ItemStack stack) {
+        return inverted ^ passesItemFilterImpl(stack);
+    }
+
+    protected boolean passesItemFilterImpl(ItemStack stack){
         for(IItemFilter obj : itemFilters){
             if(obj.passesFilter(stack)){
                 return true;
@@ -96,6 +109,18 @@ public abstract class AbstractLogisticFilter implements ILogisticFilter {
         }
         return itemFilters.length == 0;
     }
+
+    @Override
+    public final boolean passesBlockFilter(TileEntity from, TileEntity to) {
+        return inverted ^ passesBlockFilterImpl(from, to);
+    }
+
+    protected abstract boolean passesBlockFilterImpl(TileEntity from, TileEntity to);
+
+
+
+
+
 
     @Override
     public int getAmount() {

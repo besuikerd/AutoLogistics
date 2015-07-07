@@ -2,13 +2,10 @@ import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser;
 import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser$;
 import com.besuikerd.autologistics.common.lib.dsl.Statement;
 import com.besuikerd.autologistics.common.lib.dsl.vm.OptimizedVirtualMachine;
-import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunctionKeys;
-import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunctionLength;
-import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunctionType;
+import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.*;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
 import com.besuikerd.autologistics.common.lib.dsl.vm.CodeGenerator;
 import com.besuikerd.autologistics.common.lib.dsl.vm.DefaultVirtualMachine;
-import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.NativeFunction;
 import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.Instruction;
 import com.google.common.collect.Iterables;
@@ -46,7 +43,7 @@ public class VirtualMachineTest {
     public void reset(){
         vm.load(new ArrayList<Instruction>());
 
-        vm.addNative("println", new NativeFunction(){
+        vm.addNative("println", new AbstractNativeFunction(){
             @Override
             public StackValue call(VirtualMachine vm, List<StackValue> args) {
                 StackValue first = args.iterator().next();
@@ -55,7 +52,7 @@ public class VirtualMachineTest {
             }
         });
 
-        vm.addNative("assert", new NativeFunction() {
+        vm.addNative("assert", new AbstractNativeFunction() {
             @Override
             public StackValue call(VirtualMachine vm, List<StackValue> args) {
                 assertEquals(args.size(), 1);
@@ -64,7 +61,7 @@ public class VirtualMachineTest {
             }
         });
 
-        vm.addNative("assertEquals", new NativeFunction() {
+        vm.addNative("assertEquals", new AbstractNativeFunction() {
             @Override
             public StackValue call(VirtualMachine vm, List<StackValue> args) {
                 assertEquals(args.size(), 2);

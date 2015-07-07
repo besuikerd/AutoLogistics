@@ -26,6 +26,7 @@ case class IndexExpression(expression:Expression, indexes:List[Expression]) exte
 case class Application(expression:Expression, arguments:List[Expression]) extends Expression
 object Application{
   def apply(e1:Expression, name:String, e2:Expression):Application = Application(VariableExpression(name), List(e1, e2))
+  def apply(e1:Expression, args: Expression*) = new Application(e1, args.toList)
   def apply(name:String)(e1:Expression, op:String, e2:Expression):Application = apply(e1, name, e2)
   def apply(name:String, arguments:List[Expression]):Application = Application(VariableExpression(name), arguments)
 }

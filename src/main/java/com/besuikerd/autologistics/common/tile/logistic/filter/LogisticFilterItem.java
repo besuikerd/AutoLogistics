@@ -13,8 +13,8 @@ public class LogisticFilterItem extends AbstractLogisticFilter{
     private String name;
     private int meta;
 
-    public LogisticFilterItem(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters, String mod, String name, int meta) {
-        super(amount, validSides, itemFilters);
+    public LogisticFilterItem(int amount, EnumFacing[] validSides, IItemFilter[] itemFilters, boolean inverted, String mod, String name, int meta) {
+        super(amount, validSides, itemFilters, inverted);
         this.mod = mod;
         this.name = name;
         this.meta = meta;
@@ -28,7 +28,7 @@ public class LogisticFilterItem extends AbstractLogisticFilter{
     }
 
     @Override
-    public boolean passesBlockFilter(TileEntity from, TileEntity to) {
+    public boolean passesBlockFilterImpl(TileEntity from, TileEntity to) {
         if(meta != 1 && to.getBlockMetadata() == meta){
             return false;
         }

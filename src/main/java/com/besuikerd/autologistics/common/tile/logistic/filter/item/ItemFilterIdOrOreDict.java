@@ -6,18 +6,19 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-public class ItemFilterIdOrOreDict implements IItemFilter{
+public class ItemFilterIdOrOreDict extends AbstractItemFilter{
     public final String mod;
     public final String name;
     public final int meta;
 
-    public ItemFilterIdOrOreDict(String mod, String name, int meta) {
+    public ItemFilterIdOrOreDict(StackValue value, String mod, String name, int meta) {
+        super(value);
         this.mod = mod;
         this.name = name;
         this.meta = meta;
     }
 
-    public boolean passesFilter(ItemStack stack){
+    public boolean passesFilterImpl(ItemStack stack){
         if(meta != -1 && stack.getItemDamage() != meta){
             return false;
         }
@@ -56,7 +57,7 @@ public class ItemFilterIdOrOreDict implements IItemFilter{
                     if ((optItemMeta = StackValues.tryExtractField(IntegerValue.class, "meta", item)) != null) {
                         itemMeta = optItemMeta.value;
                     }
-                    return new ItemFilterIdOrOreDict(mod.value, name.value, itemMeta);
+                    return new ItemFilterIdOrOreDict(value, mod.value, name.value, itemMeta);
                 }
             }
             return null;

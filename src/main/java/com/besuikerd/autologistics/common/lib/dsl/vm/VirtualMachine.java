@@ -38,7 +38,7 @@ public interface VirtualMachine extends IStreamSerializable, IStreamDeserializab
 
     void addNative(String name, NativeFunction f);
     void addGlobal(String name, StackValue value);
-    NativeFunction getNative(String name);
+    List<NativeFunction> getNatives(String name);
 
     boolean isTerminated();
     boolean isErrorState();
