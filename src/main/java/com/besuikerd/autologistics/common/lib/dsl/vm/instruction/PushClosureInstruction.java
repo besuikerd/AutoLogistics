@@ -50,4 +50,9 @@ public class PushClosureInstruction implements Instruction{
     public <ARG, RES, THROWS extends Throwable> RES accept(InstructionVisitor<ARG, RES, THROWS> visitor, ARG arg) throws THROWS {
         return visitor.visitPushClosureInstruction(this, arg);
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s(%s, %d, %d, %d)", getClass().getSimpleName(), name, bindings.size(), free.size(), body.size());
+    }
 }

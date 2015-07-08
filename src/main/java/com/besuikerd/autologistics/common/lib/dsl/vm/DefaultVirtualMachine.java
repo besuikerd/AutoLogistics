@@ -9,6 +9,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ClosureValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.NativeFunctionValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.Recurse;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.CopyStackValueVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.DataInputStackValueParser;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.DataOutputStackValueVisitor;
 
@@ -51,6 +52,13 @@ public class DefaultVirtualMachine implements VirtualMachine{
             list.add(0, stack.pop());
         }
         return list;
+    }
+
+    @Override
+    public StackValue dup() {
+        StackValue top = stack.peek();
+        stack.push(top);
+        return top;
     }
 
     @Override

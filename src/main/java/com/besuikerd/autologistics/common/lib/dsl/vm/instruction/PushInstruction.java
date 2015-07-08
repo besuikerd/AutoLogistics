@@ -27,6 +27,6 @@ public class PushInstruction implements Instruction{
 
     @Override
     public String toString() {
-        return "PushInstruction(" + value + ")";
+        return "PushInstruction(" + value.stringRepresentation() + ")";
     }
 }

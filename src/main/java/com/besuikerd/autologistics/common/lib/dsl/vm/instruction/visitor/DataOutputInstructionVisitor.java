@@ -238,4 +238,17 @@ public class DataOutputInstructionVisitor extends BaseInstructionVisitor<DataOut
         visitInstruction(instruction, dataOutput);
         return null;
     }
+
+    @Override
+    public Void visitDupInstruction(DupInstruction instruction, DataOutput dataOutput) throws IOException {
+        visitInstruction(instruction, dataOutput);
+        return null;
+    }
+
+    @Override
+    public Void visitNopInstruction(NopInstruction instruction, DataOutput dataOutput) throws IOException {
+        visitInstruction(instruction, dataOutput);
+        dataOutput.writeInt(instruction.getAmount());
+        return null;
+    }
 }

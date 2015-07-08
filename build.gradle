@@ -51,6 +51,11 @@ apply plugin: 'idea'
 apply plugin: 'forge'
 apply plugin: 'curseforge'
 
+ext.antlr = [
+        grammarSourceDir: 'src/main/antlr',
+        generatedDir: 'src/generated/java'
+]
+
 sourceSets {
     main {
         java {
@@ -59,6 +64,7 @@ sourceSets {
         scala {
             srcDir "src/main/java"
             srcDir "src/main/scala"
+            srcDir antlr.generatedDir
         }
         resources{
             srcDir "buildSrc/src/main/groovy"
@@ -134,9 +140,11 @@ dependencies {
     compile group: 'cofh', name: 'ThermalExpansion', version: '[1.7.10]4.0.0-176-dev', ext: 'jar'
     compile group: 'cofh', name: 'ThermalFoundation', version: '[1.7.10]1.0.0-88-dev', ext: 'jar'
     compile group: 'cofh', name: 'ThermalDynamics', version: '[1.7.10]1.0.0-137-dev', ext: 'jar'
+    compile 'org.antlr:antlr4:4.5'
 
-    compile configurations.include
+    //compile configurations.include
     include 'org.antlr:antlr4-runtime:4.5'
+
 
 
     testCompile 'org.scalatest:scalatest_2.11:2.2.5'
@@ -157,6 +165,34 @@ task copyMods(type:Copy) {
     from configurations.mod
 }
 
+
+
+task generateGrammar << {
+    mkdir(antlr.generatedDir)
+    def grammars = fileTree(antlr.grammarSourceDir).include("**/*.g4")
+
+    grammars.each {
+        def packages = it.readLines().findAll{ it.startsWith("package")}
+        def params = ['-o', antlr.generatedDir, '-visitor']
+        if(!packages.isEmpty()){
+            def match = packages[0] =~ /^package\s+(\w+(\.\w+)+)/
+            if(match.find()){
+                def path = params[1] + File.separator + match.group(1).replace('.', File.separator)
+                params[1] = path
+                mkdir(path)
+            }
+        }
+
+        params << it.getAbsolutePath()
+
+        javaexec{
+            main = 'org.antlr.v4.Tool'
+            classpath = configurations.compile
+            args = params
+        }
+    }
+}
+
 processResources
 {
     // this will ensure that this task is redone when the versions change.
@@ -175,8 +211,6 @@ processResources
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
-
-
 }
 
 project.ext.windows = System.getProperty('os.name').startsWith('Windows')

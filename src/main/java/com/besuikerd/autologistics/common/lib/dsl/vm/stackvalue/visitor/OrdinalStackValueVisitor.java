@@ -17,8 +17,8 @@ public class OrdinalStackValueVisitor implements StackValueVisitor<Void, Integer
     }
 
     @Override
-    public Integer visitDoubleValue(DoubleValue value, Void aVoid) {
-        return DOUBLE.ordinal();
+    public Integer visitDecimalValue(DecimalValue value, Void aVoid) {
+        return DECIMAL.ordinal();
     }
 
     @Override

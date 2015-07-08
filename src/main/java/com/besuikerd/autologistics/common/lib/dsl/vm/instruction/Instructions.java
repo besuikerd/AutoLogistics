@@ -29,7 +29,9 @@ public enum Instructions {
     PUSH_LIST("push_list"),
     PUSH_OBJECT("push_object"),
     PUT_FIELD("put_field"),
-    PUT("put")
+    PUT("put"),
+    DUP("dup"),
+    NOP("nop")
     ;
 
     public final String type;

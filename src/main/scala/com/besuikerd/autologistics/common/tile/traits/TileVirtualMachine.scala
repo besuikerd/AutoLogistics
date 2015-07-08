@@ -3,8 +3,9 @@ package com.besuikerd.autologistics.common.tile.traits
 
 import java.io.{IOException, EOFException, DataInput, DataOutput}
 import com.besuikerd.autologistics.common.BLogger
-import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser
+import com.besuikerd.autologistics.common.lib.antlr.{AutoLogisticsParser, AutoLogisticsLexer}
 import com.besuikerd.autologistics.common.lib.dsl.vm._
+import com.besuikerd.autologistics.common.lib.dsl.vm.codegen.CodeGeneratorVisitor
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction._
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue._
 import com.besuikerd.autologistics.common.tile._
@@ -14,6 +15,7 @@ import com.google.common.io.ByteStreams
 import net.minecraft.entity.player.{EntityPlayer, EntityPlayerMP}
 import net.minecraft.nbt._
 import net.minecraft.util.{AxisAlignedBB, ChatComponentText}
+import org.antlr.v4.runtime.{CommonTokenStream, ANTLRInputStream}
 import scala.collection.JavaConversions._
 import java.util.{List => JList}
 
@@ -77,16 +79,29 @@ trait TileVirtualMachine extends TileEntityMod
 
 
   def load(program:String): Unit ={
-    AutoLogisticsParser.parse(AutoLogisticsParser.parser, program) match{
-      case AutoLogisticsParser.Success(ast, _) => {
-        val instructions = CodeGenerator.generate(ast)
-        //println(ast)
-        virtualMachine.load(instructions)
-      }
-      case AutoLogisticsParser.NoSuccess(error, _) => {
-        println("Failed to load program: " + error)
-      }
+    val lexer = new AutoLogisticsLexer(new ANTLRInputStream(program));
+    val tokens = new CommonTokenStream(lexer)
+    val parser = new AutoLogisticsParser(tokens)
+
+    val result = parser.program();
+    if(parser.getNumberOfSyntaxErrors == 0){
+      val instructions = CodeGeneratorVisitor.visit(result);
+      virtualMachine.load(instructions)
+    } else{
+      println("failed to load program")
     }
+
+
+//    AutoLogisticsParser.parse(AutoLogisticsParser.parser, program) match{
+//      case AutoLogisticsParser.Success(ast, _) => {
+//        val instructions = OldCodeGenerator.generate(ast)
+//        //println(ast)
+//        virtualMachine.load(instructions)
+//      }
+//      case AutoLogisticsParser.NoSuccess(error, _) => {
+//        println("Failed to load program: " + error)
+//      }
+//    }
   }
 }
 

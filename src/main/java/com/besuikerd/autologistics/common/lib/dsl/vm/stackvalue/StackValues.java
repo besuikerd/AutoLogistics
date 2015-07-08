@@ -6,7 +6,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.visitor.TypeStac
 public enum StackValues {
     BOOLEAN("boolean", BooleanValue.class),
     CLOSURE("closure", ClosureValue.class),
-    DOUBLE("double", DoubleValue.class),
+    DECIMAL("decimal", DecimalValue.class),
     INT("int", IntegerValue.class),
     LIST("list", ListValue.class),
     NATIVE("native", NativeFunctionValue.class),

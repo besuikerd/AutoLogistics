@@ -17,6 +17,7 @@ public interface VirtualMachine extends IStreamSerializable, IStreamDeserializab
 
     void push(StackValue value);
     StackValue pop();
+    StackValue dup();
     List<StackValue> pop(int n);
 
     void reset();

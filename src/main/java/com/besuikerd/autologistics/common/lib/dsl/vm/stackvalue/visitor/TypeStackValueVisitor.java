@@ -17,8 +17,8 @@ public class TypeStackValueVisitor extends BaseStackValueVisitor<Void, String, R
     }
 
     @Override
-    public String visitDoubleValue(DoubleValue value, Void aVoid) {
-        return DOUBLE.type;
+    public String visitDecimalValue(DecimalValue value, Void aVoid) {
+        return DECIMAL.type;
     }
 
     @Override

@@ -2,7 +2,7 @@ package dsl
 
 import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser
 import com.besuikerd.autologistics.common.lib.dsl.parser.DSLPrettyPrinter
-import com.besuikerd.autologistics.common.lib.dsl.vm.CodeGenerator
+import com.besuikerd.autologistics.common.lib.dsl.vm.OldCodeGenerator
 import org.scalatest.{Inside, FlatSpec, Assertions}
 import scala.collection.JavaConversions._
 

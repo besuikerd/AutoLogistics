@@ -1,16 +1,18 @@
-import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser;
-import com.besuikerd.autologistics.common.lib.dsl.AutoLogisticsParser$;
+import com.besuikerd.autologistics.common.lib.antlr.AutoLogisticsLexer;
+import com.besuikerd.autologistics.common.lib.antlr.AutoLogisticsParser;
+import com.besuikerd.autologistics.common.lib.antlr.AutoLogisticsParser.*;
 import com.besuikerd.autologistics.common.lib.dsl.Statement;
-import com.besuikerd.autologistics.common.lib.dsl.vm.OptimizedVirtualMachine;
+import com.besuikerd.autologistics.common.lib.dsl.vm.codegen.CodeGeneratorVisitor;
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction.*;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
-import com.besuikerd.autologistics.common.lib.dsl.vm.CodeGenerator;
 import com.besuikerd.autologistics.common.lib.dsl.vm.DefaultVirtualMachine;
 import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.Instruction;
-import com.google.common.collect.Iterables;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.TokenStream;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
@@ -24,20 +26,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@RunWith(Parameterized.class)
+//@RunWith(Parameterized.class)
 public class VirtualMachineTest {
     private VirtualMachine vm;
 
-    public VirtualMachineTest(VirtualMachine vm){
-        this.vm = vm;
+//    public VirtualMachineTest(VirtualMachine vm){
+//        this.vm = vm;
+//    }
+
+    public VirtualMachineTest(){
+        this.vm = new DefaultVirtualMachine();
     }
 
-    @Parameters
-    public static Iterable<Object[]> data(){
-        return Arrays.<Object[]>asList(
-            new Object[]{new DefaultVirtualMachine()}
-        );
-    }
+
+//    @Parameters
+//    public static Iterable<Object[]> data(){
+//        return Arrays.<Object[]>asList(
+//            new Object[]{new DefaultVirtualMachine()}
+//        );
+//    }
 
     @Before
     public void reset(){
@@ -76,19 +83,36 @@ public class VirtualMachineTest {
 
     }
 
+//    public List<Instruction> load(String program){
+//        AutoLogisticsParser$.ParseResult<scala.collection.immutable.List<Statement>> parseResult = AutoLogisticsParser.parse(AutoLogisticsParser.parser(), program);
+//        if(parseResult instanceof AutoLogisticsParser$.Success){
+//            return OldCodeGenerator.generate(parseResult.get());
+//        } else{
+//            AutoLogisticsParser$.ParseResult untyped = parseResult;
+//            AutoLogisticsParser$.NoSuccess failure = (AutoLogisticsParser$.NoSuccess) untyped;
+//            fail(failure.msg());
+//            return null;
+//        }
+//    }
+
     public List<Instruction> load(String program){
-        AutoLogisticsParser$.ParseResult<scala.collection.immutable.List<Statement>> parseResult = AutoLogisticsParser.parse(AutoLogisticsParser.parser(), program);
-        if(parseResult instanceof AutoLogisticsParser$.Success){
-            return CodeGenerator.generate(parseResult.get());
-        } else{
-            AutoLogisticsParser$.ParseResult untyped = parseResult;
-            AutoLogisticsParser$.NoSuccess failure = (AutoLogisticsParser$.NoSuccess) untyped;
-            fail(failure.msg());
-            return null;
+        System.out.println(program);
+        AutoLogisticsLexer lexer = new AutoLogisticsLexer(new ANTLRInputStream(program));
+        TokenStream tokens = new CommonTokenStream(lexer);
+        AutoLogisticsParser parser = new AutoLogisticsParser(tokens);
+        ProgramContext parseTree = parser.program();
+
+        List<Instruction> instructions = CodeGeneratorVisitor.visit(parseTree);
+        for(Instruction i : instructions){
+            System.out.println(i);
         }
+        System.out.println();
+        return instructions;
     }
 
     public void run(String program){
+
+
         List<Instruction> instructions = load(program);
 //        for(Instruction i : instructions){
 //            System.out.println(i);
@@ -101,16 +125,17 @@ public class VirtualMachineTest {
     }
 
     public void assertTermination(){
-        assertTrue("Virtual machine did not terminate", vm.isTerminated());
         if(vm.isErrorState()){
             fail(vm.getErrorMessage());
         }
+        assertTrue("Virtual machine did not terminate", vm.isTerminated());
     }
 
     @Test
     public void testBinaryExpression(){
         run("assertEquals(2 + 3, 5)");
         run("assertEquals(2 * 3, 6)");
+        run("assertEquals(2 + 3 + 4, 9)");
         run("assertEquals(2 + 3 * 4, 14)");
         run("assertEquals(8 - 4 - 2, 2)");
         run("assertEquals(8 - (4 - 2), 6)");
@@ -138,24 +163,28 @@ public class VirtualMachineTest {
     public void testBlock(){
         run("x = {null} assertEquals(x, null)");
         run("x = {assert(true) 2 + 2} assertEquals(x, 4)");
-        run("assertEquals({x = 5;}, null)");
+        run("assertEquals({x = 5;}, 5)");
     }
 
 //    @Ignore
     @Test
     public void testRecursion(){
         run("fib = \\x -> if(x == 0) 1 else x * fib(x - 1) assertEquals(fib(5), 120)");
-//        run("f = \\x -> if(x == 0) 0 else f(x - 1) assertEquals(f(1), 0)");
+        run("f = \\x -> if(x == 0) 0 else f(x - 1) assertEquals(f(10), 0)");
 //        run("f = \\x -> f(x + 1) f(0)");
     }
 
     @Test
     public void testWhile(){
         run("i = 0 while(i < 10){i = i + 1} assertEquals(i, 10)");
+        run("i = 0 while((i = i + 1) < 10){} assertEquals(i ,10)");
+        run("i = 0 while{i = i + 1; j = i + 1 i < 10} assertEquals(j, i + 1) assertEquals(i ,10)");
     }
 
     @Test
     public void testList(){
+        run("list = [1,2,3] list[0] = 42 assertEquals(list[0], 42)");
+
         run(
             "list = [1,2,3] assertEquals(length(list), 3) assertEquals(list[0], 1)" +
             "list[42] = true assertEquals(list[41], null) assertEquals(list[42], true)"
@@ -165,7 +194,20 @@ public class VirtualMachineTest {
     @Test
     public void testObjects(){
         run(
-            "obj = {name = \"John\" surname = \"Doe\" age = 25} k = keys(obj) assertEquals(length(k), 3)"
+              "obj = {name = \"John\" surname = \"Doe\" age = 25} k = keys(obj) assertEquals(length(k), 3)"
+            + "assertEquals(obj[\"name\"], \"John\")"
+            + "assertEquals(obj.age, 25)"
+            + "obj.name = \"Jane\""
+            + "assertEquals(obj[\"name\"], \"Jane\")"
+            + "obj[\"surname\"] = \"Dough\""
+            + "assertEquals(obj.surname, \"Dough\")"
+        );
+
+        run(
+              "obj = {inner = {value = 25}}"
+            + "assertEquals(obj.inner.value, 25)"
+            + "obj.inner[\"innerinner\"] = {value = 42}"
+            + "assertEquals(obj[\"inner\"].innerinner[\"value\"], 42)"
         );
     }
 
@@ -181,7 +223,7 @@ public class VirtualMachineTest {
     @Test
     public void testType(){
         run("assertEquals(type(5), \"int\")");
-        run("assertEquals(type(5.0), \"double\")");
+        run("assertEquals(type(5.0), \"decimal\")");
         run("assertEquals(type(\"hoi\"), \"string\")");
         run("assertEquals(type(true), \"boolean\")");
         run("assertEquals(type(false), \"boolean\")");
@@ -201,5 +243,10 @@ public class VirtualMachineTest {
         vm.deserialize(input);
         vm.run(100000);
         assertTermination();
+    }
+
+    @Test
+    public void testSimple(){
+        System.out.println(load("x = 2 + 2"));
     }
 }

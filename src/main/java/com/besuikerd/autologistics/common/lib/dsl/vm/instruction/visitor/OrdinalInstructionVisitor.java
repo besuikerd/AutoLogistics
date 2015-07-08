@@ -159,4 +159,14 @@ public class OrdinalInstructionVisitor extends SafeBaseInstructionVisitor<Void, 
     public Integer visitSubInstruction(SubInstruction instruction, Void aVoid) {
         return SUB.ordinal();
     }
+
+    @Override
+    public Integer visitDupInstruction(DupInstruction instruction, Void aVoid) throws RuntimeException {
+        return DUP.ordinal();
+    }
+
+    @Override
+    public Integer visitNopInstruction(NopInstruction instruction, Void aVoid) throws RuntimeException {
+        return NOP.ordinal();
+    }
 }

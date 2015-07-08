@@ -42,4 +42,9 @@ public class GetFieldInstruction implements Instruction{
     public <ARG, RES, THROWS extends Throwable> RES accept(InstructionVisitor<ARG, RES, THROWS> visitor, ARG arg) throws THROWS {
         return visitor.visitGetFieldInstruction(this, arg);
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "()";
+    }
 }

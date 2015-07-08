@@ -25,7 +25,7 @@ public class DataOutputStackValueVisitor extends BaseStackValueVisitor<DataOutpu
     }
 
     @Override
-    public Void visitDoubleValue(DoubleValue value, DataOutput dataOutput) throws IOException {
+    public Void visitDecimalValue(DecimalValue value, DataOutput dataOutput) throws IOException {
         visitStackValue(value, dataOutput);
         dataOutput.writeDouble(value.value);
         return null;

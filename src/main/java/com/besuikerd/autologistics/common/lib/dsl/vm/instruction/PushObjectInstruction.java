@@ -4,6 +4,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.visitor.Instruc
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.ObjectValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
+import com.google.common.base.Joiner;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,5 +30,10 @@ public class PushObjectInstruction implements Instruction{
     @Override
     public <ARG, RES, THROWS extends Throwable> RES accept(InstructionVisitor<ARG, RES, THROWS> visitor, ARG arg) throws THROWS {
         return visitor.visitPushObjectInstruction(this, arg);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s([%s])", getClass().getSimpleName(), Joiner.on(",").join(keys));
     }
 }

@@ -23,8 +23,8 @@ public class DataInputStackValueParser {
                     return input.readBoolean() ? BooleanValue.trueValue : BooleanValue.falseValue;
                 case INT:
                     return new IntegerValue(input.readInt());
-                case DOUBLE:
-                    return new DoubleValue(input.readDouble());
+                case DECIMAL:
+                    return new DecimalValue(input.readDouble());
                 case NIL:
                     return NilValue.instance;
                 case STRING:

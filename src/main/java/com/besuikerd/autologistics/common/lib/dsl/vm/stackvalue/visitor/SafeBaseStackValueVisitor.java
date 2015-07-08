@@ -14,8 +14,8 @@ public class SafeBaseStackValueVisitor<ARG, RES> extends BaseStackValueVisitor<A
     }
 
     @Override
-    public RES visitDoubleValue(DoubleValue value, ARG arg) {
-        return super.visitDoubleValue(value, arg);
+    public RES visitDecimalValue(DecimalValue value, ARG arg) {
+        return super.visitDecimalValue(value, arg);
     }
 
     @Override

@@ -29,4 +29,9 @@ public class RepeatedBranchInstruction implements Instruction{
     public <ARG, RES, THROWS extends Throwable> RES accept(InstructionVisitor<ARG, RES, THROWS> visitor, ARG arg) throws THROWS {
         return visitor.visitRepeatedBranchInstruction(this, arg);
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s(%d)", getClass().getSimpleName(), branchWhile.size());
+    }
 }

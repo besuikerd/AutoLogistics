@@ -10,7 +10,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue._
 
 import scala.collection.JavaConversions._
 
-object CodeGenerator {
+object OldCodeGenerator {
   def generate(statements:List[Statement]):JList[Instruction] = {
     val stack = new ArrayList[Instruction]()
     stack.add(OpenScopeInstruction.instance)
@@ -159,7 +159,7 @@ object CodeGenerator {
     }
 
     case NaturalNumberConstant(n) => stack.add(new PushInstruction(new IntegerValue(n)))
-    case RealNumberConstant(n) => stack.add(new PushInstruction(new DoubleValue(n)))
+    case RealNumberConstant(n) => stack.add(new PushInstruction(new DecimalValue(n)))
     case StringLiteral(n) => stack.add(new PushInstruction(new StringValue(n)))
     case BooleanConstant(b) => stack.add(if(b) PushInstruction.pushTrue else PushInstruction.pushFalse)
     case NullExpression => stack.add(PushInstruction.pushNil)

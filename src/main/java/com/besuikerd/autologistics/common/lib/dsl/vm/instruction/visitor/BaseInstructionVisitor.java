@@ -156,4 +156,14 @@ public abstract class BaseInstructionVisitor<ARG, RES, THROWS extends Throwable>
     public RES visitSubInstruction(SubInstruction instruction, ARG arg) throws THROWS {
         return visitInstruction(instruction, arg);
     }
+
+    @Override
+    public RES visitDupInstruction(DupInstruction instruction, ARG arg) throws THROWS {
+        return visitInstruction(instruction, arg);
+    }
+
+    @Override
+    public RES visitNopInstruction(NopInstruction instruction, ARG arg) throws THROWS {
+        return visitInstruction(instruction, arg);
+    }
 }

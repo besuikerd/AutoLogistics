@@ -14,9 +14,9 @@ public class PutFieldInstruction implements Instruction{
 
     @Override
     public void execute(VirtualMachine machine) {
-        StackValue value = machine.pop();
         StackValue index = machine.pop();
         StackValue obj = machine.pop();
+        StackValue value = machine.pop();
 
         if(index instanceof StringValue && obj instanceof ObjectValue){
             StringValue key = (StringValue) index;
@@ -25,10 +25,17 @@ public class PutFieldInstruction implements Instruction{
         } else if(index instanceof IntegerValue && obj instanceof ListValue){
             IntegerValue key = (IntegerValue) index;
             ListValue listValue = (ListValue) obj;
-            for(int i = listValue.value.size() ; i < key.value ; i++){
-                listValue.value.add(NilValue.instance);
+            int listSize = listValue.value.size();
+            if(key.value > listSize - 1){
+                for(int i = listValue.value.size() ; i < key.value ; i++){
+                    listValue.value.add(NilValue.instance);
+                }
+                listValue.value.add(value);
+            } else{
+                listValue.value.set(key.value, value);
             }
-            listValue.value.add(value);
+
+
         } else{
             machine.crash("cannot assign field with index " + index.stringRepresentation() + " to " + obj.stringRepresentation());
         }
@@ -37,5 +44,10 @@ public class PutFieldInstruction implements Instruction{
     @Override
     public <ARG, RES, THROWS extends Throwable> RES accept(InstructionVisitor<ARG, RES, THROWS> visitor, ARG arg) throws THROWS {
         return visitor.visitPutFieldInstruction(this, arg);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "()";
     }
 }

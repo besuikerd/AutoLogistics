@@ -121,6 +121,11 @@ public class DataInputInstructionParser {
                     return AndInstruction.instance;
                 case OR:
                     return OrInstruction.instance;
+                case NOP:
+                    int amount = input.readInt();
+                    return new NopInstruction(amount);
+                case DUP:
+                    return DupInstruction.instance;
                 default:
                     throw new IllegalArgumentException("unknown instruction with ordinal value " + ordinal);
             }

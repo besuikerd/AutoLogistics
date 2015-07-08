@@ -15,7 +15,7 @@ public abstract class BaseStackValueVisitor<ARG, RES, THROWS extends Throwable> 
     }
 
     @Override
-    public RES visitDoubleValue(DoubleValue value, ARG arg) throws THROWS {
+    public RES visitDecimalValue(DecimalValue value, ARG arg) throws THROWS {
         return visitStackValue(value, arg);
     }
 

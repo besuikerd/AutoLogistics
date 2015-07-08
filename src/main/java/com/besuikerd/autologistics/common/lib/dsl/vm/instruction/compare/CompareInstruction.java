@@ -24,4 +24,9 @@ public abstract class CompareInstruction implements Instruction {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "()";
+    }
 }

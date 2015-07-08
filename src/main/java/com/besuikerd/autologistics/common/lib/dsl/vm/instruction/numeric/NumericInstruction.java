@@ -2,7 +2,7 @@ package com.besuikerd.autologistics.common.lib.dsl.vm.instruction.numeric;
 
 import com.besuikerd.autologistics.common.lib.dsl.vm.VirtualMachine;
 import com.besuikerd.autologistics.common.lib.dsl.vm.instruction.Instruction;
-import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.DoubleValue;
+import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.DecimalValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.IntegerValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.NumericStackValue;
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.StackValue;
@@ -24,9 +24,14 @@ public abstract class NumericInstruction implements Instruction {
                 machine.crash("left hand side should be a numeric value, got: " + leftValue.stringRepresentation());
             } else{
                 Double result = compute(left, right);
-                StackValue stackValue = right.value instanceof Integer && left.value instanceof Integer ? new IntegerValue(result.intValue()) : new DoubleValue(result);
+                StackValue stackValue = right.value instanceof Integer && left.value instanceof Integer ? new IntegerValue(result.intValue()) : new DecimalValue(result);
                 machine.push(stackValue);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "()";
     }
 }

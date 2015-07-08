@@ -36,4 +36,6 @@ public interface InstructionVisitor<ARG, RES, THROWS extends Throwable> {
     RES visitPutInstruction(PutInstruction instruction, ARG arg) throws THROWS;
     RES visitRepeatedBranchInstruction(RepeatedBranchInstruction instruction, ARG arg) throws THROWS;
     RES visitSubInstruction(SubInstruction instruction, ARG arg) throws THROWS;
+    RES visitDupInstruction(DupInstruction instruction, ARG arg) throws THROWS;
+    RES visitNopInstruction(NopInstruction instruction, ARG arg) throws THROWS;
 }

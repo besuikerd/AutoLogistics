@@ -19,10 +19,9 @@ public class NativeFunctionInvertFilter extends SingleArgTypedNativeFunction<Obj
 
     @Override
     public StackValue call(ObjectValue arg) {
-        ObjectValue result = arg;
+        ObjectValue result = result = (ObjectValue) arg.accept(CopyStackValueVisitor.instance, null);
         BooleanValue inverted;
         if((inverted = StackValues.tryExtractField(BooleanValue.class, "inverted", arg)) != null){
-            result = (ObjectValue) result.accept(CopyStackValueVisitor.instance, null);
             result.put("inverted", inverted.value ? BooleanValue.falseValue : BooleanValue.trueValue);
         } else{
             result.put("inverted", BooleanValue.trueValue);
@@ -32,6 +31,6 @@ public class NativeFunctionInvertFilter extends SingleArgTypedNativeFunction<Obj
 
     @Override
     public boolean matchesSignature(List<StackValue> args) {
-        return super.matchesSignature(args) && ((ObjectValue) args.get(0)).mapping.containsKey("filter");
+        return super.matchesSignature(args);
     }
 }
