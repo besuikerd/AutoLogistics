@@ -98,7 +98,7 @@ public abstract class AbstractLogisticFilter implements ILogisticFilter {
 
     @Override
     public final boolean passesItemFilter(ItemStack stack) {
-        return inverted ^ passesItemFilterImpl(stack);
+        return passesItemFilterImpl(stack);
     }
 
     protected boolean passesItemFilterImpl(ItemStack stack){

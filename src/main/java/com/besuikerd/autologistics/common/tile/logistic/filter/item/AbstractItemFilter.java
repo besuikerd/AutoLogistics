@@ -27,7 +27,8 @@ public abstract class AbstractItemFilter implements IItemFilter{
 
     @Override
     public final boolean passesFilter(ItemStack stack) {
-        return inverted ^ passesFilterImpl(stack);
+        boolean passesFilter = passesFilterImpl(stack);
+        return inverted ^ passesFilter;
     }
 
     public abstract boolean passesFilterImpl(ItemStack stack);

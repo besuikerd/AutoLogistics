@@ -55,6 +55,7 @@ public class TransferrableMoveItems extends AbstractTransferrable<StackValue, St
 
                     for(int fromSlotIndex = 0 ; fromSlotIndex < fromInventory.getSizeInventory() ; fromSlotIndex++){
                         ItemStack fromStack = fromInventory.getStackInSlot(fromSlotIndex);
+
                         if(fromStack != null && fromFilter.passesItemFilter(fromStack) && InventoryItemCounterExtract.instance.canUseSlot(fromInventory, fromSlotIndex, fromStack, fromFilter)){
 
                             for(IInventory toInventory : toInventories){ //let's find an inventory that we can put this stuff into
@@ -65,7 +66,7 @@ public class TransferrableMoveItems extends AbstractTransferrable<StackValue, St
                                     toInventorySlotLoop:
                                     for(int toSlotIndex = 0 ; toSlotIndex < toInventory.getSizeInventory() ; toSlotIndex++){
                                         ItemStack toStack = toInventory.getStackInSlot(toSlotIndex);
-                                        if((toStack == null || toFilter.passesItemFilter(fromStack) && fromStack.isItemEqual(toStack) && ItemStack.areItemStackTagsEqual(fromStack, toStack)) && InventoryItemCounterInsert.instance.canUseSlot(toInventory, toSlotIndex, fromStack, toFilter)){
+                                        if((toStack == null || fromStack.isItemEqual(toStack) && ItemStack.areItemStackTagsEqual(fromStack, toStack)) && toFilter.passesItemFilter(fromStack) && InventoryItemCounterInsert.instance.canUseSlot(toInventory, toSlotIndex, fromStack, toFilter)){
                                             if(toStack == null){ //empty slot; we can simply transfer the whole stack
                                                 int toTransfer = MathUtil.min(fromLimit, toLimit, fromStack.stackSize);
                                                 ItemStack splitStack = fromInventory.decrStackSize(fromSlotIndex, toTransfer);
