@@ -195,8 +195,8 @@ class TileLogisticController extends TileEntityMod
     def compile(e: Element): Unit ={
       e.lookup("program", classOf[ElementScrollableTextArea]) match{
         case e:ElementScrollableTextArea => {
-          program = e.getText
-          PacketDispatcher.instance.sendToServer(new LoadProgramMessage(xCoord, yCoord, zCoord, program))
+          program.setValue(e.getText)
+          PacketDispatcher.instance.sendToServer(new LoadProgramMessage(xCoord, yCoord, zCoord, program.getValue))
         }
       }
     }
@@ -204,7 +204,7 @@ class TileLogisticController extends TileEntityMod
     def run(): Unit ={
       println("running: ")
       println(program)
-      load(program)
+      load(program.getValue)
       PacketDispatcher.instance.sendToServer(new RunProgramMessage(xCoord, yCoord, zCoord))
     }
 
@@ -216,7 +216,7 @@ class TileLogisticController extends TileEntityMod
       BLogger.info("saving...")
       e.lookup("program", classOf[ElementScrollableTextArea]) match{
         case e:ElementScrollableTextArea => {
-          program = e.getText
+          program.setValue(e.getText)
         }
       }
     }

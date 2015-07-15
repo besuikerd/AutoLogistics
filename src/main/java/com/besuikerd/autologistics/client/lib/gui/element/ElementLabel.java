@@ -17,6 +17,11 @@ public class ElementLabel extends Element{
 		this(0, 0, text);
 	}
 
+	public ElementLabel textColor(int color){
+		this.color = color;
+		return this;
+	}
+
 	@Override
 	public void draw() {
 		super.draw();

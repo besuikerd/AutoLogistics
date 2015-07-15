@@ -96,9 +96,9 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
 
         int yOffset = 0;
         for(String row : textToRender) {
-//            if(row.endsWith("\n")){
-//                row = row.substring(0, row.length() - 1);
-//            }
+            if(row.endsWith("\n")){
+                row = row.substring(0, row.length() - 1);
+            }
 
 //            drawRectangle(paddingLeft, paddingTop + yOffset, fontRenderer.getStringWidth(row), fontRenderer.FONT_HEIGHT, 0xffff0000);
             drawString(row, paddingLeft, paddingTop + yOffset, Colors.white);
@@ -387,7 +387,7 @@ public class ElementTextArea extends Element implements CaretPositionUpdatedList
     @Override
     public void onPositionUpdated(Vector2 oldPosition, Vector2 newPosition) {
         BLogger.debug(Keyboard.getEventKey());
-        if(!inSelection && (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || !caret.isCaretMovementKey(Keyboard.getEventKey()))) {
+        if(!inSelection && (!KeyboardUtils.isShiftKeyDown() || !caret.isCaretMovementKey(Keyboard.getEventKey()))) {
             this.selectStart = newPosition;
         }
     }

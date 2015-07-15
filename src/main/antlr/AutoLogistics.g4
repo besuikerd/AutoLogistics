@@ -7,13 +7,12 @@ package com.besuikerd.autologistics.common.lib.antlr;
 //Parser rules
 program: (exp SEMICOLON?)*;
 
-exp:
+exp                     :
                         Integer                                     #IntegerExp
 |                       Decimal                                     #DecimalExp
 |                       (TRUE | FALSE)                              #BooleanExp
 |                       StringLiteral                               #StringExp
 |                       NULL                                        #NullExp
-|                       LPAREN exp RPAREN                           #ParenExp
 |                       exp LPAREN expList? RPAREN                  #AppExp
 |                       IF exp exp (ELSE exp)?                      #IfElseExp
 |                       LBRACKET expList? RBRACKET                  #ListExp
@@ -41,20 +40,23 @@ exp:
                         RPAREN                                      #CoordExp
 |                       exp AT exp                                  #ItemFilter
 |                       exp TRANSFER exp                            #TransferExp
-
-
-|                       exp index+                                  #IndexExp
-|                       exp field+                                  #FieldExp
 |                       Identifier BECOMES exp                      #AssignExp
 |                       LOCAL Identifier BECOMES exp                #AssignLocalExp
 |                       WHILE blockOrExp blockOrExp                 #WhileExp
 |                       exp index+ BECOMES exp                      #AssignIndexExp
 |                       exp field+ BECOMES exp                      #AssignFieldExp
-|                       Identifier                                  #VariableExp
+|                       referrable                                  #ReferrableExp
 ;
+
 
 block                   : LCURLY (exp SEMICOLON?)* RCURLY;
 blockOrExp              : block | exp;
+referrable              :
+                        LPAREN exp RPAREN                           #ParenExp
+|                       Identifier                                  #VariableExp
+|                       referrable index+                           #IndexExp
+|                       referrable field+                           #FieldExp
+;
 
 expList                 : exp (COMMA? exp)*;
 idList                  : Identifier (COMMA? Identifier)*;
@@ -68,23 +70,6 @@ kv                      : Identifier BECOMES exp;
 opMulDivMod             : MUL | DIV | MOD;
 opAddSub                : ADD | SUB;
 opCompare               : GT | GTE | LT | LTE | EQ | NEQ;
-
- binaryExpr:
-      operand MUL exp             # mult
-    | operand DIV exp            # div
-    | operand MOD exp            # mod
-    | operand ADD exp         # sub
-    | operand SUB exp          # add
-    | operand LT exp           # lt
-    | operand LTE exp            # le
-    | operand GT exp            # gt
-    | operand GTE exp            # ge
-    | operand EQ exp            # eq
-    | operand NEQ exp            # neq
-    | operand AND exp            # and
-    | operand OR exp            # or
-    ;
-operand: exp;
 
 //Lexer rules
 TRUE                    : 'true';

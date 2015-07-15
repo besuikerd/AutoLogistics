@@ -10,7 +10,7 @@ public class LoadProgramMessageHandler extends VMMessageHandler<LoadProgramMessa
 
     @Override
     public void onTileMessage(TileVirtualMachine tile, EntityPlayer player, LoadProgramMessage message, MessageContext ctx) {
-        tile.program_$eq(message.getProgram());
+        tile.program().setValue(message.getProgram());
     }
 
     public static class LoadProgramMessage extends PositionalMessage{
@@ -39,5 +39,10 @@ public class LoadProgramMessageHandler extends VMMessageHandler<LoadProgramMessa
         public String getProgram() {
             return program;
         }
+    }
+
+    @Override
+    public boolean handlesClientSide() {
+        return true;
     }
 }

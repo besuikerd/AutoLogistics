@@ -20,7 +20,8 @@ public class GuiLogisticController extends GuiVirtualMachine{
                             new ElementButton(60, "Run").trigger(Trigger.PRESSED, "run"),
                             new ElementButton(60, "Kill").trigger(Trigger.PRESSED, "kill")
                     ).padding(2)
-            )
+            ),
+            new ElementLabel("").textColor(0xffe50000).id("error").paddingVertical(10)
         ).trigger(Trigger.GUI_CLOSED, "saveProgram");
         root.update();
 

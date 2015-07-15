@@ -6,7 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 
 public abstract class ClientMessageHandler<REQ extends IMessage, REPLY extends IMessage> extends SidedMessageHandler<REQ, REPLY> {
     @Override
-    public REPLY onServerMessage(EntityPlayer player, REQ message, MessageContext ctx) {
-        return null;
+    public boolean handlesServerSide() {
+        return false;
     }
 }

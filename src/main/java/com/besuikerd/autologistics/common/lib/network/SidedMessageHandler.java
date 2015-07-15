@@ -11,14 +11,26 @@ public abstract class SidedMessageHandler<REQ extends IMessage, REPLY extends IM
     public REPLY onMessage(REQ message, MessageContext ctx) {
         switch(ctx.side){
             case CLIENT:
-                return onClientMessage(AutoLogistics.proxy().getPlayer(ctx), message, ctx);
+                if(handlesClientSide()){
+                    return onClientMessage(AutoLogistics.proxy().getPlayer(ctx), message, ctx);
+                }
             case SERVER:
-                return onServerMessage(AutoLogistics.proxy().getPlayer(ctx), message, ctx);
+                if(handlesServerSide()){
+                    return onServerMessage(AutoLogistics.proxy().getPlayer(ctx), message, ctx);
+                }
             default:
                 return null;
         }
     }
 
-    public abstract REPLY onClientMessage(EntityPlayer player, REQ message, MessageContext ctx);
-    public abstract REPLY onServerMessage(EntityPlayer player, REQ message, MessageContext ctx);
+    public boolean handlesClientSide(){
+        return true;
+    }
+
+    public boolean handlesServerSide(){
+        return true;
+    }
+
+    public REPLY onClientMessage(EntityPlayer player, REQ message, MessageContext ctx){ return null; }
+    public REPLY onServerMessage(EntityPlayer player, REQ message, MessageContext ctx){ return null; }
 }

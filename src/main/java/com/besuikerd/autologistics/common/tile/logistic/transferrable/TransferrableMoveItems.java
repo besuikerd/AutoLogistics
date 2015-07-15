@@ -56,7 +56,7 @@ public class TransferrableMoveItems extends AbstractTransferrable<StackValue, St
                     for(int fromSlotIndex = 0 ; fromSlotIndex < fromInventory.getSizeInventory() ; fromSlotIndex++){
                         ItemStack fromStack = fromInventory.getStackInSlot(fromSlotIndex);
 
-                        if(fromStack != null && fromFilter.passesItemFilter(fromStack) && InventoryItemCounterExtract.instance.canUseSlot(fromInventory, fromSlotIndex, fromStack, fromFilter)){
+                        if(fromStack != null && fromStack.stackSize > 0 && fromFilter.passesItemFilter(fromStack) && InventoryItemCounterExtract.instance.canUseSlot(fromInventory, fromSlotIndex, fromStack, fromFilter)){
 
                             for(IInventory toInventory : toInventories){ //let's find an inventory that we can put this stuff into
                                 int toItemsCounted = InventoryItemCounterInsert.instance.count(toInventory, toFilter);

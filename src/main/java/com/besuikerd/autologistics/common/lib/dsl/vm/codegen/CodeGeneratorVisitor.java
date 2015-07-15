@@ -90,7 +90,7 @@ public class CodeGeneratorVisitor extends AutoLogisticsBaseVisitor<List<Instruct
 
     @Override
     public List<Instruction> visitIndexExp(IndexExpContext ctx) {
-        ctx.exp().accept(this);
+        ctx.referrable().accept(this);
         for(IndexContext index : ctx.index()){
             index.accept(this);
             instructions.add(GetFieldInstruction.instance);
@@ -124,7 +124,7 @@ public class CodeGeneratorVisitor extends AutoLogisticsBaseVisitor<List<Instruct
 
     @Override
     public List<Instruction> visitFieldExp(FieldExpContext ctx) {
-        ctx.exp().accept(this);
+        ctx.referrable().accept(this);
         for(FieldContext field : ctx.field()){
             field.accept(this);
             instructions.add(GetFieldInstruction.instance);

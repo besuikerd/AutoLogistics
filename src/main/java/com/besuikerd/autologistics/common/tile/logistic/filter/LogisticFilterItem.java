@@ -4,6 +4,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
 import com.besuikerd.autologistics.common.lib.util.OreDictionaryUtil;
 import com.besuikerd.autologistics.common.tile.logistic.filter.item.IItemFilter;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.GameRegistry.*;
 import net.minecraft.block.Block;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -35,9 +36,12 @@ public class LogisticFilterItem extends AbstractLogisticFilter{
         if(mod.equals("ore")){
             return OreDictionaryUtil.matchesOreDictionary(name, to.getBlockType());
         } else{
-            Block block = GameRegistry.findBlock(mod, name);
-            return to.getBlockType().equals(block);
+            UniqueIdentifier id = GameRegistry.findUniqueIdentifierFor(to.getBlockType());
+            if(id != null){
+                return mod.equals(id.modId) && name.equals(id.name);
+            }
         }
+        return false;
     }
 
     public static class FilterProvider implements IFilterProvider{

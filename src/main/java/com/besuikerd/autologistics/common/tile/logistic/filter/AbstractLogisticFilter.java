@@ -112,7 +112,9 @@ public abstract class AbstractLogisticFilter implements ILogisticFilter {
 
     @Override
     public final boolean passesBlockFilter(TileEntity from, TileEntity to) {
-        return inverted ^ passesBlockFilterImpl(from, to);
+        boolean passesFilter = passesBlockFilterImpl(from, to);
+
+        return inverted ^ passesFilter;
     }
 
     protected abstract boolean passesBlockFilterImpl(TileEntity from, TileEntity to);

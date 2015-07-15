@@ -237,7 +237,7 @@ public class DefaultVirtualMachine implements VirtualMachine{
     protected void serializeScopes(DataOutput output) throws IOException{
         int size = scopes.size() - 1; //we do not need to serialize the global scope
         output.writeInt(size);
-        for(int i = 1 ; i < size ; i++){
+        for(int i = 1 ; i < scopes.size() ; i++){
             scopes.get(i).accept(DataOutputStackValueVisitor.instance, output);
         }
     }

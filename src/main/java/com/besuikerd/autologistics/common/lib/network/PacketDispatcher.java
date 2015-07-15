@@ -49,17 +49,14 @@ public class PacketDispatcher {
         CHANNEL.registerMessage(messageHandler, requestMessageType, discriminator++, side);
     }
 
-    public <REQ extends IMessage, REPLY extends IMessage> void registerMessage(ServerMessageHandler<REQ, REPLY> messageHandler, Class<REQ> requestMessageType) {
-        registerMessage(messageHandler, requestMessageType, Side.SERVER);
-    }
+    public <REQ extends IMessage, REPLY extends IMessage> void registerMessage(SidedMessageHandler<REQ, REPLY> messageHandler, Class<REQ> requestMessageType) {
+        if(messageHandler.handlesClientSide()){
+            registerMessage(messageHandler, requestMessageType, Side.CLIENT);
+        }
 
-    public <REQ extends IMessage, REPLY extends IMessage> void registerMessage(ClientMessageHandler<REQ, REPLY> messageHandler, Class<REQ> requestMessageType) {
-        registerMessage(messageHandler, requestMessageType, Side.CLIENT);
-    }
-
-    public <REQ extends IMessage, REPLY extends IMessage> void registerMessage(BiDirectionalMessageHandler<REQ, REPLY> messageHandler, Class<REQ> requestMessageType) {
-        registerMessage(messageHandler, requestMessageType, Side.SERVER);
-        registerMessage(messageHandler, requestMessageType, Side.CLIENT);
+        if(messageHandler.handlesServerSide()){
+            registerMessage(messageHandler, requestMessageType, Side.SERVER);
+        }
     }
 
     public void init(){

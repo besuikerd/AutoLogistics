@@ -8,6 +8,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm._
 import com.besuikerd.autologistics.common.lib.dsl.vm.codegen.CodeGeneratorVisitor
 import com.besuikerd.autologistics.common.lib.dsl.vm.nativefunction._
 import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue._
+import com.besuikerd.autologistics.common.lib.observable.{ObservableValue, ObservableStringValue}
 import com.besuikerd.autologistics.common.tile._
 import com.besuikerd.autologistics.common.tile.TileEntityMod
 import com.google.common.base.{Predicates}
@@ -22,7 +23,7 @@ import java.util.{List => JList}
 trait TileVirtualMachine extends TileEntityMod
 {
   val virtualMachine = new DefaultVirtualMachine
-  var program:String = ""
+  var program:ObservableValue[String] = new ObservableStringValue()
 
   virtualMachine.addNative("not", NativeFunctionNegateBoolean.instance)
   virtualMachine.addNative("length", NativeFunctionLength.instance)
@@ -46,14 +47,14 @@ trait TileVirtualMachine extends TileEntityMod
 
   abstract override def readFromNBT(compound: NBTTagCompound): Unit = {
     super.readFromNBT(compound)
-    this.program = compound.getString("program")
+    program.setValue(compound.getString("program"));
     readVMFromNBT(compound)
     println("read from nbt" + compound)
   }
 
   override def writeToNBT(compound: NBTTagCompound): Unit = {
     super.writeToNBT(compound)
-    compound.setString("program", program)
+    compound.setString("program", program.getValue)
     writeVMToNBT(compound)
   }
 
@@ -76,8 +77,6 @@ trait TileVirtualMachine extends TileEntityMod
     }
   }
 
-
-
   def load(program:String): Unit ={
     val lexer = new AutoLogisticsLexer(new ANTLRInputStream(program));
     val tokens = new CommonTokenStream(lexer)
@@ -90,18 +89,6 @@ trait TileVirtualMachine extends TileEntityMod
     } else{
       println("failed to load program")
     }
-
-
-//    AutoLogisticsParser.parse(AutoLogisticsParser.parser, program) match{
-//      case AutoLogisticsParser.Success(ast, _) => {
-//        val instructions = OldCodeGenerator.generate(ast)
-//        //println(ast)
-//        virtualMachine.load(instructions)
-//      }
-//      case AutoLogisticsParser.NoSuccess(error, _) => {
-//        println("Failed to load program: " + error)
-//      }
-//    }
   }
 }
 
