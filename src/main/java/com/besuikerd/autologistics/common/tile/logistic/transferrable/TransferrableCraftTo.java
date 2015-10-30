@@ -11,6 +11,7 @@ import com.besuikerd.autologistics.common.tile.logistic.LazyTileFinder;
 import com.besuikerd.autologistics.common.tile.logistic.filter.ILogisticFilter;
 import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilterItemFilter;
 import com.besuikerd.autologistics.common.tile.logistic.filter.LogisticFilterRegistry;
+import com.besuikerd.autologistics.common.tile.logistic.filter.item.LogisticFilterItemStack;
 import com.besuikerd.autologistics.common.tile.logistic.itemcounter.InventoryItemCounterInsert;
 import com.besuikerd.autologistics.common.tile.logistic.itemcounter.ItemCounterInnerLogisticFilter;
 import com.besuikerd.autologistics.common.tile.logistic.itemcounter.ItemCounterInnerLogisticFilterExtract;
@@ -149,7 +150,10 @@ public class TransferrableCraftTo extends AbstractTransferrable<ObjectValue, Sta
                     for (Tuple2<Integer, IInventory> toInventoryWithIndex : toInventories) {
                         int toInventoryIndex = toInventoryWithIndex._1;
                         IInventory toInventory = toInventoryWithIndex._2;
-                        int toItemsCounted = InventoryItemCounterInsert.instance.count(toInventory, toFilter);
+
+                        ILogisticFilter countFilter = new LogisticFilterItemStack(toInsert, toFilter.getAmount(), toFilter.getValidSides());
+
+                        int toItemsCounted = InventoryItemCounterInsert.instance.count(toInventory, countFilter);
                         int toLimit = toFilter.getAmount() == -1 ? Integer.MAX_VALUE : toFilter.getAmount() - toItemsCounted;
                         if(toLimit > 0) { //we are allowed to insert #toLimit items
 

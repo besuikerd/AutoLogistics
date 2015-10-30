@@ -14,7 +14,7 @@ public class GuiLogisticController extends GuiVirtualMachine{
         root.add(
             new ElementLabel("Logistics Controller").width(250),
             new ElementContainer().layout(new HorizontalLayout()).add(
-                    new ElementScrollableTextArea(250, 200).text(tile.program()).id("program"),
+                    new ElementScrollableTextArea(250, 200).text(tile.program().getValue()).id("program"),
                     new ElementContainer().layout(new VerticalLayout(0, 2)).add(
                             new ElementButton(60, "Compile").trigger(Trigger.PRESSED, "compile"),
                             new ElementButton(60, "Run").trigger(Trigger.PRESSED, "run"),

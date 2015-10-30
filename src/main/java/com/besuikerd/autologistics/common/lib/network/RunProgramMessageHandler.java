@@ -8,7 +8,7 @@ public class RunProgramMessageHandler extends VMMessageHandler<RunProgramMessage
 
     @Override
     public void onTileMessage(TileVirtualMachine tile, EntityPlayer player, RunProgramMessage message, MessageContext ctx) {
-        tile.load(tile.program());
+        tile.load(tile.program().getValue());
     }
 
     public static class RunProgramMessage extends PositionalMessage{

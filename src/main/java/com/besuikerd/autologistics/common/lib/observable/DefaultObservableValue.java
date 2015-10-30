@@ -40,4 +40,9 @@ public class DefaultObservableValue<A> implements ObservableValue<A>{
             observer.onValueChanged(oldValue, value);
         }
     }
+
+    @Override
+    public String toString() {
+        return value.toString();
+    }
 }

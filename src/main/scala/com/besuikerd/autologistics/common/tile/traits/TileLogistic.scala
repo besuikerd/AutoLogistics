@@ -34,7 +34,11 @@ trait TileLogistic extends TileEntityMod{
   virtualMachine.addNative("_filter", NativeFunctionItemFilter.instance)
   virtualMachine.addNative("_transfer", new NativeFunctionItemTransfer(this))
   virtualMachine.addNative("count", new NativeFunctionCountItems(this))
-  virtualMachine.addNative("not", NativeFunctionInvertFilter.instance);
+  virtualMachine.addNative("not", NativeFunctionInvertFilter.instance)
+  virtualMachine.addGlobal("any", new ObjectValue()
+    .put("name", new StringValue(".*"))
+    .put("type", new StringValue("name"))
+  )
 
 //  object FindInventories extends NativeFunction{
 //    override def call(vm: VirtualMachine, args: JList[StackValue]): StackValue = {

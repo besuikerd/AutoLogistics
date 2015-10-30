@@ -33,8 +33,9 @@ public class ObjectValue implements StackValue{
         return builder.toString();
     }
 
-    public void put(String key, StackValue value){
+    public ObjectValue put(String key, StackValue value){
         mapping.put(key, value);
+        return this;
     }
 
     @Override

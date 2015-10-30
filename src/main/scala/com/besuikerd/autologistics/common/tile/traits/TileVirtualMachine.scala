@@ -28,9 +28,12 @@ trait TileVirtualMachine extends TileEntityMod
   virtualMachine.addNative("not", NativeFunctionNegateBoolean.instance)
   virtualMachine.addNative("length", NativeFunctionLength.instance)
   virtualMachine.addNative("keys", NativeFunctionKeys.instance)
+
   virtualMachine.addNative("print", NativeFunctionPrint.instance)
+
   virtualMachine.addNative("println", NativeFunctionPrintln.instance)
   virtualMachine.addNative("say", nativeSay)
+  virtualMachine.addNative("type", NativeFunctionType.instance);
 
   object nativeSay extends AbstractNativeFunction {
     override def call(vm: VirtualMachine, args: JList[StackValue]): StackValue = {
