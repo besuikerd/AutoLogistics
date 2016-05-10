@@ -13,10 +13,7 @@ import com.besuikerd.autologistics.common.lib.dsl.vm.stackvalue.*;
 import com.google.common.collect.Lists;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -387,7 +384,7 @@ public class CodeGeneratorVisitor extends AutoLogisticsBaseVisitor<List<Instruct
     @Override
     public List<Instruction> visitAppExp(AppExpContext ctx) {
         ctx.exp().accept(this);
-        List<ExpContext> args = ctx.expList().exp();
+        List<ExpContext> args = ctx.expList() != null ? ctx.expList().exp() : Collections.<ExpContext>emptyList();
         for(ExpContext arg : args){
             arg.accept(this);
         }
@@ -410,10 +407,12 @@ public class CodeGeneratorVisitor extends AutoLogisticsBaseVisitor<List<Instruct
         this.instructions = allInstructions;
 
         List<String> bindings = new ArrayList<String>();
-        for(TerminalNode identifier : ctx.idList().Identifier()){
-            bindings.add(identifier.getText());
+        IdListContext idListContext = ctx.idList();
+        if(idListContext != null){
+            for(TerminalNode identifier : idListContext.Identifier()){
+                bindings.add(identifier.getText());
+            }
         }
-
         List<String> freeVariables = FreeVariableInstructionVisitor.visit(bodyInstructions);
         freeVariables.removeAll(bindings);
         if(closureName != null){

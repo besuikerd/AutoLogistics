@@ -133,8 +133,8 @@ Decimal                 : Sign Digit (DOT Digit+)?;
 Identifier              : Letter (Letter | Digit)*;
 
 Item                    : LT ItemChar* GT;
-fragment ItemChar       : ~[>\\] | ItemEsc;
-fragment ItemEsc        : '\\' [\\>];
+fragment ItemChar       : ~[\(\)>\{\}] | ItemEsc;
+fragment ItemEsc        : '\\' [>\{\}\(\)];
 
 StringLiteral           : QUOTE StringChar* QUOTE;
 fragment StringChar     : ~["\\] | EscapeSeq;

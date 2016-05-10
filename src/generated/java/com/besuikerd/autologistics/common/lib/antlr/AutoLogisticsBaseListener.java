@@ -1,4 +1,4 @@
-// Generated from C:\Users\Nick\projects\minecraft\AutoLogistics\src\main\antlr\AutoLogistics.g4 by ANTLR 4.5
+// Generated from /home/nick/projects/minecraft/AutoLogistics/src/main/antlr/AutoLogistics.g4 by ANTLR 4.5
 
 package com.besuikerd.autologistics.common.lib.antlr;
 
